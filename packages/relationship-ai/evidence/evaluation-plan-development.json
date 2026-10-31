@@ -1,0 +1,17 @@
+{
+  "status": "PLAN_ONLY_NO_MODEL_CALLS",
+  "syntheticOnly": true,
+  "model": "gpt-6.1-sol",
+  "split": "development",
+  "offset": 0,
+  "cases": 24,
+  "maxCalls": 39,
+  "retries": 0,
+  "outputTokenCap": 1200,
+  "inputByteCap": 32768,
+  "planningEstimateUsd": 0.702,
+  "conservativeReservationUsd": 3.183648,
+  "notIncluded": "human review; token estimate is not observed billing",
+  "priceVersion": "openai-standard-2026-10-31",
+  "priceSource": "https://developers.openai.com/api/docs/models/gpt-6.1-sol"
+}
