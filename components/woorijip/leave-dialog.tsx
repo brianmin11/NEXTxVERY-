@@ -28,7 +28,7 @@ export function LeaveDialog({
   onCloseAutoFocus,
   onLeave,
   onDiscard,
-  description = "앱 안에서 다른 화면으로 가면 내용은 유지돼요. 새로고침하거나 탭을 닫으면 사라져요(메모리에만 있는 데모예요).",
+  description = "앱 안에서 다른 화면으로 가면 내용은 유지돼요. 새로고침하거나 탭을 닫으면 사라져요(저장 전 초안은 이 탭에만 남아요).",
 }: LeaveDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

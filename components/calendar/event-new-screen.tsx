@@ -1,5 +1,6 @@
 "use client"
 
+import { IS_DEMO } from "@/lib/app-mode"
 import * as React from "react"
 import { useRouter } from "next/navigation"
 
@@ -45,12 +46,13 @@ export function EventNewScreen({ initialDate }: { initialDate?: string }) {
     return () => window.removeEventListener("beforeunload", handler)
   }, [dirty])
 
-  function submit(draft: CalendarDraft, token: string) {
+  async function submit(draft: CalendarDraft, token: string) {
     if (savingRef.current) return
     savingRef.current = true
     const fields = draftToEventFields(draft)
-    cal.add({ id: crypto.randomUUID(), createdByMemberId: viewerId, ...fields }, token)
-    router.push(`/calendar?saved=added&date=${fields.date}`)
+    const ok = await cal.add({ id: crypto.randomUUID(), createdByMemberId: viewerId, ...fields }, token)
+    savingRef.current = false
+    if (ok) router.push(`/calendar?saved=added&date=`)
   }
 
   function requestClose() {
@@ -77,7 +79,7 @@ export function EventNewScreen({ initialDate }: { initialDate?: string }) {
       }
     >
       <DemoViewerSwitch />
-      <p className="text-sm text-muted-foreground">데모 일정에만 반영돼요. 실제 저장·알림은 없어요.</p>
+      {IS_DEMO && <p className="text-sm text-muted-foreground">데모 일정에만 반영돼요. 실제 저장·알림은 없어요.</p>}
       <EventForm formId={FORM_ID} mode="create" initial={initial} family={family} onSubmit={submit} onDirtyChange={setDirty} />
 
       <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>

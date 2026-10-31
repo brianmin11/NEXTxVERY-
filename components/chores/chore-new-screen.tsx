@@ -34,10 +34,10 @@ export function ChoreNewScreen() {
     return () => window.removeEventListener("beforeunload", handler)
   }, [draftDirty])
 
-  function submit() {
+  async function submit() {
     if (submittingRef.current || !draft.submitToken) return
     submittingRef.current = true
-    chores.addChore(draftToChoreFields(draft), draft.submitToken)
+    await chores.addChore(draftToChoreFields(draft), draft.submitToken)
     submittingRef.current = false
   }
 
@@ -87,8 +87,8 @@ export function ChoreNewScreen() {
           <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-primary">
             <CircleCheck className="size-6" aria-hidden="true" />
           </span>
-          <p className="font-semibold">데모 할 일에 추가했어요</p>
-          <p className="text-sm text-muted-foreground">담당자에게 알림은 가지 않아요. 새로고침하면 사라지는 메모리 데모예요.</p>
+          <p className="font-semibold">할 일을 추가했어요</p>
+          <p className="text-sm text-muted-foreground">담당자에게 알림은 아직 가지 않아요.</p>
         </div>
       ) : (
         <ChoreForm formId="chore-new-form" draft={draft} family={family} onChange={chores.updateDraft} onSubmit={submit} />

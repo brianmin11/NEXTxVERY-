@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { IS_DEMO } from "@/lib/app-mode"
 import { ArrowLeft } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -96,6 +97,7 @@ export function AppShell({ children, flush = false, hideNav = false, mainClassNa
 
 /** 화면 상단의 작은 데모 표시 */
 export function DemoBadge({ className }: { className?: string }) {
+  if (!IS_DEMO) return null
   return (
     <Badge variant="outline" className={cn("h-6 self-start px-2.5 text-muted-foreground", className)}>
       프론트 데모 · 가상 데이터

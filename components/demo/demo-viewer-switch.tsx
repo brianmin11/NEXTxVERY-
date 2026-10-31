@@ -1,5 +1,6 @@
 "use client"
 
+import { IS_DEMO } from "@/lib/app-mode"
 import * as React from "react"
 import { Check, FlaskConical } from "lucide-react"
 
@@ -37,6 +38,8 @@ export function DemoViewerSwitch({ className }: { className?: string }) {
   const sheetFocus = useReturnFocus()
   const dialogFocus = useReturnFocus()
   const dirty = mindDirty || memories.draftDirty || chores.draftDirty
+  // 라이브 모드에는 데모 인물 전환이 없다(실제 세션 하나뿐).
+  if (!IS_DEMO) return null
 
   function request(id: string) {
     if (id === viewerId) {

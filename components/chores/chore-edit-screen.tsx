@@ -73,10 +73,10 @@ function Editor({ initial, choreId, family }: { initial: ChoreDraft; choreId: st
     return () => window.removeEventListener("beforeunload", handler)
   }, [dirty])
 
-  function save() {
+  async function save() {
     if (savingRef.current) return
     savingRef.current = true
-    const ok = chores.updateChore(choreId, draftToChoreFields(draft))
+    const ok = await chores.updateChore(choreId, draftToChoreFields(draft))
     savingRef.current = false
     if (ok) router.push(`/chores/${choreId}?saved=1`)
   }

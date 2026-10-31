@@ -30,8 +30,8 @@ export function ThemeScreen() {
   }
   const dirty = allowed && draft !== family.theme
 
-  function apply() {
-    const ok = setTheme(draft)
+  async function apply() {
+    const ok = await setTheme(draft)
     if (!ok) {
       setNotice("가족 관리자만 테마를 바꿀 수 있어요.")
       return

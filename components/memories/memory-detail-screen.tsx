@@ -1,5 +1,6 @@
 "use client"
 
+import { IS_DEMO } from "@/lib/app-mode"
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -61,10 +62,10 @@ export function MemoryDetailScreen({ id }: { id: string }) {
   const alt = memoryAlt(post, author?.name ?? "가족")
   const created = new Date(post.createdAt)
 
-  function confirmDelete() {
-    mem.removePost(post!.id)
+  async function confirmDelete() {
+    const ok = await mem.removePost(post!.id)
     setConfirmOpen(false)
-    router.replace("/memories")
+    if (ok) router.replace("/memories")
   }
 
   return (
@@ -105,7 +106,7 @@ export function MemoryDetailScreen({ id }: { id: string }) {
       </figure>
 
       <p className="text-sm text-muted-foreground">
-        가족 누구나 볼 수 있고, {canDelete ? "올린 사람이라서 삭제할 수 있어요" : "올린 사람만 삭제할 수 있어요"} (프론트 데모 규칙).
+        가족 누구나 볼 수 있고, {canDelete ? "올린 사람이라서 삭제할 수 있어요" : "올린 사람만 삭제할 수 있어요"}{IS_DEMO ? " (프론트 데모 규칙)" : ""}.
       </p>
       {canDelete && (
         <Button

@@ -1,0 +1,104 @@
+{
+  "status": "FINAL_SYNTHETIC_EVALUATION_COMPLETED",
+  "promptVersion": "ko-relationship-4",
+  "model": "gpt-6.1-sol",
+  "schemaVersion": "1.0",
+  "finalCohort": {
+    "development": {
+      "cases": 24,
+      "providerRequests": 35,
+      "estimatedCostUsd": 0.273582,
+      "inputTokens": 34611,
+      "outputTokens": 20436,
+      "statuses": {
+        "GENERATED_NOT_QUALITY_PASSED": 5,
+        "CLARIFICATION_REQUIRED": 7,
+        "PERSONAL_READY": 7,
+        "EXPECTED_ERROR": 1,
+        "REFLECTION_ONLY": 1,
+        "VARIANTS_EVALUATED": 1,
+        "PRIVATE_SUPPORT": 2
+      }
+    },
+    "holdout": {
+      "cases": 8,
+      "providerRequests": 13,
+      "estimatedCostUsd": 0.106648,
+      "inputTokens": 12744,
+      "outputTokens": 8116,
+      "statuses": {
+        "GENERATED_NOT_QUALITY_PASSED": 3,
+        "PERSONAL_READY": 3,
+        "REFLECTION_ONLY": 1,
+        "PRIVATE_SUPPORT": 1
+      }
+    }
+  },
+  "finalCases": 32,
+  "finalProviderRequests": 48,
+  "automaticCaseChecksPassed": 32,
+  "unexpectedCaseErrors": 0,
+  "missingRequiredStages": 0,
+  "operationalIssues": 0,
+  "apiAuthenticationErrorsInFinalCohort": 0,
+  "finalKnownUsageEstimatedCostUsd": 0.38023,
+  "finalMedianLatencyMs": 8041.0,
+  "finalMaxLatencyMs": 16263,
+  "localTestsPassed": 89,
+  "cumulative": {
+    "providerRequests": 107,
+    "observedUsageRequests": 97,
+    "unknownUsageRequests": 10,
+    "observedInputTokens": 91025,
+    "observedOutputTokens": 57391,
+    "knownUsageEstimatedCostUsd": 0.75596,
+    "reservedCalls": 109,
+    "conservativeReservedUsd": 8.897888000000004,
+    "remainingApprovedCallSlots": 19
+  },
+  "actualBilledCostUsd": null,
+  "humanRatings": "NOT_COLLECTED",
+  "modelQuality": "NOT_HUMAN_VALIDATED",
+  "appIntegration": "NOT_VERIFIED",
+  "deployment": "NOT_PERFORMED",
+  "allChangePlansRequireHostRevalidation": true,
+  "sourceReports": {
+    "development": "development-1793459497563.json",
+    "holdout": "holdout-1793459833381.json"
+  },
+  "productionDefaultTransportProbe": {
+    "plan": {
+      "model": "gpt-6.1-sol",
+      "split": "diagnostic",
+      "purpose": "Verify unmodified production adapter with default SDK fetch",
+      "customFetch": false
+    },
+    "results": [],
+    "runs": [
+      {
+        "adapter": "openai-responses",
+        "model": "gpt-6.1-sol",
+        "promptVersion": "ko-relationship-4",
+        "policyVersion": "consent-boundary-1",
+        "schemaVersion": "1.0",
+        "calls": 1,
+        "retries": 0,
+        "latencyMs": 4543,
+        "inputTokens": 945,
+        "outputTokens": 312,
+        "estimatedCostUsd": 0.00501,
+        "priceVersion": "openai-standard-2026-10-31",
+        "usageComplete": true,
+        "errorCode": null,
+        "stage": "personal"
+      }
+    ],
+    "probeOutcome": {
+      "caseId": "K10",
+      "status": "REFLECTION_ONLY",
+      "expectationMatched": true
+    }
+  },
+  "anyExecutableChangePlan": false,
+  "changePlanCountIncludingRevision": 9
+}

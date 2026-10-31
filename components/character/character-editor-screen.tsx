@@ -54,14 +54,14 @@ export function CharacterEditorScreen({ returnTo = "/more" }: { returnTo?: strin
     return () => window.removeEventListener("beforeunload", handler)
   }, [dirty])
 
-  function save() {
+  async function save() {
     const error = validateMemberName(draft.name)
     setNameError(error)
     if (error) {
       document.getElementById("character-name")?.focus()
       return
     }
-    const ok = updateMyProfile({ name: draft.name.trim(), avatar: draft.avatar })
+    const ok = await updateMyProfile({ name: draft.name.trim(), avatar: draft.avatar })
     if (!ok) {
       setNotice("저장하지 못했어요. 본인 캐릭터만 바꿀 수 있어요.")
       return

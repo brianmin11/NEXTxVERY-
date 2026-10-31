@@ -22,29 +22,35 @@ type RenameDialogProps = {
   onOpenChange: (open: boolean) => void
   onCloseAutoFocus: (event: Event) => void
   current: string
-  /** 검증을 통과한 이름으로 호출. false를 돌려주면 권한 오류로 표시한다. */
-  onSave: (name: string) => boolean
+  /** 검증을 통과한 이름으로 호출. false를 돌려주면 권한·서버 오류로 표시한다. */
+  onSave: (name: string) => Promise<boolean>
+  lastError?: string | null
 }
 
 /** 가족 이름 변경(관리자 전용). 짧은 입력이라 대화상자로 둔다. */
-export function RenameFamilyDialog({ open, onOpenChange, onCloseAutoFocus, current, onSave }: RenameDialogProps) {
+export function RenameFamilyDialog({ open, onOpenChange, onCloseAutoFocus, current, onSave, lastError }: RenameDialogProps) {
   const [name, setName] = React.useState(current)
   const [error, setError] = React.useState<string | null>(null)
+  const [busy, setBusy] = React.useState(false)
   const [base, setBase] = React.useState(current)
   if (base !== current) {
     setBase(current)
     setName(current)
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
+    if (busy) return
     const err = validateFamilyName(name)
     if (err) {
       setError(err)
       return
     }
-    if (!onSave(name.trim())) {
-      setError("가족 관리자만 이름을 바꿀 수 있어요.")
+    setBusy(true)
+    const ok = await onSave(name.trim())
+    setBusy(false)
+    if (!ok) {
+      setError(lastError ?? "가족 관리자만 이름을 바꿀 수 있어요.")
       return
     }
     setError(null)
@@ -101,8 +107,8 @@ export function RenameFamilyDialog({ open, onOpenChange, onCloseAutoFocus, curre
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               취소
             </Button>
-            <Button type="submit" disabled={name.trim() === current}>
-              저장
+            <Button type="submit" disabled={name.trim() === current || busy} aria-busy={busy}>
+              {busy ? "저장하는 중" : "저장"}
             </Button>
           </DialogFooter>
         </form>

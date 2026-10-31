@@ -11,6 +11,7 @@ export type MindMessageStatus = "sent" | "read" | "replied" | "later" | "decline
  * 작성자의 원문(rawText)·개인 메모는 어떤 필드로도 넣지 않는다.
  */
 export type MindMessage = {
+  revision?: number
   id: string
   fromId: string
   toId: string

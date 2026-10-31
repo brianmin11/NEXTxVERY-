@@ -1,0 +1,18 @@
+2026-11-01 Operational storage v4
+Implementation candidate a5145758aeaea7ca575aa1a0f79984095d965a29
+Target: Supabase woorijip-production / pjpskzlihmakcgjffdiq / Seoul Free-Nano
+TLS: official CA, rejectUnauthorized=true. Session pooler5432.
+Product schema woorijip migrated; private bucket family-memories created.
+User explicitly approved transfer of22accounts/emails/passwordhashes/sessions/13families/2photos; transfer succeeded. Legacy raw-private tables excluded.
+Build/typecheck/lint PASS. Independent readonly QA:28/28 service/provider/recovery/storage tests PASS.
+Live HTTP: migrated password login; new synthetic signup; familycreate/invite/join; two-process duplicate request id=>same event; competing revision=>200/409 PASS.
+Private assets: upload/reencode/attach; pending owner-only; shared family200; outsider404; anonymous401; publicobjectURLdenied PASS.
+Privacy: raw marker absent inPGrecords; anon/authenticated direct SELECT denied PASS.
+Remote backup:25accounts,15families,3photos. Restore into woorijip_recovery + family-memories-recovery PASS. Repeatrestore refused (exit1).
+Recovery server: verify-v3-live check PASS; verify-v4-live check PASS (two accounts + eventrevision + photohash + outsider404).
+Final product server localhost3120: verify-v3-live check PASS; verify-v4-live check PASS.
+Actual browser login/save/reload PASS. Browser event persisted exactlyonce inPG and visible tosecondfamilyaccount PASS.
+Screenshot: evidence/storage-v4-calendar.png
+Cleanup tool againstproductPG/Storage PASS removed0.
+Observed intermediate connectiontimeouts/503; noDBlockblockers. Pool max2/keepalive/querydeadline/errorlistener applied. Final rechecks PASS; longrunningavailability/load nottested.
+New paidAIcalls0. Publicdeployment0. Designchanges0. Existing practiceproject untouched.

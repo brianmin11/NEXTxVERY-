@@ -1,0 +1,31 @@
+✔ session identifies actual member; invite secret is hashed and family data isolated (8.91325ms)
+✔ calendar preserves local dates and enforces actor, participants, revision and idempotency (17.161542ms)
+✔ invalid calendar requests roll back without reserving request key (3.409625ms)
+✔ chores enforce author/assignee rules, explicit state and completion timestamp stability (4.281042ms)
+✔ mind suggestions are ephemeral, final messages restricted, read does not downgrade responses (5.987667ms)
+✔ unconfigured AI fails explicitly but manual message delivery remains usable (1.990792ms)
+✔ private images validate bytes, restrict pending assets, attach and delete atomically (17.026458ms)
+✔ competing revisions admit exactly one write and pending upload cleanup leaves attached assets intact (7.225875ms)
+✔ two parties explicitly accept one proposal; atomic apply preserves event identity and unrelated fields (12.627917ms)
+✔ nonparties cannot discover a room and only the event creator can create or apply it (4.924209ms)
+✔ old revisions and incomplete consent cannot change a calendar; edits reset all decisions (3.282125ms)
+✔ defer blocks execution, decline is terminal and withdrawal removes consent without rolling back applied events (9.155459ms)
+✔ calendar edits, membership loss and room expiry invalidate consent before execution (11.254958ms)
+✔ invalid dates and replay payloads fail, concurrent requests admit exactly one new revision (3.030625ms)
+✔ calendar and room rollback if writing the atomic idempotency receipt fails (2.557291ms)
+✔ AI sees approved room contributions only; preview is transient and explicit timezone conversion is stable (5.560084ms)
+✔ AI result becomes stale if a contribution changes while the model is pending (2.317833ms)
+✔ unsupported AI action details remain visible blockers and unavailable AI preserves manual flow (4.205916ms)
+✔ idempotent retries return current room without resurrecting a withdrawn contribution (2.143542ms)
+✔ provider uses transient requests and persistent reservation/rate limits without retaining input or draft (572.606791ms)
+✔ exhausted budget, unapproved actors and cancelled requests never reach the model (1089.866208ms)
+✔ provider failures are redacted, keep conservative reservation and do not auto retry (385.138709ms)
+✔ upload recovery removes only old unreferenced server UUID files and preserves active or unfamiliar paths (33.824333ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2158.856875

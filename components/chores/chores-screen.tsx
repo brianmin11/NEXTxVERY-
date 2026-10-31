@@ -1,5 +1,6 @@
 "use client"
 
+import { IS_DEMO } from "@/lib/app-mode"
 import * as React from "react"
 import Link from "next/link"
 import { CheckCircle2, ClipboardList, Plus } from "lucide-react"
@@ -39,9 +40,9 @@ export function ChoresScreen() {
   const { busyId, mark } = useBusyId()
   const list = chores.listChores(status, scope === "mine")
 
-  function handleSetStatus(id: string, next: ChoreStatus) {
+  async function handleSetStatus(id: string, next: ChoreStatus) {
     if (busyId) return
-    const ok = chores.setStatus(id, next)
+    const ok = await chores.setStatus(id, next)
     if (ok) {
       mark(id)
       setNotice(next === "done" ? "완료로 표시했어요" : "완료를 취소했어요")
@@ -70,7 +71,7 @@ export function ChoresScreen() {
       }
     >
       <DemoViewerSwitch />
-      <p className="text-sm text-muted-foreground">메모리에만 있는 데모예요. 새로고침하면 추가·완료 기록이 사라져요.</p>
+      {IS_DEMO && <p className="text-sm text-muted-foreground">메모리에만 있는 데모예요. 새로고침하면 추가·완료 기록이 사라져요.</p>}
 
       <div className="-mx-4 flex flex-col gap-1">
         <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)}>

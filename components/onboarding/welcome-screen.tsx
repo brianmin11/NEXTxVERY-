@@ -4,7 +4,7 @@ import Link from "next/link"
 import { ShieldCheck } from "lucide-react"
 
 import { PixelCharacter } from "@/components/character/pixel-character"
-import { useFamily } from "@/components/family/family-provider"
+import { useOnboarding } from "@/components/family/family-provider"
 import { BRAND_NAME } from "@/components/logo"
 import { Button } from "@/components/ui/button"
 import { themeLayerSrc } from "@/lib/scene/themes"
@@ -17,10 +17,10 @@ const HERO_CHARACTERS = [
 
 /**
  * 환영 화면. 새 가족 만들기 / 초대코드로 참여하기.
- * 로그인은 아직 연결되지 않았으므로 '로그인 완료'처럼 보이는 문구를 쓰지 않는다.
+ * 라이브에서는 로그인한 뒤 가족이 없을 때 도착한다. '로그인 완료'처럼 보이는 문구는 쓰지 않는다.
  */
 export function WelcomeScreen() {
-  const { family } = useFamily()
+  const { mode, currentFamily, logout } = useOnboarding()
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <div className="relative h-[44vh] min-h-72 overflow-hidden rounded-b-[9rem] bg-home-scene">
@@ -54,11 +54,18 @@ export function WelcomeScreen() {
           </Button>
           <p className="flex items-center justify-center gap-1.5 pt-1 text-xs text-muted-foreground">
             <ShieldCheck className="size-3.5" aria-hidden="true" />
-            프론트 데모 흐름이에요. 로그인은 아직 연결되지 않았어요.
+            {mode === "demo" ? "프론트 데모 흐름이에요. 로그인은 아직 연결되지 않았어요." : "초대코드는 참여할 가족을 찾는 코드이고, 로그인은 이미 끝났어요."}
           </p>
-          <Button variant="link" className="h-11" asChild>
-            <Link href="/home">지금 가족 ‘{family.name}’으로 돌아가기</Link>
-          </Button>
+          {currentFamily && (
+            <Button variant="link" className="h-11" asChild>
+              <Link href="/home">지금 가족 ‘{currentFamily.name}’으로 돌아가기</Link>
+            </Button>
+          )}
+          {mode === "live" && logout && (
+            <Button variant="ghost" className="h-11 text-muted-foreground" onClick={() => void logout()}>
+              다른 계정으로 로그인
+            </Button>
+          )}
         </div>
       </main>
     </div>

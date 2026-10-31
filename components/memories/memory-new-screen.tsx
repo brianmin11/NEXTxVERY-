@@ -1,5 +1,6 @@
 "use client"
 
+import { IS_DEMO } from "@/lib/app-mode"
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -48,7 +49,7 @@ export function MemoryNewScreen() {
   }, [draftDirty])
 
   const dateValid = isValidDateKey(draft.memoryDate)
-  const canSubmit = !!pendingAsset && dateValid && !picking && draft.step === "compose"
+  const canSubmit = !!pendingAsset && (IS_DEMO || pendingAsset.kind === "remote") && dateValid && !picking && !mem.uploading && draft.step === "compose"
   const done = draft.step === "done"
 
   async function handleFiles(files: FileList | null) {
@@ -70,14 +71,20 @@ export function MemoryNewScreen() {
       setPickError(result.message)
       return
     }
-    mem.setPendingAsset({ id: crypto.randomUUID(), kind: "blob", ...result })
+    const blobAsset = { id: crypto.randomUUID(), kind: "blob" as const, ...result }
+    mem.setPendingAsset(blobAsset)
+    if (IS_DEMO) return
+    // 라이브: 미리보기는 blob으로 먼저 보여 주고, 서버 업로드(형식·용량·실제 내용 검사 후 재인코딩) 결과로 바꾼다.
+    const uploadError = await mem.upload(file)
+    if (uploadError && id === requestRef.current) setPickError(uploadError)
   }
 
-  function submit() {
+  async function submit() {
     if (!canSubmit || submittingRef.current || !draft.submitToken) return
     submittingRef.current = true
-    mem.addPost({ memoryDate: draft.memoryDate, caption: draft.caption }, draft.submitToken)
+    const created = await mem.addPost({ memoryDate: draft.memoryDate, caption: draft.caption }, draft.submitToken)
     submittingRef.current = false
+    if (!created) setPickError(mem.error ?? "추억을 등록하지 못했어요. 다시 시도해 주세요.")
   }
 
   function close() {
@@ -121,7 +128,7 @@ export function MemoryNewScreen() {
             </Button>
             {!canSubmit && (
               <p className="text-center text-sm text-muted-foreground">
-                {picking ? "사진을 확인하고 있어요." : !pendingAsset ? "사진을 고르면 등록할 수 있어요." : "추억 날짜를 골라 주세요."}
+                {picking ? "사진을 확인하고 있어요." : mem.uploading ? "사진을 올리는 중이에요." : !pendingAsset ? "사진을 고르면 등록할 수 있어요." : "추억 날짜를 골라 주세요."}
               </p>
             )}
           </>
@@ -135,7 +142,7 @@ export function MemoryNewScreen() {
           <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-primary">
             <CircleCheck className="size-6" aria-hidden="true" />
           </span>
-          <p className="font-semibold">데모 추억에 추가했어요</p>
+          <p className="font-semibold">추억을 남겼어요</p>
           <p className="text-sm text-muted-foreground">
             실제 업로드나 가족에게 전송은 하지 않았어요. 이 탭에서만 보이고 새로고침하면 사라져요.
           </p>

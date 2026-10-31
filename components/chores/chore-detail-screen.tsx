@@ -37,7 +37,7 @@ export function ChoreDetailScreen({ id }: { id: string }) {
   const { family, viewerId } = useDemoViewer()
   const chores = useChores()
   const chore = chores.choreById(id)
-  const [notice, setNotice] = React.useState<string | null>(params.get("saved") ? "데모 할 일에 반영했어요" : null)
+  const [notice, setNotice] = React.useState<string | null>(params.get("saved") ? "할 일에 반영했어요" : null)
   const [confirmOpen, setConfirmOpen] = React.useState(false)
   const { busyId, mark } = useBusyId()
   const returnFocus = useReturnFocus()
@@ -68,18 +68,18 @@ export function ChoreDetailScreen({ id }: { id: string }) {
   const mayEdit = canEditChore(chore, viewerId)
   const mayDelete = canDeleteChore(chore, viewerId)
 
-  function setStatus(next: "todo" | "done") {
+  async function setStatus(next: "todo" | "done") {
     if (busyId) return
-    if (chores.setStatus(chore!.id, next)) {
+    if (await chores.setStatus(chore!.id, next)) {
       mark(chore!.id)
       setNotice(next === "done" ? "완료로 표시했어요" : "완료를 취소했어요")
     }
   }
 
-  function confirmDelete() {
-    chores.removeChore(chore!.id)
+  async function confirmDelete() {
+    const ok = await chores.removeChore(chore!.id)
     setConfirmOpen(false)
-    router.replace("/chores")
+    if (ok) router.replace("/chores")
   }
 
   return (
@@ -188,7 +188,7 @@ export function ChoreDetailScreen({ id }: { id: string }) {
         <DialogContent onCloseAutoFocus={returnFocus.onCloseAutoFocus}>
           <DialogHeader>
             <DialogTitle>‘{chore.title}’을(를) 삭제할까요?</DialogTitle>
-            <DialogDescription>데모 할 일에서만 지워지고 되돌릴 수 없어요.</DialogDescription>
+            <DialogDescription>이 할 일이 지워지고 되돌릴 수 없어요.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>

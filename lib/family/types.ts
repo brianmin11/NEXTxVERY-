@@ -21,8 +21,8 @@ export type Family = {
   adminMemberId: string
   /** 가족 공통 테마. 관리자만 바꾼다. */
   theme: SceneTheme
-  /** 데모 초대코드. 실제 초대 발급·검증은 서버가 맡는다. */
-  inviteCode: string
+  /** 데모 초대코드(라이브에서는 서버가 발급하며 세션에 포함하지 않는다) */
+  inviteCode?: string
   /** 가상 예시 데이터 표시용 */
   seed?: boolean
 }

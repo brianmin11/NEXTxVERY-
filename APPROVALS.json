@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "1",
+  "repositoryAndBranchWork": true,
+  "paidModelCalls": true,
+  "publicDeployment": false,
+  "maxCostUsd": 12,
+  "maxCalls": 128,
+  "approvalId": "relationship-ai-synthetic-2026-10-31-01",
+  "model": "gpt-6.1-sol",
+  "syntheticOnly": true,
+  "automaticRetries": 0,
+  "scope": {
+    "developmentCases": 24,
+    "holdoutCases": 8
+  },
+  "remotePush": {
+    "approved": true,
+    "repository": "https://github.com/brianmin11/NEXTxVERY-",
+    "branch": "codex/relationship-ai",
+    "payload": "Relationship AI source, documentation and synthetic tests"
+  },
+  "authorizationSource": "Explicit user replies approving branch push and synthetic evaluation up to USD12; no public deployment approval",
+  "apiKeyPermissionEdit": {
+    "approved": true,
+    "keyName": "testkey",
+    "project": "Default project",
+    "added": "Responses Write",
+    "saved": true,
+    "authorizationSource": "User: save하고 바로 다음 단계까지 쭉 진행해줘"
+  },
+  "integration": {
+    "branch": "codex/relationship-integration",
+    "userRequest": "별도 통합 브랜치에서 두 계정 요청 전달·조율·일정 변경·저장 및 실제 동작 검증",
+    "syntheticLiveApproved": true,
+    "maxCalls": 12,
+    "additionalMaxCostUsd": 2,
+    "cumulativeMaxCostUsd": 12,
+    "automaticRetries": 0,
+    "publicDeployment": false,
+    "priorReservedCalls": 109,
+    "priorReservedUsd": 8.897888000000004
+  },
+  "backendV3Execution": {
+    "authorization": "Uses remaining existing synthetic integration approval; no new budget or production processing authorization.",
+    "sourceCommit": "e7eb698",
+    "sourcePath": "../NEXTxVERY-integration/APPROVALS.json",
+    "existingIntegrationReservationsBefore": 10,
+    "remainingIntegrationCallsBefore": 2,
+    "existingReservedUsdBefore": 1.5,
+    "sharedExistingLedgerRequired": true,
+    "syntheticActorAllowlistRequired": true,
+    "automaticRetries": 0,
+    "publicDeployment": false
+  },
+  "backendV3LiveApproval": {
+    "approved": true,
+    "provider": "OpenAI",
+    "model": "gpt-6.1-sol",
+    "maxCalls": 2,
+    "maxCostUsd": 0.3,
+    "syntheticOnly": true,
+    "data": "가상 가족의 12월 15일 저녁 준비 일정 조율 대화",
+    "userAnswer": "합성 입력 2회·총 $0.30 이내 승인",
+    "automaticRetries": 0,
+    "existingSharedLedgerRequired": true,
+    "publicDeployment": false
+  },
+  "backendV4Storage": {
+    "approved": true,
+    "project": "woorijip-production",
+    "projectRef": "pjpskzlihmakcgjffdiq",
+    "organization": "JIS25K's Org",
+    "region": "ap-northeast-2",
+    "plan": "Free",
+    "scope": "PostgreSQL application/auth storage and private photo bucket; local integration and synthetic verification",
+    "authorizationSource": "User selected new Supabase product project, created it and saved DB password locally",
+    "publicDeployment": false,
+    "paidModelCalls": false,
+    "paidPlanChanges": false,
+    "rawPrivateTextPersistence": false
+  },
+  "backendV4DataTransfer": {
+    "approved": true,
+    "userAnswer": "기존 데이터 이관 승인",
+    "targetProject": "pjpskzlihmakcgjffdiq",
+    "payload": {
+      "accounts": 22,
+      "includes": [
+        "emails",
+        "password hashes",
+        "login sessions",
+        "13 families current service records",
+        "2 photos"
+      ],
+      "excludes": [
+        "legacy private raw text",
+        "unapproved AI drafts"
+      ]
+    },
+    "destination": "Supabase private application schema and private family-memories bucket"
+  },
+  "operationalAiConfiguration": {
+    "userDailyCalls": 20,
+    "globalDailyUsd": 5,
+    "dayTimezone": "Asia/Seoul",
+    "configurationApproved": true,
+    "paidCallsApproved": false,
+    "realUserTextTransmissionApproved": false,
+    "userAnswer": "데모용: 사용자당 하루 20회·전체 하루 $5 상한"
+  }
+}

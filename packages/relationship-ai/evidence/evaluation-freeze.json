@@ -1,0 +1,21 @@
+{
+  "frozenAt": "2026-10-31T15:17:12.465Z",
+  "model": "gpt-6.1-sol",
+  "promptVersion": "ko-relationship-4",
+  "policyVersion": "consent-boundary-1",
+  "developmentReport": "development-1793459497563.json",
+  "holdoutStarted": false,
+  "files": {
+    "dist/src/prompts/index.js": "a0ca72350c8d76182eb55a09e8bb3a078f22cefec21c9833d69fc285f6de2af3",
+    "dist/src/contracts/index.js": "30effb33cb35605d6d1ad04fdab45a4d254c3c4e2c791811e592dc97a96f4d95",
+    "dist/eval/case.js": "497ff79ccef56344837253b2d75f4e1a0427530e96fc696018684b81d2699406",
+    "dist/eval/run.js": "72a6b4caf8bf0b09ce3693e6db82f031882c49940fad1f5c9eb8b9cda636e4f7",
+    "eval/development.jsonl": "036ec97c09453073385473e4a7e07bbedadea5c252db21cd28113e357cfd287b",
+    "eval/holdout.jsonl": "fe1113099a34b0ea8387dd678e667e9c5b973e6e5195b20ebfbb7147ad9e9b85"
+  },
+  "budgetAtFreeze": {
+    "approvalId": "relationship-ai-synthetic-2026-10-31-01",
+    "reservedCalls": 95,
+    "reservedUsd": 7.755039999999995
+  }
+}

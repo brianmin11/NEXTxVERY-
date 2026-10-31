@@ -1,5 +1,6 @@
 "use client"
 
+import { IS_DEMO } from "@/lib/app-mode"
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -82,12 +83,13 @@ function Editor({ event, family }: { event: CalendarEvent; family: Family }) {
     return () => window.removeEventListener("beforeunload", handler)
   }, [dirty])
 
-  function submit(draft: CalendarDraft) {
+  async function submit(draft: CalendarDraft) {
     if (savingRef.current) return
     savingRef.current = true
     const fields = draftToEventFields(draft)
-    cal.update(event.id, fields)
-    router.push(`/calendar?saved=updated&date=${fields.date}`)
+    const ok = await cal.update(event.id, fields)
+    savingRef.current = false
+    if (ok) router.push(`/calendar?saved=updated&date=`)
   }
 
   function requestClose() {
@@ -114,7 +116,7 @@ function Editor({ event, family }: { event: CalendarEvent; family: Family }) {
       }
     >
       <DemoViewerSwitch />
-      <p className="text-sm text-muted-foreground">데모 일정에만 반영돼요. 실제 저장·알림은 없어요.</p>
+      {IS_DEMO && <p className="text-sm text-muted-foreground">데모 일정에만 반영돼요. 실제 저장·알림은 없어요.</p>}
       <EventForm formId={FORM_ID} mode="edit" initial={initial} family={family} onSubmit={submit} onDirtyChange={setDirty} />
 
       <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>

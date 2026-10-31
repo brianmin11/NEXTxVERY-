@@ -1,0 +1,31 @@
+2026-11-01 (Asia/Seoul) — service backend completion verification
+Repository: NEXTxVERY-backend-v2, branch codex/frontend-backend-v2
+Frontend baseline: 민경민 a5e474a2cbe5812105acceba90a1ecc60600e8ab
+Runtime final source: 81b6012 (last runtime change d8dd515); later approval/evidence-only commits do not change runtime.
+
+PASS npm run typecheck
+PASS npm run lint (0 warnings/errors)
+PASS npm run build (production webpack; metadataBase localhost warning only)
+PASS service/provider/recovery:23/23,0skip,0fail. Evidence v3-service-tests.txt.
+PASS bundled Relationship AI:89/89. Evidence v3-engine-tests.txt.
+PASS actual Chrome browser:4/4,3.2min. Independent real Better Auth cookie accounts, synthetic identity/data.
+- Calendar create/edit reload, cross-member read, nonauthor403, localdate/time.
+- Direct inbox read, other-family404, Origin403.
+- Chore assigned-member completion, actual image upload/private retrieval, unavailable-AI manual message fallback.
+- Joint coordination through UI: own explicit contributions, keyboard proposal publish, both accept, creator apply, persisted calendar reload, withdrawal does not undo applied event. Nonparty404/noncreator403.
+Browser tested be102fa runtime, final changes only add orphan cleanup, safe provider-error propagation and engine eval compilation. UI unchanged. Final readonly independent QA repeated all23 tests on81b6012. Mobile390px and desktop1280px screenshots reviewed; fullpage fixed nav overlay is a capture artifact, scrolling/keyboard controls verified.
+
+PASS actual OpenAI Responses:2 calls, model gpt-6.1-sol, automatic retries0. Explicit user approval recorded in APPROVALS.json backendV3LiveApproval.
+- Personal free-input suggestion:950 input tokens,549 output tokens,estimated USD0.007390,success.
+- Joint preview from explicitly shared contributions:1711 input,1090 output,estimated USD0.014322,success,supported single-event preview,no unsupported reasons.
+- Total estimated usage USD0.021712. Conservative reservationUSD0.30,within approvedUSD0.30. Invoice not independently verified.
+- Before final approval/sending, database records/receipts unchanged by generated private or joint drafts. Raw input absent. Only approved final outgoing message/proposal persists.
+- Two authenticated accounts shared contributions, explicitly published final date/time, both accepted same proposal, creator updated original event once. Replayed apply returns same revision, calendar revision2/time19:30–20:30.
+- Original integration budget preserved:12 totalintegration reservations,USD1.80 reserved, prior109calls/USD8.897888 unchanged. Integration call cap exhausted; no further paid calls authorized by this execution approval. Real-user processing remains disabled outside explicit synthetic actor allowlist.
+
+PASS stop/start production server, both previous authenticated sessions read persisted applied room and calendarrevision2.
+PASS consistent DB+privateassets backup,checksum/integrityverified restore to NEW separate directory,2 referencedassets.
+PASS recovered DB serverlocalhost3121: two existing sessions and calendar/room queries pass. Recovery server stopped after validation. Original server remainslocalhost3120.
+PASS orphan cleanup: only expired unreferenced UUIDv4 WebP removed; fresh file,attachedasset,unknownfilename,symlinktarget,directory preserved.
+
+Current product storage: local SQLite WAL and private filesystem. No external DB/RLS/objectstorage provisioning or public deployment is claimed. No remote branch push/merge performed. Email verification/reset delivery and external notifications are outside this frontend contract. Production real-user model budget/policy is not authorized by synthetic test approval.

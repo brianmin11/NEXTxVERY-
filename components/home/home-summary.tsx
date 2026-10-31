@@ -112,9 +112,9 @@ export function HomeSummary({ onSelect }: HomeSummaryProps) {
                   viewerId={viewerId}
                   today={choresState.today}
                   busy={busyId === c.id}
-                  onSetStatus={(id, next) => {
+                  onSetStatus={async (id, next) => {
                     if (busyId) return
-                    if (choresState.setStatus(id, next)) {
+                    if (await choresState.setStatus(id, next)) {
                       mark(id)
                       setChoreNotice(next === "done" ? "완료로 표시했어요" : "완료를 취소했어요")
                     }

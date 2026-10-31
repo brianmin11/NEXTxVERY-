@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { AppShell } from "@/components/woorijip/app-shell"
 import { StepLabel } from "@/components/woorijip/flow-page"
 import { EmptyState } from "@/components/woorijip/state-views"
+import { IS_DEMO } from "@/lib/app-mode"
 import { formatFullDate, formatTime } from "@/lib/format"
 import { findMember } from "@/lib/home.fixture"
 import { MIND_REPLY_MAX_LENGTH } from "@/lib/mind/config"
@@ -59,7 +60,7 @@ export function MindDetailScreen({ id }: { id: string }) {
   const shouldMarkRead = !!message && message.toId === viewerId && message.status === "sent"
   React.useEffect(() => {
     // 서버 연동 시 이 자리가 "상세 조회 = 읽음 처리" 호출로 바뀐다.
-    if (shouldMarkRead) dispatch({ type: "message/read", id })
+    if (shouldMarkRead) void dispatch({ type: "message/read", id })
   }, [shouldMarkRead, id, dispatch])
 
   if (!message || (message.toId !== viewerId && message.fromId !== viewerId)) {
@@ -68,8 +69,12 @@ export function MindDetailScreen({ id }: { id: string }) {
         <DemoViewerSwitch />
         <EmptyState
           icon={SearchX}
-          title="이 인물에게는 보이지 않는 메시지예요"
-          description="데모 인물을 보낸 사람이나 받는 사람으로 바꾸면 볼 수 있어요. 새로고침으로 사라졌을 수도 있어요."
+          title={IS_DEMO ? "이 인물에게는 보이지 않는 메시지예요" : "볼 수 없는 메시지예요"}
+          description={
+            IS_DEMO
+              ? "데모 인물을 보낸 사람이나 받는 사람으로 바꾸면 볼 수 있어요. 새로고침으로 사라졌을 수도 있어요."
+              : "보낸 사람과 받는 사람만 볼 수 있어요. 주소가 잘못됐거나 삭제된 메시지일 수 있어요."
+          }
           action={
             <Button asChild>
               <Link href="/inbox">수신함으로</Link>
@@ -88,13 +93,14 @@ export function MindDetailScreen({ id }: { id: string }) {
   const canRespond = isRecipient && message.response === null
   const replyBlank = reply.trim().length === 0
 
-  function commit() {
+  async function commit() {
     if (!pending || !message) return
     const atNow = new Date().toISOString()
     const response: MindResponse =
       pending.kind === "reply" ? { kind: "reply", text: pending.text.trim(), at: atNow } : { kind: pending.kind, at: atNow }
-    dispatch({ type: "message/respond", id: message.id, response })
+    const ok = await dispatch({ type: "message/respond", id: message.id, response })
     setPending(null)
+    if (!ok) return
     setReplyOpen(false)
     setReply("")
   }
@@ -192,7 +198,7 @@ export function MindDetailScreen({ id }: { id: string }) {
             <DialogTitle>
               {pending?.kind === "reply" ? "이 답장을 보낼까요?" : pending?.kind === "later" ? "나중에 이야기하기로 할까요?" : "지금은 어렵다고 답할까요?"}
             </DialogTitle>
-            <DialogDescription>데모 수신함에만 반영돼요. 실제 알림은 보내지 않고, 보낸 뒤에는 바꿀 수 없어요.</DialogDescription>
+            <DialogDescription>보낸 뒤에는 바꿀 수 없어요. 상대에게는 응답 내용만 보여요.</DialogDescription>
           </DialogHeader>
           {pending?.kind === "reply" && (
             <p className="rounded-lg bg-muted p-3 text-sm leading-relaxed whitespace-pre-wrap">{pending.text}</p>

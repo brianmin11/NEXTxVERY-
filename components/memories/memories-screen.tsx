@@ -1,5 +1,6 @@
 "use client"
 
+import { IS_DEMO } from "@/lib/app-mode"
 import Link from "next/link"
 import { Camera, ImagePlus, Images } from "lucide-react"
 
@@ -42,9 +43,11 @@ export function MemoriesScreen() {
     >
       <div className="flex flex-col gap-3 px-4">
         <DemoViewerSwitch />
-        <p className="text-sm text-muted-foreground">
+        {IS_DEMO && (
+<p className="text-sm text-muted-foreground">
           이 데모의 사진은 현재 브라우저 탭에서만 보이고 새로고침하면 사라져요. 실제 저장·가족 공유가 아니에요.
         </p>
+)}
       </div>
 
       {sortedPosts.length === 0 ? (

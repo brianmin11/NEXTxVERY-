@@ -6,6 +6,7 @@ import type { DateKey } from "@/lib/calendar/types"
  * 미래 서버 데이터의 영구 식별자가 아니다(서버 연결 시 asset id ↔ 저장 경로로 교체).
  */
 export type MemoryAsset =
+  | { id: string; kind: "remote"; url: string; mime: string; width: number; height: number; bytes: number }
   | {
       id: string
       kind: "blob"
@@ -26,6 +27,7 @@ export type MemoryAsset =
     }
 
 export type MemoryPost = {
+  revision?: number
   id: string
   authorId: string
   /** 추억 날짜 YYYY-MM-DD */

@@ -1,0 +1,12 @@
+2026-11-01 Operational AI configuration
+User selected20calls/user/KSTday + USD5/day service reservationcap. Configuration approval only; paidcalls andrealusertexttransmission NOT approved.
+Integrated code03de810b8b5cc29786a8bef5dfcb460c93d201f7; launcher-only addition272813d.
+Independent readonlyQA: typecheck PASS,lint PASS,service/provider/recovery/storage/AI42/42 PASS (0fail/skip).
+Productionbuild PASS. Existing local metadataBase warning remains unrelated.
+Quota tests:20user/day;33x$0.15=$4.95 service reservations thenreject34;concurrentbudgetedge;actor/globalconcurrency;cooldown;expiredlease;KSTmidnight includingpastdayactive;finishidempotency;rollback;PGbigintstrings.
+Provider tests: syntheticlegacy unchanged;operationalnormalactor(fakefetch)accepted onlywithapproval+PGconfigured;off/nodb denied withoutcalls;rate-limitednextrequest;raw/draftnotpersisted;runtime timeout;preabort;failedcompletionretainscharge/noautomaticretry.
+Actual PostgreSQL: migrations product+recovery PASS; recovery-onlysynthetic twoindependentpools PASS user20/global4950000microUSD/concurrency3. No external model call.
+Actual localhost3120 operational-profile HTTP request with realcookie:503AI_UNAVAILABLE,0reservationsadded. Live approvalfalse.
+No UI/design changes. Separate auththread notyetintegrated; emailverified-policy/fullauth+AIfinalflow waitsforauthcandidate.
+Recovery: ai_reservations addedtoallowlist;oldv4snapshotcompat;restoreliveflagtrue rejected. Reactivation afteroldbackup requires manualusageaudit; noautomaticreconciliationimplemented.
+Newpaidmodelcalls0,realusertextsenttomodel0,publicdeployments0.

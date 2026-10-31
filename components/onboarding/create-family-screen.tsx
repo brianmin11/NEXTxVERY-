@@ -2,10 +2,10 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { AlertCircle, ShieldCheck } from "lucide-react"
+import { AlertCircle, Loader2, ShieldCheck } from "lucide-react"
 
 import { CharacterForm, type CharacterDraft } from "@/components/character/character-form"
-import { useFamily } from "@/components/family/family-provider"
+import { useOnboarding } from "@/components/family/family-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,16 +18,18 @@ type Step = "name" | "character"
 
 /**
  * 새 가족 만들기: 1) 가족 이름 → 2) 내 이름·캐릭터 → 저장하고 우리집 보기.
- * 만든 사람이 초기 관리자가 된다(역할과 별개). 모두 메모리 데모이며 실제 계정·저장은 없다.
+ * 만든 사람이 초기 관리자가 된다(역할과 별개). 라이브에서는 서버가 가족·구성원·프로필을 저장한다.
  */
 export function CreateFamilyScreen() {
   const router = useRouter()
-  const { createFamily } = useFamily()
+  const { createFamily, lastError } = useOnboarding()
   const [step, setStep] = React.useState<Step>("name")
   const [familyName, setFamilyName] = React.useState("")
   const [familyError, setFamilyError] = React.useState<string | null>(null)
   const [draft, setDraft] = React.useState<CharacterDraft>({ name: "", avatar: DEFAULT_CHARACTER })
   const [nameError, setNameError] = React.useState<string | null>(null)
+  const [submitError, setSubmitError] = React.useState<string | null>(null)
+  const [busy, setBusy] = React.useState(false)
   const submittingRef = React.useRef(false)
 
   function next(e: React.FormEvent) {
@@ -41,7 +43,7 @@ export function CreateFamilyScreen() {
     setStep("character")
   }
 
-  function finish() {
+  async function finish() {
     if (submittingRef.current) return
     const err = validateMemberName(draft.name)
     setNameError(err)
@@ -50,10 +52,13 @@ export function CreateFamilyScreen() {
       return
     }
     submittingRef.current = true
-    const result = createFamily(familyName, { name: draft.name.trim(), avatar: draft.avatar })
+    setBusy(true)
+    setSubmitError(null)
+    const result = await createFamily(familyName, { name: draft.name.trim(), avatar: draft.avatar })
+    submittingRef.current = false
+    setBusy(false)
     if (!result) {
-      submittingRef.current = false
-      setNameError("가족을 만들지 못했어요. 입력을 확인해 주세요.")
+      setSubmitError(lastError ?? "가족을 만들지 못했어요. 입력을 확인해 주세요.")
       return
     }
     router.push("/home")
@@ -124,9 +129,24 @@ export function CreateFamilyScreen() {
       back={() => setStep("name")}
       backLabel="가족 이름으로 돌아가기"
       action={
-        <Button size="lg" onClick={finish}>
-          저장하고 우리집 보기
-        </Button>
+        <>
+          {submitError && (
+            <p role="alert" className="flex items-start gap-1.5 text-sm text-destructive">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              {submitError}
+            </p>
+          )}
+          <Button size="lg" onClick={finish} disabled={busy} aria-busy={busy}>
+            {busy ? (
+              <>
+                <Loader2 className="motion-safe:animate-spin" aria-hidden="true" />
+                가족을 만드는 중
+              </>
+            ) : (
+              "저장하고 우리집 보기"
+            )}
+          </Button>
+        </>
       }
     >
       <p className="text-sm text-muted-foreground">‘{familyName.trim()}’에서 쓸 이름과 캐릭터를 골라 주세요. 나중에 더보기에서 바꿀 수 있어요.</p>

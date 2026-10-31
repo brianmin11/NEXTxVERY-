@@ -19,6 +19,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { FlowHeading, FlowLead, FlowPage, StepLabel } from "@/components/woorijip/flow-page"
 import { LeaveDialog } from "@/components/woorijip/leave-dialog"
+import { IS_DEMO } from "@/lib/app-mode"
 import { findMember } from "@/lib/home.fixture"
 import { MIND_MAX_LENGTH } from "@/lib/mind/config"
 import { relationshipAdapter, SYNTHETIC_EXAMPLE } from "@/lib/mind/relationship-demo-adapter"
@@ -178,9 +179,10 @@ function ComposeStep() {
 }
 
 function RefineStep() {
-  const { family, draft, dispatch } = useMind()
+  const { family, draft, dispatch, canSuggest, suggest, suggestion } = useMind()
   const recipient = draft.recipientId ? findMember(family, draft.recipientId) : undefined
-  const [confirmCopy, setConfirmCopyState] = React.useState<"raw" | "example" | null>(null)
+  const suggestPhase = suggestion.phase
+  const [confirmCopy, setConfirmCopyState] = React.useState<"raw" | "example" | "suggest" | null>(null)
   const [exampleOpen, setExampleOpenState] = React.useState(false)
   const hasOutgoing = !isBlank(draft.outgoingText)
   const exampleFocus = useReturnFocus()
@@ -190,7 +192,7 @@ function RefineStep() {
     if (open) exampleFocus.capture()
     setExampleOpenState(open)
   }
-  const setConfirmCopy = (next: "raw" | "example" | null) => {
+  const setConfirmCopy = (next: "raw" | "example" | "suggest" | null) => {
     if (next) copyFocus.capture()
     setConfirmCopyState(next)
   }
@@ -215,7 +217,11 @@ function RefineStep() {
           <br />
           직접 다듬어 볼까요?
         </FlowHeading>
-        <FlowLead>실제 AI는 아직 연결되지 않아 제안을 만들지 않아요. 원문을 보며 전달할 문장을 직접 써 주세요.</FlowLead>
+        <FlowLead>
+          {canSuggest
+            ? "원하면 AI 제안을 받아 출발점으로 쓰고, 보내기 전에 꼭 직접 확인·수정해 주세요. 원문은 제안을 만들 때만 서버에 전달되고 보관되지 않아요."
+            : "실제 AI는 아직 연결되지 않아 제안을 만들지 않아요. 원문을 보며 전달할 문장을 직접 써 주세요."}
+        </FlowLead>
       </div>
 
       <section aria-labelledby="mind-raw-title" className="flex flex-col gap-1 rounded-r-lg border-l-3 border-input bg-muted px-4 py-3">
@@ -226,15 +232,26 @@ function RefineStep() {
         <p className="text-sm leading-relaxed whitespace-pre-wrap">{draft.rawText}</p>
       </section>
 
-      <AdapterStatus phase="demo" />
+      <AdapterStatus phase={canSuggest ? suggestPhase : "demo"} label={suggestion.label ?? undefined} errorMessage={suggestion.error ?? undefined} />
 
       <div className="flex flex-wrap gap-2">
+        {canSuggest && (
+          <Button
+            onClick={() => (hasOutgoing && suggestPhase !== "success" ? setConfirmCopy("suggest") : void suggest())}
+            disabled={suggestPhase === "loading"}
+            aria-busy={suggestPhase === "loading"}
+          >
+            {suggestPhase === "loading" ? "제안을 받는 중" : suggestPhase === "error" ? "AI 제안 다시 받기" : suggestPhase === "success" ? "다른 제안 받기" : "AI 제안 받기"}
+          </Button>
+        )}
         <Button variant="outline" onClick={() => (hasOutgoing && draft.outgoingText !== draft.rawText ? setConfirmCopy("raw") : copyRaw())}>
           원문을 초안으로 복사
         </Button>
-        <Button variant="ghost" onClick={() => setExampleOpen(true)}>
-          예시 흐름 보기
-        </Button>
+        {!canSuggest && (
+          <Button variant="ghost" onClick={() => setExampleOpen(true)}>
+            예시 흐름 보기
+          </Button>
+        )}
       </div>
 
       <section className="flex flex-col gap-2">
@@ -289,7 +306,7 @@ function RefineStep() {
           <DialogHeader>
             <DialogTitle>지금 쓴 전달 문장을 바꿀까요?</DialogTitle>
             <DialogDescription>
-              {confirmCopy === "raw" ? "원문 내용으로" : "합성 예시 문장으로"} 바뀌고, 지금 쓴 전달 문장은 사라져요.
+              {confirmCopy === "raw" ? "원문 내용으로" : confirmCopy === "suggest" ? "AI 제안 문장으로" : "합성 예시 문장으로"} 바뀌고, 지금 쓴 전달 문장은 사라져요.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -300,6 +317,7 @@ function RefineStep() {
               variant="destructive"
               onClick={() => {
                 if (confirmCopy === "raw") void copyRaw()
+                else if (confirmCopy === "suggest") void suggest()
                 else applyExample()
                 setConfirmCopy(null)
               }}
@@ -348,7 +366,9 @@ function SentStep() {
         <br />
         답할 시간을 천천히 기다려 주세요.
       </FlowLead>
-      <p className="text-xs text-muted-foreground">데모 수신함에만 추가됐고 실제 알림은 보내지 않았어요. 새로고침하면 사라져요.</p>
+      <p className="text-xs text-muted-foreground">
+        {IS_DEMO ? "데모 수신함에만 추가됐고 실제 알림은 보내지 않았어요. 새로고침하면 사라져요." : "원문과 초안은 이 기기에서도 지워졌어요. 푸시 알림은 아직 없어요."}
+      </p>
     </div>
   )
 }
@@ -362,8 +382,9 @@ function StepActions({
   viewerName: string
   recipient: ReturnType<typeof findMember>
 }) {
-  const { draft, dispatch } = useMind()
+  const { draft, dispatch, error } = useMind()
   const sendingRef = React.useRef(false)
+  const [sendFailed, setSendFailed] = React.useState(false)
 
   switch (draft.step) {
     case "compose": {
@@ -400,10 +421,11 @@ function StepActions({
         <>
           <Button
             size="lg"
-            onClick={() => {
-              // 연타 방지: 첫 클릭 이후는 무시하고, reducer도 같은 토큰을 한 번만 받는다.
+            onClick={async () => {
+              // 연타 방지: 첫 클릭 이후는 무시하고, provider도 같은 확인 토큰을 한 번만 받는다(라이브는 서버 requestId로 중복 차단).
               if (sendingRef.current || !draft.recipientId || !draft.confirmToken) return
               sendingRef.current = true
+              setSendFailed(false)
               const message: MindMessage = {
                 id: crypto.randomUUID(),
                 fromId: viewerId,
@@ -413,13 +435,24 @@ function StepActions({
                 status: "sent",
                 response: null,
               }
-              dispatch({ type: "message/send", message, confirmToken: draft.confirmToken })
+              const ok = await dispatch({ type: "message/send", message, confirmToken: draft.confirmToken })
+              // 실패하면 같은 토큰으로 다시 시도할 수 있게 잠금을 푼다(서버는 같은 requestId를 한 번만 처리한다).
+              if (!ok) {
+                sendingRef.current = false
+                setSendFailed(true)
+              }
             }}
           >
             확인하고 전송
           </Button>
+          {sendFailed && (
+            <p role="alert" className="text-center text-sm text-destructive">
+              {error ?? "전송하지 못했어요. 연결을 확인하고 다시 시도해 주세요."}
+            </p>
+          )}
           <p className="text-center text-sm text-muted-foreground">
-            {viewerName} → {recipient?.name} · 데모 수신함에만 추가돼요
+            {viewerName} → {recipient?.name}
+            {IS_DEMO ? " · 데모 수신함에만 추가돼요" : " · 상대의 수신함에 전달돼요"}
           </p>
         </>
       )

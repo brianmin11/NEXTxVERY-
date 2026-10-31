@@ -1,5 +1,6 @@
 "use client"
 
+import { IS_DEMO } from "@/lib/app-mode"
 import * as React from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -28,8 +29,8 @@ import { EventList } from "./event-list"
 import { MonthGrid } from "./month-grid"
 
 const SAVED_NOTICE: Record<string, string> = {
-  added: "데모 일정에 추가했어요",
-  updated: "데모 일정에 반영했어요",
+  added: "일정을 추가했어요",
+  updated: "일정에 반영했어요",
 }
 
 /**
@@ -70,11 +71,12 @@ export function CalendarScreen() {
   function moveMonth(delta: number) {
     setCursor((c) => addMonths(c.year, c.month, delta))
   }
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!deleteTarget) return
-    cal.remove(deleteTarget.id)
+    const ok = await cal.remove(deleteTarget.id)
     setDeleteTarget(null)
-    setNotice("데모 일정에서 삭제했어요")
+    if (!ok) return
+    setNotice("일정을 삭제했어요")
     setDetailId(null)
   }
 
@@ -140,7 +142,7 @@ export function CalendarScreen() {
         <EventList events={dayEvents} family={family} date={selected} onOpen={(id, origin) => openDetail(id, origin)} />
       </section>
 
-      <p className="text-xs text-muted-foreground">메모리에만 있는 데모예요. 새로고침하면 추가·수정한 일정이 사라져요. 표시 시간대: {cal.timeZone}</p>
+      {IS_DEMO && <p className="text-xs text-muted-foreground">메모리에만 있는 데모예요. 새로고침하면 추가·수정한 일정이 사라져요. 표시 시간대: {cal.timeZone}</p>}
 
       {/* 상세 시트 */}
       <Sheet open={detailOpen} onOpenChange={(o) => !o && setDetailId(null)}>
@@ -173,7 +175,7 @@ export function CalendarScreen() {
         <DialogContent onCloseAutoFocus={dialogFocus.onCloseAutoFocus}>
           <DialogHeader>
             <DialogTitle>‘{deleteTarget?.title}’ 일정을 삭제할까요?</DialogTitle>
-            <DialogDescription>데모 일정에서만 지워져요. 되돌릴 수 없어요.</DialogDescription>
+            <DialogDescription>이 일정이 지워져요. 되돌릴 수 없어요.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)}>
