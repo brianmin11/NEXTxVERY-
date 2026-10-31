@@ -1,0 +1,11 @@
+2026-11-01 storage v4 intermediate verification (NOT operational completion)
+Integrated storage API commit 53b3040 + QA commit 458fb70.
+Typecheck: pass.
+Production build: pass (metadataBase local origin warning remains).
+Remote TLS: official Supabase CA verification enabled; reached PostgreSQL authentication.
+Remote PostgreSQL: FAIL 28P01 password authentication failed; no schema/data migration executed.
+No new paid AI calls, deployment, or changes to the practice Supabase project.
+Remaining: corrected DB credential, migration, private bucket, data import, PG/storage real-account E2E and recovery validation.
+
+Service/provider/recovery/storage tests: 28/28 pass (local SQLite + injected memory assets; not remote PG proof).
+Lint: pass.

@@ -10,3 +10,13 @@
 문서: docs/SERVICE-BACKEND-COMPLETION.md / evidence/VERIFICATION-V3.txt.
 미실행: 운영 외부DB·비공개objectstorage 프로비저닝, 운영AI예산/실제사용자 데이터처리 승인, 공개배포. 로컬검증을 운영배포완료로 표시하지 않음.
 원격push/민경민merge/공개배포 없음. 기존 독립 저장소 변경 보존. 픽셀시안 미적용.
+
+2026-11-01 — 운영 저장소 v4 진행 중 (완료 아님)
+사용자가 Free/서울 신규 Supabase woorijip-production(pjpskzlihmakcgjffdiq)을 생성함. 기존 연습 프로젝트 미사용.
+PostgreSQL 비동기 어댑터/트랜잭션 직렬화, 비공개 Storage 어댑터, 서비스 비동기 전환, migration 준비 및 통합.
+운영 설정은 gitignored .env.supabase.local, 0600. 공식 Supabase CA를 적용해 인증서 검증을 유지함.
+실제 연결: TLS 통과 후 28P01 password authentication failed. 사용자에게 DB 비밀번호 대조·수정 요청 중.
+원격 스키마 migration/사진 bucket 생성/데이터 이관/운영 저장·복구·브라우저 검증은 아직 미실행.
+운영 프로필 선택 실행: STORAGE_ENV_FILE=.env.supabase.local npm run local -- --production. 연결·migration 완료 전 전환하지 말 것.
+운영 프로필에서 INTEGRATION_LIVE_APPROVED=false 유지. 새 유료 AI 호출·공개 배포 없음.
+다음: 비밀번호 확인 → DATABASE_URL 비밀번호 재생성 → PG 연결/스키마 확인 → migration·비공개 bucket → 허용 테이블/사진 이관 및 실제 계정·저장·격리·복구 검증.

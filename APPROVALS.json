@@ -64,5 +64,19 @@
     "automaticRetries": 0,
     "existingSharedLedgerRequired": true,
     "publicDeployment": false
+  },
+  "backendV4Storage": {
+    "approved": true,
+    "project": "woorijip-production",
+    "projectRef": "pjpskzlihmakcgjffdiq",
+    "organization": "JIS25K's Org",
+    "region": "ap-northeast-2",
+    "plan": "Free",
+    "scope": "PostgreSQL application/auth storage and private photo bucket; local integration and synthetic verification",
+    "authorizationSource": "User selected new Supabase product project, created it and saved DB password locally",
+    "publicDeployment": false,
+    "paidModelCalls": false,
+    "paidPlanChanges": false,
+    "rawPrivateTextPersistence": false
   }
 }

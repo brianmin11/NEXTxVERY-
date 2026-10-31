@@ -115,6 +115,7 @@ export function createSupabaseAssetStore(): PrivateAssetStore {
     async *list() {
       await ready()
       let offset = 0
+      const snapshot: { key: string; modifiedAt: number }[] = []
       for (;;) {
         const { data, error } = await store.list("", {
           limit: 100,
@@ -122,16 +123,18 @@ export function createSupabaseAssetStore(): PrivateAssetStore {
           sortBy: { column: "name", order: "asc" },
         })
         if (error) throw new Error("Private assets unavailable")
-        if (!data?.length) return
-        for (const item of data)
-          if (item.id && valid(item.name))
-            yield {
-              key: item.name,
-              modifiedAt: Date.parse(item.updated_at || item.created_at),
-            }
+        if (!data?.length) break
+        for (const item of data) {
+          const modifiedAt = Date.parse(
+            item.updated_at || item.created_at || ""
+          )
+          if (item.id && valid(item.name) && Number.isFinite(modifiedAt))
+            snapshot.push({ key: item.name, modifiedAt })
+        }
         offset += data.length
-        if (data.length < 100) return
+        if (data.length < 100) break
       }
+      yield* snapshot
     },
   }
 }
