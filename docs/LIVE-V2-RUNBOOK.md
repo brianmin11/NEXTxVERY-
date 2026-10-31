@@ -1,3 +1,5 @@
+# 이전 v2 기록 — 최신 실행·AI·조율·복구 현황은 SERVICE-BACKEND-COMPLETION.md 참조
+
 # 최신 프론트 로컬 연동 실행
 
 브랜치 codex/frontend-backend-v2, 프론트 기준 민경민 a5e474a. 기존 codex/relationship-integration 작업 트리의 미커밋 변경은 복사/수정하지 않았다.
