@@ -51,5 +51,18 @@
     "syntheticActorAllowlistRequired": true,
     "automaticRetries": 0,
     "publicDeployment": false
+  },
+  "backendV3LiveApproval": {
+    "approved": true,
+    "provider": "OpenAI",
+    "model": "gpt-6.1-sol",
+    "maxCalls": 2,
+    "maxCostUsd": 0.3,
+    "syntheticOnly": true,
+    "data": "가상 가족의 12월 15일 저녁 준비 일정 조율 대화",
+    "userAnswer": "합성 입력 2회·총 $0.30 이내 승인",
+    "automaticRetries": 0,
+    "existingSharedLedgerRequired": true,
+    "publicDeployment": false
   }
 }
