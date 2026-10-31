@@ -19,6 +19,7 @@ export type TimeKey = string
  * 종일 일정은 startTime·endTime이 null이고, 일반 일정은 endTime > startTime이어야 한다.
  */
 export type CalendarEvent = {
+  revision?: number
   id: string
   title: string
   category: CalendarCategory

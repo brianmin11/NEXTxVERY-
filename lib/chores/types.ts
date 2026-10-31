@@ -4,6 +4,7 @@ import type { DateKey } from "@/lib/calendar/types"
 export type ChoreStatus = "todo" | "done"
 
 export type Chore = {
+  revision?: number
   id: string
   title: string
   memo: string
