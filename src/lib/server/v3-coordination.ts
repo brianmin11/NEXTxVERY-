@@ -463,6 +463,7 @@ export function createCoordinationService({ db, propose }: Options) {
       try {
         generated = await propose(jointContext(actor, value))
       } catch (error) {
+        if (error instanceof V2Error) throw error
         const code = (error as { code?: unknown } | null)?.code
         if (code === "BUDGET_EXCEEDED" || code === "AI_BUDGET_EXCEEDED")
           fail(
