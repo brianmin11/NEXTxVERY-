@@ -14,6 +14,9 @@ import {
   type JointContext,
 } from "@family-os/relationship-ai"
 import { V2Error, type V2Actor } from "./v2-service"
+import { getDatabase } from "./auth"
+import { createAiLedger, AiLimitError } from "./ai-ledger"
+import { withAiLedger } from "./ai-runner"
 
 // Existing user-approved synthetic integration envelope, shared with the previous host.
 // Reservation ceilings are conservative, not a claim about the final provider invoice.
@@ -42,15 +45,20 @@ function unavailable(code = "AI_UNAVAILABLE", status = 503): never {
   throw new V2Error(
     code,
     status,
-    code === "AI_BUDGET_EXCEEDED"
-      ? "승인된 AI 사용 한도에 도달했어요. 직접 작성한 내용으로 계속할 수 있어요."
-      : code === "AI_RATE_LIMIT"
-        ? "AI 요청을 처리 중이에요. 잠시 후 다시 시도해 주세요."
-        : "AI 제안을 완료하지 못했어요. 직접 작성한 내용으로 계속할 수 있어요."
+    code === "AI_USER_DAILY_LIMIT"
+      ? "오늘의 AI 사용 횟수를 모두 사용했어요. 직접 작성한 내용으로 계속할 수 있어요."
+      : code === "AI_TIMEOUT"
+        ? "AI 응답이 늦어 요청을 종료했어요. 입력은 유지되며 직접 작성할 수 있어요."
+        : code === "AI_BUDGET_EXCEEDED"
+          ? "승인된 AI 사용 한도에 도달했어요. 직접 작성한 내용으로 계속할 수 있어요."
+          : code === "AI_RATE_LIMIT"
+            ? "AI 요청을 처리 중이에요. 잠시 후 다시 시도해 주세요."
+            : "AI 제안을 완료하지 못했어요. 직접 작성한 내용으로 계속할 수 있어요."
   )
 }
 function safeError(error: unknown): never {
   if (error instanceof V2Error) throw error
+  if (error instanceof AiLimitError) unavailable(error.code, 429)
   if (error instanceof RelationshipError) {
     if (error.code === "BUDGET_EXCEEDED") unavailable("AI_BUDGET_EXCEEDED", 429)
     if (error.code === "RATE_LIMIT") unavailable("AI_RATE_LIMIT", 429)
@@ -61,10 +69,29 @@ function safeError(error: unknown): never {
         "이 내용은 AI 공동 조율 제안으로 만들 수 없어요. 개인 대화로 정리해 주세요."
       )
     if (error.code === "CANCELLED") unavailable("AI_CANCELLED", 409)
+    if (error.code === "TIMEOUT") unavailable("AI_TIMEOUT", 504)
   }
   unavailable()
 }
 function getEngine(actor: V2Actor, signal?: AbortSignal) {
+  if (process.env.AI_MODE === "operational") {
+    if (
+      process.env.AI_LIVE_APPROVED !== "true" ||
+      !process.env.DATABASE_URL ||
+      !process.env.OPENAI_API_KEY ||
+      !actor.id
+    )
+      unavailable()
+    const runner = withAiLedger(
+      createRunner(
+        new OpenAIAdapter("gpt-6.1-sol", process.env.OPENAI_API_KEY)
+      ),
+      createAiLedger(getDatabase()),
+      actor.id
+    )
+    return createEngine(runner)
+  }
+  if (process.env.AI_MODE && process.env.AI_MODE !== "synthetic") unavailable()
   const path = process.env.INTEGRATION_BUDGET_PATH
   // This session permits synthetic evaluation only. No production entitlement is inferred.
   const actorAllowlist = (process.env.INTEGRATION_SYNTHETIC_ACTOR_IDS || "")

@@ -20,6 +20,9 @@ try {
       schema
     )
   )
+  await pool.query(
+    readFileSync("migrations/postgres/002-ai-operations.sql", "utf8")
+  )
   const migrations = await getMigrations({
     database: pool,
     emailAndPassword: { enabled: true },

@@ -98,5 +98,14 @@
       ]
     },
     "destination": "Supabase private application schema and private family-memories bucket"
+  },
+  "operationalAiConfiguration": {
+    "userDailyCalls": 20,
+    "globalDailyUsd": 5,
+    "dayTimezone": "Asia/Seoul",
+    "configurationApproved": true,
+    "paidCallsApproved": false,
+    "realUserTextTransmissionApproved": false,
+    "userAnswer": "데모용: 사용자당 하루 20회·전체 하루 $5 상한"
   }
 }

@@ -31,6 +31,7 @@ const tables = [
   "v2_invites",
   "v2_records",
   "v2_receipts",
+  "ai_reservations",
 ] as const
 const keyPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\.webp$/
@@ -120,6 +121,8 @@ async function loadBundle(source: string) {
   if (manifest.version !== 2 || hash(bytes) !== manifest.dataHash)
     throw Error("Invalid snapshot checksum/version")
   const data: Data = JSON.parse(bytes.toString())
+  // v4 snapshots predate the operational ledger; activation requires a separate budget audit.
+  if (!("ai_reservations" in data)) data.ai_reservations = []
   if (
     Object.keys(data).length !== tables.length ||
     tables.some((t) => !Array.isArray(data[t]))
@@ -144,6 +147,10 @@ async function empty(client: PoolClient) {
       throw Error("Restore requires empty application tables")
 }
 const [mode, input, output] = process.argv.slice(2)
+if (mode === "restore" && process.env.AI_LIVE_APPROVED === "true")
+  throw Error(
+    "Disable live AI before restoring and reconcile usage before reactivation"
+  )
 if (!input || !["sqlite", "backup", "restore"].includes(mode))
   throw Error(
     "Usage: sqlite <snapshot> <bundle> | backup <bundle> | restore <bundle> --apply"
@@ -166,7 +173,17 @@ try {
     })
     try {
       const data = Object.fromEntries(
-        tables.map((t) => [t, db.prepare(`SELECT * FROM ${quote(t)}`).all()])
+        tables.map((t) => [
+          t,
+          t === "ai_reservations" &&
+          !db
+            .prepare(
+              "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?"
+            )
+            .get(t)
+            ? []
+            : db.prepare(`SELECT * FROM ${quote(t)}`).all(),
+        ])
       ) as Data
       await bundle(resolve(output), data, async (key) => {
         const b = await file(join(source, "uploads", key))

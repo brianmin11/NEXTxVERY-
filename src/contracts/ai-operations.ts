@@ -7,7 +7,10 @@ export const DEMO_AI_POLICY = {
   leaseMs: 120_000,
 } as const
 export type AiOutcome = "success" | "timeout" | "cancelled" | "failed"
-export interface AiReservation { id: string; day: string }
+export interface AiReservation {
+  id: string
+  day: string
+}
 export interface AiLedger {
   reserve(actorId: string): Promise<AiReservation>
   finish(id: string, outcome: AiOutcome): Promise<void>
