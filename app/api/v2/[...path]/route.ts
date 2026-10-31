@@ -19,6 +19,7 @@ async function handle(request:Request,context:{params:Promise<{path:string[]}>})
   const path=(await context.params).path.join('/');
   const service=createV2Service({db:getDatabase()});
   if(request.method==='POST'&&path==='memories/assets'){
+   await service.cleanup();
    const buffer=await limitedBody(request,11*1024*1024);
    const form=await new Response(buffer,{headers:{'Content-Type':request.headers.get('content-type')||''}}).formData();
    const file=form.get('file');
