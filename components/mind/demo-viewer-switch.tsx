@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { useChores } from "@/components/chores/chores-provider"
 import { useDemoViewer } from "@/components/demo/demo-viewer-provider"
 import { useMemories } from "@/components/memories/memories-provider"
 import { Button } from "@/components/ui/button"
@@ -26,9 +27,10 @@ export function DemoViewerSwitch() {
   const { family, viewerId, setViewerId } = useDemoViewer()
   const { draftDirty: mindDirty } = useMind()
   const memories = useMemories()
+  const chores = useChores()
   const [pending, setPending] = React.useState<string | null>(null)
   const returnFocus = useReturnFocus()
-  const dirty = mindDirty || memories.draftDirty
+  const dirty = mindDirty || memories.draftDirty || chores.draftDirty
 
   function request(id: string) {
     if (id === viewerId) return
@@ -42,6 +44,7 @@ export function DemoViewerSwitch() {
     if (!pending) return
     // 추억 초안의 임시 사진은 object URL까지 해제한다(마음 초안은 작성자에게만 보이므로 그대로 둔다).
     if (memories.draftDirty) memories.resetDraft()
+    if (chores.draftDirty) chores.resetDraft()
     setViewerId(pending)
     setPending(null)
   }

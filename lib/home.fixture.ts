@@ -30,12 +30,6 @@ export type Family = {
 
 // 일정은 lib/calendar/fixture.ts(seedEvents)가 원본이다. 홈과 캘린더가 같은 상태를 읽는다.
 
-export type ChoreItem = {
-  id: string
-  title: string
-  assigneeId: string
-  done: boolean
-}
 
 // 추억 사진은 lib/memories/fixture.ts(seedMemories)가 원본이다. 홈과 /memories가 같은 상태를 읽는다.
 
@@ -49,7 +43,6 @@ export type HomeData = {
   family: Family
   /** 현재 보고 있는 구성원(가상) */
   viewerId: string
-  chores: ChoreItem[]
   notifications: NotificationItem[]
 }
 
@@ -127,10 +120,6 @@ function homeFor(family: Family): HomeData {
   return {
     family,
     viewerId: first,
-    chores: [
-      { id: "chore-dish", title: "설거지", assigneeId: first, done: false },
-      { id: "chore-laundry", title: "빨래 개기", assigneeId: first, done: true },
-    ],
     notifications:
       family.members.length > 1
         ? [

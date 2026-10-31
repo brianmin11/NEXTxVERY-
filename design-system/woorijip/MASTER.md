@@ -158,6 +158,24 @@
 | `MemoryImage` | 로딩·실패 상태를 가진 사진 렌더. object URL(blob:)은 next/image 로더를 쓸 수 없어 `<img>`를 쓴다. 서버 업로드가 생기면 next/image로 바꾼다 |
 
 - 게시물당 사진 1장. 여러 장·영상·댓글·좋아요·편집·EXIF 위치·얼굴 분석은 하지 않는다.
+
+**집안일 분담(`components/chores`, `lib/chores`)** — 프론트 데모. 실제 저장·알림·동기화·점수·보상은 없다.
+| 조각 | 역할 |
+|---|---|
+| `lib/chores/types.ts` | `Chore`(id·title·memo·assigneeMemberId·dueDate(YYYY-MM-DD 또는 null)·status(todo/done)·createdBy·createdAt·updatedAt·completedAt·completedBy). '기한 지남'은 저장 상태가 아니라 오늘과 비교한 표시 |
+| `lib/chores/config.ts` | 제목 40자·메모 200자(임시 프론트 제한), 홈 표시 2개 |
+| `lib/chores/validate.ts` | 공백 제목·길이·담당자 필수·날짜 형식 검증. 빈 날짜는 null(시간을 붙이지 않음) |
+| `lib/chores/permissions.ts` | 데모 권한 규칙 한 곳: 모두 조회·추가, 작성자는 수정(미완료일 때)·삭제, 담당자·작성자는 완료/완료 취소. UI와 provider 변경 함수가 같이 쓴다. 서버 보호가 아니다 |
+| `lib/chores/fixture.ts` | 오늘 기준 seed 5개(설거지·빨래·분리수거·심부름·화분) |
+| `ChoresProvider` | 메모리 상태, 추가 초안은 작성한 인물에게만, 등록 토큰 연타 방지, `setStatus(id, 목표 상태)`로 토글이 아닌 명시적 전환 |
+| `ChoreCard` | 완료 조작(네이티브 `button role="checkbox"`, 제목이 들어간 접근 가능한 이름)과 상세 링크를 형제로 둔다(버튼 안에 버튼 없음). 완료는 체크·취소선·sr 텍스트로 함께 전달 |
+| `/chores` | 내 할 일/가족 전체 × 할 일/완료 탭, 조합별 빈 상태, 미완료는 날짜순(미정 뒤), 완료는 완료 시각 내림차순. 상태 변경 직후 0.7초 조작 잠금 |
+| `/chores/new`, `/chores/[id]/edit` | 전체 화면 폼(공용 `ChoreForm`, `RecipientPicker` 재사용, 현재 인물이 기본 담당자). 수정은 복사한 초안, 유실 확인 |
+| `/chores/[id]` | 상세·완료/완료 취소·수정·삭제(제목 포함 확인). 담당자 지정은 '수락 아님'으로 표시. 완료 항목은 완료 취소 후 수정 |
+
+- 홈 '내 할 일'은 같은 provider에서 현재 인물의 미완료 2개 + '전체 보기'. `/more`에 집안일 진입 항목만 있다.
+- 기한이 지나도 '기한 지남'으로만 안내하고 비난·벌점 문구를 쓰지 않는다. 집 단계와 연결하지 않는다.
+- native `<button>` 허용 예외 추가: `chore-card.tsx`의 완료 체크(`role="checkbox"`, `aria-checked`, `aria-label`에 제목, 44px, focus-visible 링).
 - 홈 '최근 추억'은 같은 provider의 등록 시각 내림차순 3개와 '전체 보기'다.
 - 새로고침 초기화와 데모 인물 전환은 실제 인증·저장·가족 공유가 아니다.
 - 홈은 오늘 일정을 시간순 2개만 보여주고 '전체 보기'로 /calendar에 연결한다.

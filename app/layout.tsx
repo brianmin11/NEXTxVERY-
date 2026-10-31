@@ -4,6 +4,7 @@ import localFont from "next/font/local"
 
 import "./globals.css"
 import { CalendarProvider } from "@/components/calendar/calendar-provider"
+import { ChoresProvider } from "@/components/chores/chores-provider"
 import { DemoViewerProvider } from "@/components/demo/demo-viewer-provider"
 import { MemoriesProvider } from "@/components/memories/memories-provider"
 import { MindProvider } from "@/components/mind/mind-provider"
@@ -72,7 +73,9 @@ export default function RootLayout({
             <DemoViewerProvider>
               <MindProvider>
                 <CalendarProvider>
-                  <MemoriesProvider>{children}</MemoriesProvider>
+                  <MemoriesProvider>
+                    <ChoresProvider>{children}</ChoresProvider>
+                  </MemoriesProvider>
                 </CalendarProvider>
               </MindProvider>
             </DemoViewerProvider>
