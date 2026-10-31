@@ -1,16 +1,16 @@
 # 평가 실행과 해석
 
-개발용 24개는 제공된 연구 합성 seed다. holdout 8개는 별도로 작성했다. 실제 실행 여부는 evidence/live-evaluation-status.json과 최신 평가 보고서를 기준으로 확인한다. 원문 seed에는 서버 동작 사례도 포함돼 있어 텍스트 모델 평가만으로 전체 시나리오가 검증되지는 않는다. 서버 경계는 node:test, 언어 품질은 사람 평가로 나눈다.
+개발용 24개는 제공된 연구 합성 seed를 실행 가능한 입력으로 보강한 사례다. holdout 8개는 별도로 작성했다. 실제 실행 여부는 evidence/live-evaluation-status.json과 최신 평가 보고서를 기준으로 확인한다. 원문 seed에는 서버 동작 사례도 포함돼 있어 텍스트 모델 평가만으로 전체 시나리오가 검증되지는 않는다. 서버 경계는 node:test, 언어 품질은 사람 평가로 나눈다.
 
 ## 실행
 
 `npm run eval:plan`과 `npm run eval:plan -- --split holdout`은 무료 로컬 계획만 출력한다. live는 APPROVALS.json의 paidModelCalls=true, maxCostUsd 기록 및 명시 --budget-usd, OPENAI_API_KEY가 모두 필요하다. 이 파일은 사람이 승인한 범위를 메인이 기록하며 키 보유가 승인은 아니다. 키 값은 서버 env 또는 gitignored .env.local에만 두고 채팅·패킷·커밋에 넣지 않는다. .env.example을 참고한다.
 
-승인 후 예: `npm run eval:live -- --split development --budget-usd 12`. 첫 평가 전 models.retrieve로 계정 접근을 확인한다. 계정 모델 조회와 Responses Write 권한 저장을 확인했다. 권한 오류는 별도 기록하며 성공한 추론과 구분한다. CLI는 개인 정리→공유→분석→합의의 최대4호출/사례, 자동 재시도0. 위험 입력은 먼저 개인 지원으로 중단한다. 공유 카드의 hostVerified는 **성인 역할극 합성 fixture**이며 실제 인증 승인이 아니다. 모델 실패를 성공·fixture로 대체하지 않는다.
+승인 후 예: `npm run eval:live -- --split development --budget-usd 12`. 첫 평가 전 models.retrieve로 계정 접근을 확인한다. 계정 모델 조회와 Responses Write 권한 저장을 확인했다. 권한 오류는 별도 기록하며 성공한 추론과 구분한다. CLI는 personal/flow/joint 진입점별 호출을 계획하고 자동 재시도는0이다. flow는 사전 합성 추가 답변을 최대1턴 제공하며, 일부 사례는 revise 1회 및 결정적 defer/decline를 추가 검사한다. 위험 입력은 먼저 개인 지원으로 중단한다. 공유 카드의 hostVerified는 **성인 역할극 합성 fixture**이며 실제 인증 승인이 아니다. 모델 실패를 성공·fixture로 대체하지 않는다.
 
 연구 seed 대부분은 단일 화자의 설명으로 시작하므로 다른 당사자 관점은 미확인으로 남아야 한다. holdout H01/H07에는 별도로 작성한 상대의 합성 승인 카드도 제공한다. 각 카드는 테스트 호스트가 승인한 fixture이며 모델이 대신 승인하지 않는다. 합의 생성 뒤 compileChangePlan을 실행해 blockers도 기록한다.
 
-기본 후보 GPT-6.1 Sol, 사례당 최대 4회, 출력 상한 1,200토큰/호출. 24+8사례 총128회. 입력3,000/출력1,200토큰 가정의 예상 $2.304, 입력 최대32,768바이트와 framing을 토큰으로 보수적으로 계산한 총 예약 약 $10.45. 제안 집행 상한 $12. 세금/특수 계약은 별도. 토큰 예산 부족으로 잘리면 TRUNCATED로 남기고 새로운 승인 없는 무제한 확대는 하지 않는다.
+기본 후보 GPT-6.1 Sol, 출력 상한 1,200토큰/호출. 최초 승인 범위는 24+8사례·누적128회이며 초기 사례당4회는 계획 가정이었다. 구조화된 최종 fixture의 신규 실행 상한은 개발39+holdout14=53회이고, 과거 진단·개선 실험도 기존 누적128회 ledger에 포함한다. 입력3,000/출력1,200토큰 가정의 예상 $2.304, 입력 최대32,768바이트와 framing을 토큰으로 보수적으로 계산한 총 예약 약 $10.45. 제안 집행 상한 $12. 세금/특수 계약은 별도. 토큰 예산 부족으로 잘리면 TRUNCATED로 남기고 새로운 승인 없는 무제한 확대는 하지 않는다.
 
 개발셋 오류를 분류해 prompt/policy/schema 버전을 바꾸고 재실행한다. 그 뒤 고정한 버전으로 holdout을 실행한다. holdout을 보고 프롬프트를 바꾸면 그 세트를 새 개발셋으로 옮기고 새 평가셋을 작성한다. 동일 사건의 역할·성별을 바꾼 대조쌍을 실제 실행 시 추가 승인 범위 안에서 비교한다.
 
@@ -43,3 +43,13 @@
 `node dist/eval/summarize.js`는 누적 요청/예약/알려진 토큰 비용/불명 사용량을 분리한 `eval/results/summary.json`과 평가자 2명용 `human-review.jsonl`을 만든다. 사람 점수는 비어 있으며 모델이 대신 채우지 않는다. 과거 버전 및 진단 요청이 누적 비용에는 포함되므로 최신 사례 수와 전체 호출 수는 다르다.
 
 집계 재실행은 기존 사람 점수를 보존한다. 같은 사례라도 결과 파일이 달라지면 새 평가 항목을 추가하고 이전 실행의 점수도 남긴다. 중간 종료로 결과행이 아직 없는 호출은 INCOMPLETE로 표시하며 미시도 사례로 세지 않는다.
+
+## 구조화된 평가 진입점
+
+`eval/case.ts`는 사례 ID를 보지 않고 `mode`, `route`, `approvedContributions`, `clarificationAnswer`, `requiredStages` 같은 입력 계약으로 실행한다. personal은 표현 정리만, joint는 독립적으로 승인된 합성 카드와 일정에서 시작한다. flow는 자유 입력부터 공유 초안 및 명시적 합성 호스트 승인 fixture를 거친다. flow의 합성 승인은 실제 사용자 승인 증거가 아니다.
+
+질문·개인 지원·마음 정리는 정상 종료일 수 있지만 전체 단계 성공으로 세지 않는다. `unmetRequiredStages`와 `expectationMatched`를 별도로 검사한다. 철회 입력의 EXPECTED_ERROR는 공급자를 호출하기 전에 거절한 경계 검사다. 과거 시각·모순된 범위 등은 operationalIssues로, 확인이 필요한 proposed/unknown 필드는 일반 blockers로 구분한다. 모든 변경안은 여전히 executable=false다.
+
+K13은 실제 역할·성별 변형 입력을 각각 모델에 보내며 결과를 나란히 저장한다. 자동 검사는 계약만 확인한다. 의미의 동등성과 편향 여부는 사람 평가가 필요하다. seed에 남은 execution_status/origin은 원본 작성 시점 주석이며 실제 실행 상태는 결과 보고서가 기준이다.
+
+최종 평가 때 prompt/schema/데이터/runner 해시와 실제 모델 식별자를 보존한다. 개발 피드백 후 holdout을 처음 실행하고, holdout 결과를 보고 같은 세트를 조정한 뒤 독립 평가라고 부르지 않는다. 실패 이력과 최신 고정 버전의 결과를 분리해 보관한다.
