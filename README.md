@@ -22,6 +22,8 @@ const result = await engine.personal(hostPreparedPrivateContext, callOptions);
 ```
 
 - [호스트 연결 계약과 함수별 책임](docs/INTEGRATION.md)
+- [우리집 대표 사용자 흐름·화면별 데이터와 액션](docs/PRODUCT-FLOW.md)
+- [민경민 브랜치 기준 AI 파이프라인·통합 조정 설계](docs/AI-PIPELINE-DESIGN.md)
 - [실제 모델 평가·사람 검토 절차](docs/EVALUATION.md)
 - [최종32개 실제 평가 결과](docs/LIVE-EVALUATION.md)
 - [실패 원인과 수정 근거](docs/FAILURE-ANALYSIS.md)

@@ -30,3 +30,13 @@ Next:
 - Do not reset eval/results/budget.json or infer new paid/deployment approval.
 
 Evidence: docs/LIVE-EVALUATION.md, docs/FAILURE-ANALYSIS.md, evidence/{final-development.json,final-holdout.json,evaluation-freeze.json,live-evaluation-status.json,local-tests.tap}.
+
+2026-11-01 KST — app integration design (documentation only)
+- Fetched and inspected teammate remote branch origin/민경민 at ef47b6ae2dceeb97ff8cb39e159e532a8de68774 (Git author brianmin11), against AI implementation 8b4d551.
+- Confirmed fixture-backed home, placeholder calendar/memories/more, private note display component, no app API/auth/DB implementation in that snapshot.
+- Documented three user paths, twelve screen roles/data/actions, host commands/state/ownership, package integration, confirmed execution-plan/acceptance boundary and prioritized engine adjustments.
+- Design artifacts: docs/PRODUCT-FLOW.md and docs/AI-PIPELINE-DESIGN.md. Proposed contracts/routes are not implemented endpoints.
+- Static document QA completed: local links/source anchors and unique S00-S11 inventory checked; independent review fixes separate hard validation from consent and serialize conflicting calendar writes across plans and ordinary CRUD. Re-review confirmed both fixes.
+- Branch histories have no merge base; proposed app-based integration with a server-only AI package, no merge or teammate source changes performed.
+- No paid calls, app browser/build/DB/RLS checks or deployment in this design task. Earlier engine verification remains unchanged.
+- Next: team reviews proposed contracts; implement the two-account schedule coordination slice and test real host boundaries.
