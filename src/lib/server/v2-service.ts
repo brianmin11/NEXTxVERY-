@@ -370,6 +370,11 @@ export function createV2Service({
         )
         return { created: true }
       })
+      const storedInvite = db
+        .prepare("SELECT expires_at FROM v2_invites WHERE code_hash=?")
+        .get(hash(inviteCode)) as { expires_at: string } | undefined
+      if (!storedInvite || Date.parse(storedInvite.expires_at) <= Date.now())
+        fail("INVITE_EXPIRED", 409, "새 초대 코드를 만들어 주세요.")
       return { inviteCode }
     }
     if (path === "calendar/events") {

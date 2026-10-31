@@ -105,7 +105,12 @@ test("session identifies actual member; invite secret is hashed and family data 
     const rows = f.db.prepare("SELECT * FROM v2_invites").all()
     assert.equal(JSON.stringify(rows).includes(f.invite.inviteCode), false)
     assert.ok(rows.length > 0)
-    assert.equal(JSON.stringify(f.db.prepare("SELECT * FROM v2_receipts").all()).includes(f.invite.inviteCode), false)
+    assert.equal(
+      JSON.stringify(f.db.prepare("SELECT * FROM v2_receipts").all()).includes(
+        f.invite.inviteCode
+      ),
+      false
+    )
     const noFamily = await f.call<{ family: null }>(
       actor("새 계정"),
       "GET",
