@@ -27,3 +27,9 @@
 응답을 하지 않음·거절·보류·마음 정리 종료는 유효한 결과다. 높은 합의율을 단독 목표로 삼지 않는다. 오류는 facts/perspective/privacy/consent/operations/safety/refusal/truncation으로 분류한다. 사람 평가 결과와 실제 실행 결과가 없으면 relation_quality_passed 같은 플래그를 만들지 않는다.
 
 로컬 suite, 실제 공급자 호출, 한국어 사람 평가, 앱 통합, 실제 가족 효과를 서로 다른 완료 단계로 보고한다.
+
+## 승인 집행 기록
+
+명시적 사용자 승인으로 합성 32사례·최대128호출·총USD12가 APPROVALS.json에 기록됐다. 개발/holdout/재시작 모두 eval/results/budget.json의 누적 예약을 공유하고 budget.lock으로 동시 집행을 거부한다. 실패/중단 예약도 환급하지 않는다. 충돌·손상·비정상 종료로 남은 lock은 이전 실행 및 공급자 사용량을 확인한 뒤 수동 복구한다. ledger 삭제로 승인을 재사용하지 않는다.
+
+승인 후 키 사전검사에서 OPENAI_API_KEY가 없어 중단됐다. 유료 모델 요청은 0회, 한국어 품질은 미검증이다.

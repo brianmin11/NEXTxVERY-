@@ -13,7 +13,7 @@ Completed local implementation:
 
 Evidence:
 - npm run typecheck and npm run build passed.
-- 62/62 node:test checks passed, evidence/local-tests.tap.
+- 64/64 node:test checks passed (including cumulative evaluation-budget tests), evidence/local-tests.tap.
 - Independent QA at 3a067aa956bf479000f9bae71448956e1d06c170 passed all local commands and targeted regression reproduction.
 - Provider serialization/refusal/truncation/rate-limit tested through injected fake HTTP transport, NOT live provider.
 - Free eval plans: evidence/evaluation-plan-{development,holdout}.json.
@@ -22,8 +22,12 @@ Not complete / not claimed:
 - No paid model calls or human language-quality ratings. API key not available in current environment. Account model access unverified.
 - No real user/child data, auth/RLS/storage/deletion/approval/calendar integration, browser UI, deployment, family relationship effects or payment willingness verification.
 
-Next requested approval:
+Approved scope (explicit user reply):
 - OpenAI GPT-6.1 Sol; synthetic adult-roleplay only; development24 + holdout8, <=128 calls, 0 retries, output cap1200, input bytes32768.
 - Planning estimate USD2.304, conservative reservation USD10.448896, proposed total cap USD12 (tax/contract extras excluded).
-- Record explicit approval scope in APPROVALS.json before calls. Configure OPENAI_API_KEY in local ignored .env.local or server environment; never in chat/git.
+- Explicit paid-call and branch-push approval recorded in APPROVALS.json. Configure OPENAI_API_KEY in local ignored .env.local or server environment; never in chat/git.
 - Account access preflight before inference. Inspect development errors before holdout; extra tuning reruns require remaining authorized budget/call scope, otherwise new approval.
+
+API key preflight after approval: process environment and project .env.local absent; live evaluation not started.
+
+Paid evaluation preflight attempted after approval: stopped before provider request because key missing. Cumulative 128-call/USD12 ledger added and tested across restarts/concurrency.
