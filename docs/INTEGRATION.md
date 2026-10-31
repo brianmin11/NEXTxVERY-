@@ -54,3 +54,9 @@ maxCalls는 함수 한 번의 모델 단계에 적용된다. 여러 함수를 �
 ## 실제 반영 전 반드시 할 통합 검사
 
 두 인증 세션/다른 가구, 수신자 변경, membership 탈퇴, generation 중 철회, 버전 경쟁, old acceptance, queue 실패/중복, 알림 취소, 실제 DB 저장·조회·삭제·백업 복구를 시험한다. ChangePlanDraft는 항상 executable=false이며 쓰기 도구가 없다. execute라는 함수나 전체 앱 REST 경로는 제공하지 않는다. 독립 승인 합의의 철회와 원문 삭제를 자동으로 동일시하지 않는다.
+
+## Claim 화자와 실패 사용량
+
+개인 단계의 `Claim.speakerId`는 `scope.actorId`, 즉 현재 보고한 사용자입니다. 타인의 인용문은 그 사용자가 전한 말이며 상대가 직접 승인한 진술로 바뀌지 않습니다. 상대 발언 보고는 `interpretation`으로 표시하고 공동 맥락은 별도의 승인 카드만 받습니다.
+
+`RelationshipError.providerUsage`는 공급자가 실제로 반환한 모델 식별자와 토큰 수만 포함합니다. 잘림·거절·JSON 오류라도 usage가 있으면 계측하며, 없는 응답/네트워크 실패는 null로 남깁니다. 실제 청구 금액은 단가 기반 추정치와 다릅니다.

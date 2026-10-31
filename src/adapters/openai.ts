@@ -8,10 +8,12 @@ export class OpenAIAdapter implements ModelAdapter {
   try {
    // No SDK auto-retry, state, tools, stored conversation, or fixture fallback.
    const response=await this.client.responses.create({model:this.model,store:false,instructions:req.system,input:JSON.stringify(req.input),max_output_tokens:req.maxOutputTokens,text:{format:zodTextFormat(req.schema,req.stage)}},{signal:req.signal});
-   if(response.status==='incomplete')throw new RelationshipError('TRUNCATED');
-   if(response.output.some(o=>o.type==='message'&&o.content.some(c=>c.type==='refusal')))throw new RelationshipError('MODEL_REFUSAL');
-   if(response.status!=='completed')throw new RelationshipError('PROVIDER_ERROR');
-   let value:unknown;try{value=JSON.parse(response.output_text);}catch{throw new RelationshipError('SCHEMA_INVALID');}
+   const usage={model:response.model,inputTokens:response.usage?.input_tokens??null,outputTokens:response.usage?.output_tokens??null};
+   const failed=(code:'TRUNCATED'|'MODEL_REFUSAL'|'PROVIDER_ERROR'|'SCHEMA_INVALID')=>new RelationshipError(code,false,undefined,usage);
+   if(response.status==='incomplete')throw failed('TRUNCATED');
+   if(response.output.some(o=>o.type==='message'&&o.content.some(c=>c.type==='refusal')))throw failed('MODEL_REFUSAL');
+   if(response.status!=='completed')throw failed('PROVIDER_ERROR');
+   let value:unknown;try{value=JSON.parse(response.output_text);}catch{throw failed('SCHEMA_INVALID');}
    return {value,model:response.model,inputTokens:response.usage?.input_tokens??null,outputTokens:response.usage?.output_tokens??null};
   }catch(e){
    if(e instanceof RelationshipError)throw e;

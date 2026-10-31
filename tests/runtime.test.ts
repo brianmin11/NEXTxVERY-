@@ -49,3 +49,18 @@ test('provider exception is sanitized and is not successful data',async()=>{
  await assert.rejects(createRunner(adapter(async()=>{throw new Error('private secret API token raw error');})).run('personal',schema,{},{...options,onMetadata:(m:ModelRunMetadata)=>logs.push(m)}),(e:unknown)=>e instanceof Error&&!e.message.includes('private secret'));
  assert.ok(!JSON.stringify(logs).includes('private secret'));
 });
+test('known failed-response usage is metered and unknown retries remain unknown',async()=>{
+ const logs:ModelRunMetadata[]=[];
+ const a=adapter(async()=>{throw new RelationshipError('TRUNCATED',false,undefined,{model:'snapshot',inputTokens:41,outputTokens:500});});
+ await assert.rejects(createRunner(a).run('personal',schema,{},{...options,onMetadata:m=>logs.push(m)}),hasCode('TRUNCATED'));
+ assert.equal(logs[0]?.inputTokens,41);assert.equal(logs[0]?.outputTokens,500);assert.equal(logs[0]?.usageComplete,true);assert.equal(logs[0]?.model,'snapshot');
+ let calls=0;const retryLogs:ModelRunMetadata[]=[];
+ const b=adapter(async()=>{if(++calls===1)throw new RelationshipError('PROVIDER_ERROR',true);return ok();});
+ await createRunner(b).run('personal',schema,{},{...options,maxCalls:2,maxRetries:1,onMetadata:m=>retryLogs.push(m)});
+ assert.equal(retryLogs[0]?.usageComplete,false);assert.equal(retryLogs[0]?.estimatedCostUsd,null);
+});
+test('schema validation failure keeps observed usage without treating output as successful',async()=>{
+ const logs:ModelRunMetadata[]=[];
+ await assert.rejects(createRunner(adapter(async()=>({value:{wrong:true},model:'test-only',inputTokens:20,outputTokens:10}))).run('personal',schema,{},{...options,onMetadata:m=>logs.push(m)}),hasCode('SCHEMA_INVALID'));
+ assert.equal(logs[0]?.inputTokens,20);assert.equal(logs[0]?.errorCode,'SCHEMA_INVALID');
+});

@@ -25,3 +25,7 @@ test('permission diagnostics expose only status and scope names, never raw error
  const a=new OpenAIAdapter('test','TEST_ONLY',transport({error:{message:'Missing scopes: api.responses.write. private-text secret-token'}},403));
  await assert.rejects(a.generate(req),(e:any)=>{assert.deepEqual(e.providerDetails,{status:403,missingScopes:['api.responses.write']});assert.ok(!JSON.stringify(e).includes('secret-token'));return e.code==='POLICY_RESTRICTED';});
 });
+test('provider-observed usage survives truncation without retaining response text',async()=>{
+ const a=new OpenAIAdapter('test','TEST_ONLY',transport({status:'incomplete',model:'test-snapshot',output:[],usage:{input_tokens:41,output_tokens:500,total_tokens:541}}));
+ await assert.rejects(a.generate(req),(e:any)=>{assert.deepEqual(e.providerUsage,{model:'test-snapshot',inputTokens:41,outputTokens:500});return e.code==='TRUNCATED';});
+});

@@ -24,14 +24,14 @@ export function createRunner(adapter:ModelAdapter):Runner {
     if(controller.signal.aborted)throw new RelationshipError(expired?'TIMEOUT':'CANCELLED');
     if(calls>=options.maxCalls||spentUpper+upper>options.maxCostUsd)throw new RelationshipError('BUDGET_EXCEEDED');
     calls++;spentUpper+=upper;
-    let abortHandler:(()=>void)|undefined;
+    let abortHandler:(()=>void)|undefined;let attemptUsageObserved=false;
     try {
      const aborted=new Promise<never>((_,reject)=>{abortHandler=()=>reject(new RelationshipError(expired?'TIMEOUT':'CANCELLED'));controller.signal.addEventListener('abort',abortHandler,{once:true});});
      const reply=await Promise.race([adapter.generate({stage,system:prompts[stage],input,schema,maxOutputTokens:options.maxOutputTokens,signal:controller.signal}),aborted]);
      returnedModel=reply.model;
      if(reply.inputTokens===null||reply.outputTokens===null)usageComplete=false;
      else if(!Number.isFinite(reply.inputTokens)||!Number.isFinite(reply.outputTokens)||reply.inputTokens<0||reply.outputTokens<0){usageComplete=false;throw new RelationshipError('PROVIDER_ERROR');}
-     else {inputTokens+=reply.inputTokens;outputTokens+=reply.outputTokens;}
+     else {inputTokens+=reply.inputTokens;outputTokens+=reply.outputTokens;attemptUsageObserved=true;}
      const parsed=schema.safeParse(reply.value);
      if(!parsed.success)throw new RelationshipError('SCHEMA_INVALID');
      if(reply.outputTokens!==null&&reply.outputTokens>options.maxOutputTokens)throw new RelationshipError('BUDGET_EXCEEDED');
@@ -40,8 +40,13 @@ export function createRunner(adapter:ModelAdapter):Runner {
      return {value:parsed.data,run:metadata()};
     } catch(e){
      const err=e instanceof RelationshipError?e:new RelationshipError('PROVIDER_ERROR',true);
-     // On failed attempts the provider may have billed tokens we cannot observe.
-     usageComplete=false;
+     // Keep provider-observed usage even for failed/truncated outputs; unknown requests stay null.
+     const usage=err.providerUsage;
+     if(!attemptUsageObserved&&usage){
+      returnedModel=usage.model;
+      if(typeof usage.inputTokens==='number'&&typeof usage.outputTokens==='number'&&Number.isFinite(usage.inputTokens)&&Number.isFinite(usage.outputTokens)&&usage.inputTokens>=0&&usage.outputTokens>=0){inputTokens+=usage.inputTokens;outputTokens+=usage.outputTokens;attemptUsageObserved=true;}
+     }
+     if(!attemptUsageObserved)usageComplete=false;
      if(!err.retryable||calls>options.maxRetries||calls>=options.maxCalls||controller.signal.aborted)throw err;
     } finally {if(abortHandler)controller.signal.removeEventListener('abort',abortHandler);}
    }

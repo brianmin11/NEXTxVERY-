@@ -1,3 +1,4 @@
+export class EvaluationBudgetExhausted extends Error {}
 import {mkdirSync,openSync,closeSync,readFileSync,writeFileSync,renameSync,unlinkSync,existsSync} from 'node:fs';
 import {join} from 'node:path';
 /** Fail closed across sequential splits/restarts. A crashed session leaves a lock for manual inspection. */
@@ -10,7 +11,7 @@ export function openEvaluationBudget(directory:string,approvalId:string,maxCalls
   let closed=false;
   return {
    reserve(usd:number){
-    if(closed||!Number.isFinite(usd)||usd<0||state.reservedCalls+1>maxCalls||state.reservedUsd+usd>maxUsd)throw Error('Approved cumulative evaluation budget exhausted');
+    if(closed||!Number.isFinite(usd)||usd<0||state.reservedCalls+1>maxCalls||state.reservedUsd+usd>maxUsd)throw new EvaluationBudgetExhausted('Approved cumulative evaluation budget exhausted');
     state={...state,reservedCalls:state.reservedCalls+1,reservedUsd:state.reservedUsd+usd};
     writeFileSync(file+'.tmp',JSON.stringify(state,null,2)+'\n',{mode:0o600});renameSync(file+'.tmp',file);
    },
