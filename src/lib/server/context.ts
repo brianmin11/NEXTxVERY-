@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { PrivateContext, JointContext, Scope, DerivedArtifactMetadata, RelationshipError, VERSION, type Evidence } from '../../contracts/index.js';
-export const POLICY_VERSION = 'relationship-policy/1.0';
+import { POLICY_VERSION } from '../../prompts/index.js';
+export { POLICY_VERSION };
 export interface AllowedSource { id:string; revision:number; text:string; ownerId:string; validUntil:string }
 export function parse<T>(schema:z.ZodType<T>, value:unknown, code:'INPUT_INVALID'|'SCHEMA_INVALID'='INPUT_INVALID'):T {
  const parsed=schema.safeParse(value); if(!parsed.success) throw new RelationshipError(code); return parsed.data;

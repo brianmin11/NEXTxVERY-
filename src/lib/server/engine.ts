@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { PersonalResult, ShareCardDraft, IssueAnalysis, AgreementDraft, RelationshipError, VERSION, id, type RelationshipEngine, type Runner, type RunOptions, type ModelRunMetadata } from '../../contracts/index.js';
-import { privateContext, jointContext, parse, metadata, validateEvidence, assertStillFresh, stable, POLICY_VERSION } from './context.js';
+import { PersonalResult, SharedPrior, ShareCardDraft, IssueAnalysis, AgreementDraft, RelationshipError, VERSION, id, type RelationshipEngine, type Runner, type RunOptions, type ModelRunMetadata } from '../../contracts/index.js';
+import { privateContext, jointContext, parse, metadata, validateEvidence, assertStillFresh, stable, hash, POLICY_VERSION } from './context.js';
 import { validateAgreement } from './compile.js';
 const ShareOutput=ShareCardDraft.extend({safetyDisposition:z.enum(['ordinary','private_support'])});
 const RevisionSettings=z.strictObject({id,revision:z.number().int().positive()});
@@ -51,7 +51,9 @@ export function createEngine(runner:Runner):RelationshipEngine {
   return {value:v,metadata:metadata(c.scope,sources,'shared',request),run:result.run};
  },
  async revise(input,rawPrior,rawFeedback,options){
-  checkOptions(options);const started=performance.now();const {context:c,sources,projection}=jointContext(input);const prior=parse(AgreementDraft,rawPrior);const feedback=parse(Feedback,rawFeedback);
+  checkOptions(options);const started=performance.now();const {context:c,sources,projection}=jointContext(input);const envelope=parse(SharedPrior,rawPrior);const prior=envelope.draft;const m=envelope.metadata;
+  if(envelope.contentHash!==hash(prior)||envelope.latestRevision!==prior.revision||m.permissionEpoch!==c.scope.permissionEpoch||m.purpose!==c.scope.purpose||stable([...m.audience].sort())!==stable([...c.scope.participantIds].sort())||Date.parse(m.validUntil)<=Date.parse(c.scope.now)||!m.sourceVersions.length||m.sourceVersions.some(ref=>!sources.some(s=>s.id===ref.id&&s.revision===ref.revision)))throw new RelationshipError('STALE_CONTEXT');
+  const feedback=parse(Feedback,rawFeedback);
   validateAgreement(prior,sources,c.scope.participantIds);
   if(feedback.actorId!==c.scope.actorId||!prior.parties.includes(feedback.actorId))throw new RelationshipError('POLICY_RESTRICTED');
   if(prior.status==='declined')throw new RelationshipError('POLICY_RESTRICTED');

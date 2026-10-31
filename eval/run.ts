@@ -1,6 +1,6 @@
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
-import {createEngine,createRunner,OpenAIAdapter,RelationshipError, type RunOptions, type ModelRunMetadata} from '../src/index.js';
+import {createEngine,createRunner,compileChangePlan,OpenAIAdapter,RelationshipError, type RunOptions, type ModelRunMetadata} from '../src/index.js';
 const args=process.argv.slice(2);const arg=(n:string,d:string)=>args.includes(n)?args[args.indexOf(n)+1]??d:d;
 const split=arg('--split','development');if(!['development','holdout'].includes(split))throw Error('Invalid split');
 const rows=readFileSync(resolve('eval',split+'.jsonl'),'utf8').trim().split('\n').map(x=>JSON.parse(x));
@@ -24,11 +24,11 @@ for(const row of selected){
  try{
   const personal=await engine.personal(privateInput,options());
   if(personal.value.disposition==='private_support'){results.push({id:row.id,status:'PRIVATE_SUPPORT',personal:personal.value,humanReview:'pending'});continue;}
-  const share=await engine.share(privateInput,{id:'card-'+row.id,revision:1,recipients:scope.participantIds,purpose:scope.purpose,constraintsOnly:true},options());
+  const share=await engine.share(privateInput,{id:'card-'+row.id,revision:1,recipients:scope.participantIds.filter(x=>x!==scope.actorId),purpose:scope.purpose,constraintsOnly:true},options());
   // Explicit synthetic host attestation fixture; never a real authenticated approval.
-  const joint={scope,cards:[{schemaVersion:'1.0',id:share.value.id,revision:share.value.revision,senderId:scope.actorId,householdId:scope.householdId,exactText:share.value.exactText,recipients:scope.participantIds,purpose:scope.purpose,validUntil,state:'active',hostVerified:true,permissionEpoch:1}],schedules:[]};
+  const joint={scope,cards:[{schemaVersion:'1.0',id:share.value.id,revision:share.value.revision,senderId:scope.actorId,householdId:scope.householdId,exactText:share.value.exactText,recipients:scope.participantIds,purpose:scope.purpose,validUntil,state:'active',hostVerified:true,permissionEpoch:1},...(row.approvedContributions??[]).map((contribution:{senderId:string;text:string},i:number)=>({schemaVersion:'1.0',id:'independent-card-'+row.id+'-'+i,revision:1,senderId:contribution.senderId,householdId:scope.householdId,exactText:contribution.text,recipients:scope.participantIds.filter(x=>x!==contribution.senderId),purpose:scope.purpose,validUntil,state:'active',hostVerified:true,permissionEpoch:1}))],schedules:[]};
   const issue=await engine.analyze(joint,options());const agreement=await engine.propose(joint,{id:'agreement-'+row.id,revision:1},options());
-  results.push({id:row.id,status:'GENERATED_NOT_QUALITY_PASSED',syntheticHostApproval:true,personal:personal.value,share:share.value,issue:issue.value,agreement:agreement.value,humanReview:'pending'});
+  results.push({id:row.id,status:'GENERATED_NOT_QUALITY_PASSED',syntheticHostApproval:true,personal:personal.value,share:share.value,issue:issue.value,agreement:agreement.value,changePlan:compileChangePlan(agreement.value,joint),humanReview:'pending'});
  }catch(e){results.push({id:row.id,status:'ERROR',code:e instanceof RelationshipError?e.code:'HARNESS_ERROR',humanReview:'pending'});}
 }
 mkdirSync('eval/results',{recursive:true});const output=resolve('eval/results',`${split}-${Date.now()}.json`);

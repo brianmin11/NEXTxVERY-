@@ -16,7 +16,7 @@
 | .share | PrivateContext + id/revision/recipients/purpose/constraintsOnly → ShareCardDraft | reflect 경로는 공유 요청으로 명시 변경. 결과 검토·수정 후 인증된 승인 필요. 동일 호출에서 위험 판정, 위험이면 POLICY_RESTRICTED | 모델 호출만; 발송 없음 |
 | .analyze | JointContext → IssueAnalysis | 유효 ApprovedShareCard와 허용 최소 일정만. 원문·개인 metadata 금지 | 모델 호출만 |
 | .propose | JointContext + id/revision → AgreementDraft | ID/버전은 서버 발급. 당사자별 수정·수락·거절·보류 UX는 호스트 | 모델 호출만 |
-| .revise | JointContext + prior + feedback(actorId/instruction/action) → AgreementDraft | prior는 호스트의 허용된 공동 저장소에서 가져온 최신 초안. feedback.actorId 인증. 새 버전 수락 별도 | revise는 모델 호출; defer/decline은 순수 코드 |
+| .revise | JointContext + SharedPrior + feedback(actorId/instruction/action) → AgreementDraft | SharedPrior는 draft·metadata(shared 범위/출처/유효기간)·contentHash·latestRevision을 포함한다. 호스트가 신뢰 저장소에서 만든 envelope만 전달하며 raw draft는 거부된다. feedback.actorId 인증. 새 버전 수락 별도 | revise는 모델 호출; defer/decline은 순수 코드 |
 | compileChangePlan | AgreementDraft + JointContext → ChangePlanDraft | 같은 최신 공유 입력; ambiguous/null/proposed 조건은 blockers 검토. 실행 전 현재 버전과 각 당사자 수락 재검증 | 없음 |
 | verifyAcceptanceVersion | ChangePlanDraft + agreementId/revision/semanticHash → boolean | 단순 일치 검사. true여도 인증·권한·당사자 전체 수락을 증명하지 않음 | 없음 |
 | invalidatedArtifacts | {id,revision,metadata}[] + 변경 출처[] → 영향받는 배열 인덱스 | 파생 lineage를 유지; 삭제/철회/정정/새버전 전파. 독립 승인 합의는 별도 정책 | 없음; DB 삭제 아님 |

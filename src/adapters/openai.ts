@@ -3,7 +3,7 @@ import { zodTextFormat } from 'openai/helpers/zod';
 import { RelationshipError, type ModelAdapter, type ModelRequest, type ModelReply } from '../contracts/index.js';
 export class OpenAIAdapter implements ModelAdapter {
  readonly name='openai-responses'; private client:OpenAI;
- constructor(readonly model:string,apiKey:string){if(!model||!apiKey)throw new RelationshipError('INPUT_INVALID');this.client=new OpenAI({apiKey,maxRetries:0});}
+ constructor(readonly model:string,apiKey:string, transport?: typeof globalThis.fetch){if(!model||!apiKey)throw new RelationshipError('INPUT_INVALID');this.client=new OpenAI({apiKey,maxRetries:0,...(transport?{fetch:transport}:{})});}
  async generate(req:ModelRequest):Promise<ModelReply>{
   try {
    // No SDK auto-retry, state, tools, stored conversation, or fixture fallback.

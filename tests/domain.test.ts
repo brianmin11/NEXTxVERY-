@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createEngine } from '../src/lib/server/engine.js';
 import { compileChangePlan, verifyAcceptanceVersion } from '../src/lib/server/compile.js';
-import { agreement, hasCode, issue, jointContext, options, personalResult, privateContext, stub } from './fixtures.js';
+import { agreement, sharedPrior, hasCode, issue, jointContext, options, personalResult, privateContext, stub } from './fixtures.js';
 
 test('memory disabled excludes stored history but preserves current request', async()=>{
  const c=privateContext();c.memoryEnabled=false;
@@ -74,14 +74,14 @@ test('one-sided input preserves the missing participant',async()=>{
 });
 test('defer and decline preserve choice without model invocation',async()=>{
  for(const action of ['defer','decline'] as const){
-  const s=stub([]);const out=await createEngine(s.runner).revise(jointContext(),agreement(),{actorId:'child',instruction:'나중에',action},options);
+  const s=stub([]);const out=await createEngine(s.runner).revise(jointContext(),sharedPrior(agreement()),{actorId:'child',instruction:'나중에',action},options);
   assert.equal(out.value.status,action==='defer'?'deferred':'declined');
   assert.equal(out.value.acceptanceInheritance,false);assert.equal(s.inputs.length,0);
  }
 });
 test('revision changes version and old acceptance cannot match new semantic plan',async()=>{
  const prior=agreement();const revised=agreement();revised.revision=2;revised.summary='수정한 문구';
- const out=await createEngine(stub([revised]).runner).revise(jointContext(),prior,{actorId:'child',instruction:'문구를 수정해 주세요',action:'revise'},options);
+ const out=await createEngine(stub([revised]).runner).revise(jointContext(),sharedPrior(prior),{actorId:'child',instruction:'문구를 수정해 주세요',action:'revise'},options);
  assert.equal(out.value.revision,2);assert.equal(out.value.acceptanceInheritance,false);assert.ok(out.value.changes.length>0);
  const before=compileChangePlan(prior,jointContext());const after=compileChangePlan(out.value,jointContext());
  assert.equal(verifyAcceptanceVersion(after,{agreementId:before.agreementId,revision:before.agreementRevision,semanticHash:before.semanticHash}),false);
@@ -133,4 +133,23 @@ test('old approval versions and semantic hashes are independently rejected',()=>
  const base={agreementId:plan.agreementId,revision:plan.agreementRevision,semanticHash:plan.semanticHash};
  assert.equal(verifyAcceptanceVersion(plan,base),true);
  for(const patch of [{agreementId:'another'},{revision:base.revision+1},{semanticHash:'different'}])assert.equal(verifyAcceptanceVersion(plan,{...base,...patch}),false);
+});
+test('recurring actions conflict with later occurrences of another new action',()=>{
+ const a=agreement();const x=a.actions[0]!;x.basis='proposed';x.recurrence='daily';x.until='2026-11-10T23:00:00+09:00';
+ a.actions.push({...x,start:'2026-11-06T19:30:00+09:00',end:'2026-11-06T20:30:00+09:00'});
+ const p=compileChangePlan(a,jointContext());assert.ok(p.blockers.some(x=>x.includes('INTRA_PLAN_CONFLICT')));
+});
+test('proposed terms cannot appear as a clean plan without confirmation even if model omitted unknowns',()=>{
+ const a=agreement();a.actions[0]!.basis='proposed';a.actions[0]!.unresolvedFields=[];const p=compileChangePlan(a,jointContext());assert.ok(p.blockers.some(x=>x.includes('PROPOSED_TERMS_REQUIRE_CONFIRMATION')));
+});
+
+test('raw prior and tampered prior text cannot enter joint prompt',async()=>{
+ for(const prior of [agreement(),{...sharedPrior(),draft:{...agreement(),summary:'UNAPPROVED_PRIVATE_CANARY'}}]){
+  const s=stub([]);await assert.rejects(createEngine(s.runner).revise(jointContext(),prior,{actorId:'child',instruction:'수정',action:'revise'},options));assert.equal(s.inputs.length,0);
+ }
+});
+test('private-scoped or stale prior metadata is rejected before joint inference',async()=>{
+ for(const patch of [{visibility:'private'},{permissionEpoch:0},{audience:['child']},{sourceVersions:[{id:'private-original',revision:1}]}]){
+  const p=sharedPrior();Object.assign(p.metadata,patch);const s=stub([]);await assert.rejects(createEngine(s.runner).revise(jointContext(),p,{actorId:'child',instruction:'수정',action:'revise'},options));assert.equal(s.inputs.length,0);
+ }
 });

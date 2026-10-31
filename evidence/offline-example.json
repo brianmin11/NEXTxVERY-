@@ -1,0 +1,61 @@
+{
+  "mode": "TEST_ONLY_NO_LANGUAGE_QUALITY_CLAIM",
+  "result": {
+    "value": {
+      "response": "마음을 정리하는 경로입니다.",
+      "claims": [
+        {
+          "speakerId": "parent",
+          "kind": "want",
+          "statement": "마음을 정리하고 싶음",
+          "epistemicStatus": "self_report",
+          "evidence": [
+            {
+              "sourceId": "message1",
+              "revision": 1,
+              "quote": "마음만 정리하고 싶어요."
+            }
+          ]
+        }
+      ],
+      "unknowns": [],
+      "questions": [],
+      "disposition": "ready",
+      "suggestedRoute": "reflect"
+    },
+    "metadata": {
+      "schemaVersion": "1.0",
+      "visibility": "private",
+      "sourceVersions": [
+        {
+          "id": "message1",
+          "revision": 1
+        }
+      ],
+      "audience": [
+        "parent"
+      ],
+      "purpose": "reflect",
+      "permissionEpoch": 1,
+      "validUntil": "2026-11-01T12:00:00Z",
+      "policyVersion": "consent-boundary-1",
+      "inputHash": "fb854f2dc4e0228adc52251e125f22b1d89ccaf4661056e6a011e4de9bcca2b0"
+    },
+    "run": {
+      "adapter": "TEST_ONLY_SCRIPTED",
+      "model": "fixture",
+      "promptVersion": "ko-relationship-1",
+      "policyVersion": "consent-boundary-1",
+      "schemaVersion": "1.0",
+      "calls": 1,
+      "retries": 0,
+      "latencyMs": 2,
+      "inputTokens": null,
+      "outputTokens": null,
+      "estimatedCostUsd": null,
+      "priceVersion": "TEST_ONLY_NO_BILLING",
+      "usageComplete": false,
+      "errorCode": null
+    }
+  }
+}

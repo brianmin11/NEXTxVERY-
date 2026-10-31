@@ -19,6 +19,7 @@ function weekday(ms:number,tz:string){const name=new Intl.DateTimeFormat('en-US'
 function wallTime(ms:number,tz:string){return new Intl.DateTimeFormat('en-GB',{timeZone:tz,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(ms);}
 export function compileChangePlan(raw:unknown,rawContext:unknown):ChangePlanDraft {
  const a=parse(AgreementDraft,raw);const {context:c,sources}=jointContext(rawContext);validateAgreement(a,sources,c.scope.participantIds);
+ const occurrences=new Map<number,Array<[number,number]>>();
  const blockers:string[]=[];const block=(i:number,why:string)=>blockers.push(`actions[${i}]: ${why}`);
  if(a.status!=='draft')blockers.push('AGREEMENT_NOT_DRAFT');
  if(a.unknowns.length)blockers.push('AGREEMENT_HAS_UNRESOLVED_FIELDS');
@@ -27,6 +28,7 @@ export function compileChangePlan(raw:unknown,rawContext:unknown):ChangePlanDraf
   const start=time(action.start),end=time(action.end),deadline=time(action.deadline),until=time(action.until),reminder=time(action.reminderAt),now=Date.parse(c.scope.now);
   if(!action.description.trim())block(i,'DESCRIPTION_REQUIRED');
   if(action.unresolvedFields.length)block(i,'UNRESOLVED_FIELDS');
+  if(action.basis==='proposed')block(i,'PROPOSED_TERMS_REQUIRE_CONFIRMATION');
   if(action.assigneeId===null)block(i,'ASSIGNEE_REQUIRED');
   if(action.recurrence===null)block(i,'RECURRENCE_REQUIRED');
   if(action.kind==='schedule_create'||action.kind==='schedule_update'){
@@ -61,11 +63,12 @@ export function compileChangePlan(raw:unknown,rawContext:unknown):ChangePlanDraf
      if(action.recurrence==='daily'||action.weekdays.includes(weekday(d,c.scope.timezone)))starts.push(d);
     }
    }
+   occurrences.set(i,starts.map(t=>[t,t+(end-start)]));
    for(const s of c.schedules)if(s.id!==action.targetId&&action.assigneeId&&s.participantIds.includes(action.assigneeId)&&starts.some(t=>t<Date.parse(s.end)&&t+(end-start)>Date.parse(s.start)))block(i,'SCHEDULE_CONFLICT');
   }
  });
  // Check collisions introduced by the same plan, not only existing calendar entries.
- a.actions.forEach((x,i)=>a.actions.slice(i+1).forEach(y=>{if(x.assigneeId&&x.assigneeId===y.assigneeId&&x.start&&x.end&&y.start&&y.end&&Date.parse(x.start)<Date.parse(y.end)&&Date.parse(x.end)>Date.parse(y.start))block(i,'INTRA_PLAN_CONFLICT');}));
+ a.actions.forEach((x,i)=>a.actions.forEach((y,j)=>{if(j>i&&x.assigneeId&&x.assigneeId===y.assigneeId&&(occurrences.get(i)??[]).some(([xs,xe])=>(occurrences.get(j)??[]).some(([ys,ye])=>xs<ye&&xe>ys)))block(i,'INTRA_PLAN_CONFLICT');}));
  return parse(ChangePlanDraft,{schemaVersion:VERSION,status:'draft',executable:false,agreementId:a.id,agreementRevision:a.revision,semanticHash:hash({agreement:a,timezone:c.scope.timezone,householdId:c.scope.householdId,purpose:c.scope.purpose,permissionEpoch:c.scope.permissionEpoch}),changes:a.actions,blockers:[...new Set(blockers)],requiresHostRevalidation:true});
 }
 export function verifyAcceptanceVersion(raw:unknown,acceptance:{agreementId:string;revision:number;semanticHash:string}):boolean {

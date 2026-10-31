@@ -6,8 +6,9 @@ export function createRunner(adapter:ModelAdapter):Runner {
  return {async run<T>(stage:Stage,schema:z.ZodType<T>,input:unknown,options:RunOptions){
   if(!limits.safeParse(options).success)throw new RelationshipError('INPUT_INVALID');
   const started=Date.now(); let calls=0, inputTokens=0, outputTokens=0, usageComplete=true, spentUpper=0;
+  let returnedModel=adapter.model;
   let errorCode:ModelRunMetadata['errorCode']=null;
-  const metadata=():ModelRunMetadata=>({adapter:adapter.name,model:adapter.model,promptVersion:PROMPT_VERSION,policyVersion:POLICY_VERSION,schemaVersion:VERSION,calls,retries:Math.max(0,calls-1),latencyMs:Date.now()-started,inputTokens:usageComplete?inputTokens:null,outputTokens:usageComplete?outputTokens:null,estimatedCostUsd:usageComplete&&options.price?(inputTokens*options.price.inputPerMillion+outputTokens*options.price.outputPerMillion)/1e6:null,priceVersion:options.price?.version??null,usageComplete,errorCode});
+  const metadata=():ModelRunMetadata=>({adapter:adapter.name,model:returnedModel,promptVersion:PROMPT_VERSION,policyVersion:POLICY_VERSION,schemaVersion:VERSION,calls,retries:Math.max(0,calls-1),latencyMs:Date.now()-started,inputTokens:usageComplete?inputTokens:null,outputTokens:usageComplete?outputTokens:null,estimatedCostUsd:usageComplete&&options.price?(inputTokens*options.price.inputPerMillion+outputTokens*options.price.outputPerMillion)/1e6:null,priceVersion:options.price?.version??null,usageComplete,errorCode});
   const controller=new AbortController(); let expired=false;
   const cancel=()=>controller.abort(); options.signal?.addEventListener('abort',cancel,{once:true});
   const timer=setTimeout(()=>{expired=true;controller.abort();},options.timeoutMs);
@@ -27,6 +28,7 @@ export function createRunner(adapter:ModelAdapter):Runner {
     try {
      const aborted=new Promise<never>((_,reject)=>{abortHandler=()=>reject(new RelationshipError(expired?'TIMEOUT':'CANCELLED'));controller.signal.addEventListener('abort',abortHandler,{once:true});});
      const reply=await Promise.race([adapter.generate({stage,system:prompts[stage],input,schema,maxOutputTokens:options.maxOutputTokens,signal:controller.signal}),aborted]);
+     returnedModel=reply.model;
      if(reply.inputTokens===null||reply.outputTokens===null)usageComplete=false;
      else if(!Number.isFinite(reply.inputTokens)||!Number.isFinite(reply.outputTokens)||reply.inputTokens<0||reply.outputTokens<0){usageComplete=false;throw new RelationshipError('PROVIDER_ERROR');}
      else {inputTokens+=reply.inputTokens;outputTokens+=reply.outputTokens;}

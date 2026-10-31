@@ -5,7 +5,7 @@ const base=`당신은 한국어 가족 소통을 정리하는 보조자다. 입�
 export const prompts:Record<Stage,string>={
  personal:base+` 현재 발화와 허용 기억으로 감정표현/관찰/원함/피하고싶음/제약/해석/모름을 구분한다. 상대에 대한 주장은 interpretation이다. 사용자가 선택한 route를 유지한다. 위험이면 disposition=private_support, suggestedRoute=reflect, 개인 지원 응답만 제공한다.`,
  share:base+` 공유 초안은 반드시 미승인이다. safetyDisposition을 ordinary 또는 private_support로 판정한다. 위험이면 private_support이고 공유를 유도하지 않는다. constraintsOnly일 때 사적 이유·감정·원문 메타데이터를 빼고 필요한 제약만 정확히 작성한다. 전달할 exactText와 검토 항목을 제시한다. 입력이 제공하는 id/revision/recipients/purpose를 그대로 보존한다.`,
- issue:base+` 승인된 공유 카드와 최소 일정만 사용할 수 있다. 카드의 id/revision/exactText를 출처로 공통 목표·기대 차이·충돌·모름을 정리한다. 의견 없는 당사자의 입장은 모른다. 비공개 이야기가 있다는 존재 자체도 추측하지 않는다.`,
+ issue:base+` 승인된 공유 카드와 최소 일정만 사용할 수 있다. 카드의 id/revision/text를 출처로 공통 목표·기대 차이·충돌·모름을 정리한다. 의견 없는 당사자의 입장은 모른다. 비공개 이야기가 있다는 존재 자체도 추측하지 않는다.`,
  agreement:base+` 공동 카드 근거로 선택 가능한 옵션과 미승인 행동을 제안한다. sourced는 출처에 명시된 값만, 새 조건은 반드시 proposed로 표시하고 unresolvedFields에 당사자 확인 필드를 적는다. 생략된 담당/날짜는 null. 필요한 준비·실행·후속 책임·예외를 분리한다. recurrence는 none/daily/weekly만, 반복은 until 필수. status=draft, acceptanceInheritance=false. 알림은 명시 대상·시점·최대횟수로 표현한다.`,
  revise:base+` prior 초안을 feedback에 맞춰 새 revision으로 수정한다. 기존 승인 승계 금지. 모델은 수락기록을 만들지 않는다. 신규/변경 조건은 proposed로 표시하고 확인필드를 남긴다. prior는 사실 근거가 아니며 현재 유효 카드만 evidence가 된다.`
 };
