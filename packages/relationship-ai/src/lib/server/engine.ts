@@ -45,7 +45,7 @@ export function createEngine(runner:Runner):RelationshipEngine {
  async propose(input,rawSettings,options){
   checkOptions(options);const started=performance.now();const {context:c,sources,projection}=jointContext(input);const settings=parse(RevisionSettings,rawSettings);
   if(settings.revision!==1)throw new RelationshipError('INPUT_INVALID');
-  const request={...projection,settings};const result=await runner.run('agreement',AgreementDraft,request,options);const v=parse(AgreementDraft,result.value,'SCHEMA_INVALID');
+  const request={...projection,settings};const outputSchema=AgreementDraft.extend({id:z.literal(settings.id),revision:z.literal(settings.revision),status:z.literal('draft')});const result=await runner.run('agreement',outputSchema,request,options);const v=parse(AgreementDraft,result.value,'SCHEMA_INVALID');
   if(v.id!==settings.id||v.revision!==settings.revision||v.status!=='draft')throw new RelationshipError('SEMANTIC_INVALID');
   validateAgreement(v,sources,c.scope.participantIds);v.changes=[];assertStillFresh(sources,c.scope.now,started);checkOptions(options);
   return {value:v,metadata:metadata(c.scope,sources,'shared',request),run:result.run};
@@ -61,7 +61,7 @@ export function createEngine(runner:Runner):RelationshipEngine {
   if(feedback.action==='defer'||feedback.action==='decline'){
    v={...prior,revision:prior.revision+1,status:feedback.action==='defer'?'deferred':'declined',acceptanceInheritance:false,changes:[]};run=noModel();
   } else {
-   const result=await runner.run('revise',AgreementDraft,request,options);v=parse(AgreementDraft,result.value,'SCHEMA_INVALID');run=result.run;
+   const outputSchema=AgreementDraft.extend({id:z.literal(prior.id),revision:z.literal(prior.revision+1),status:z.literal('draft')});const result=await runner.run('revise',outputSchema,request,options);v=parse(AgreementDraft,result.value,'SCHEMA_INVALID');run=result.run;
    if(v.id!==prior.id||v.revision!==prior.revision+1||v.status!=='draft')throw new RelationshipError('SEMANTIC_INVALID');
    validateAgreement(v,sources,c.scope.participantIds);
   }
