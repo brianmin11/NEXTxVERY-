@@ -1,7 +1,10 @@
-2026-11-01 — 최신 프론트 로컬 연동 구현 진행 중
-기준: 민경민 a5e474a, 격리 브랜치 codex/frontend-backend-v2.
-기존 NEXTxVERY-integration의 미커밋 변경은 보존하고 커밋된 인증 기반만 재사용.
-사용자 확정: 원문·AI 초안 서버 비보관. 일반 사용자 입력의 유료 호출/배포는 수행하지 않음.
-계약: docs/BACKEND-BATCH-CONTRACT.md. 실행: docs/LIVE-V2-RUNBOOK.md.
-구현 중: UI/API/QA 분리 worktree live-v2. 루트는 HTTP 인증/Origin/크기 제한과 migration 및 통합 담당.
-검증: 의존성 설치·기존 engine 빌드 성공. 전체 typecheck/build/E2E는 구현 통합 후 실행 예정.
+2026-11-01 — 최신 프론트 로컬 백엔드 연동 구현 완료
+작업 브랜치: codex/frontend-backend-v2. 기준 프론트: 민경민 a5e474a.
+기존 NEXTxVERY-integration의 진행 중 변경을 보존한 별도 worktree.
+구현: Better Auth 실제 세션/가족 생성·초대·가입, 일정 CRUD, 집안일 CRUD/완료, 최종 메시지 전송·읽음·응답, 비공개 사진 업로드/조회/삭제, 홈 서버 요약.
+원문·AI 초안 서버 비보관. 최종 확정 문장만 저장. 기존 개인 원문 영속 API는 노출하지 않음.
+검증: typecheck/lint/production build 통과. 서비스8/8, Chrome 실제 두 계정 E2E3/3 통과. CUA 가입/가족 생성/일정 저장·재조회와 모바일/데스크톱 화면 확인.
+증거: evidence/VERIFICATION.txt, evidence/*png. 실행: docs/LIVE-V2-RUNBOOK.md.
+미완료/별도 범위: 실모델 제안 성공 연결, 배포용 외부 DB/비공개 저장소, 공개 배포, 물리 휴대폰 검증, 기존 공동조율 일정 실행 재통합. 현재 HTTP AI 제안은 명시적503이며 직접 작성·전달 가능.
+원격 push/민경민 merge/배포 없음. 외부 모델 유료 호출 없음. 픽셀 시안 미적용.
+다음: 로컬 결과 리뷰 후 실모델 비영속 어댑터 및 운영 저장소 범위 확정.

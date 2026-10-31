@@ -1,0 +1,13 @@
+2026-11-01 Asia/Seoul — 최신 프론트 로컬 백엔드 통합 검증
+Source: codex/frontend-backend-v2, frontend base 민경민 a5e474a.
+Typecheck: PASS. ESLint: PASS, 0 errors/0 warnings (after unused binding cleanup).
+Production build: PASS. metadataBase localhost warning only; public deployment not claimed.
+Service contract tests: 8/8 PASS (Node SQLite, temporary DB/files; synthetic suggestion injection, no paid API).
+Chrome E2E: 3/3 PASS in 2.1 minutes, running d6d1a246 application behavior. d763ce1 changes calendar form explanation only, no behavior change.
+1 calendar actual time19:00-20:00 form save, reload, independent family member view, non-author modification denied.
+2 direct inbox URL read status, unrelated family404, cross-origin write403.
+3 chores creation/assignee completion/reload; valid PNG selected in UI/upload/other-member view/private image retrieval; AI503 then manual edit/confirm/send; recipient sees final text, not raw.
+Service tests additionally: hashed invite and no plaintext receipt, family isolation, validation rollback, competing versions/idempotency, stable completion time, no raw/suggested text persistence, image sniff/validation, pending-owner restriction, attached-family access, delete/orphan cleanup.
+CUA manual: synthetic account signup -> family creation -> home -> all-day event save -> reload retains record; console errors none. Desktop heading count1. Screenshots calendar-mobile-cua.png/calendar-desktop-cua.png/mind-mobile.png visually inspected.
+The automated full-page desktop screenshot duplicated sticky header during resizing; stable CUA screenshot is the accepted evidence.
+Not verified: physical phone, actual live model success, external DB/storage, public deployment. Models remain unavailable in HTTP until separately authorized transient provider is connected. Manual message delivery works.
