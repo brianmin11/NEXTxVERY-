@@ -52,7 +52,7 @@ export function HomeSummary({ data, onSelect }: HomeSummaryProps) {
             <span id="home-today">오늘 일정</span>
             {todays.length > 0 && <span className="ml-1 tabular-nums">{todays.length}</span>}
           </SectionTitle>
-          <Button variant="link" className="h-auto px-0 text-sm" asChild>
+          <Button variant="link" className="-mr-2 h-11 px-2 text-sm" asChild>
             <Link href="/calendar">전체 보기</Link>
           </Button>
         </div>

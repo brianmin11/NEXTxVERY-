@@ -128,7 +128,7 @@ export function CalendarScreen() {
           {formatMonthTitle(cursor.year, cursor.month)}
         </h2>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="sm" className="h-9" onClick={goToday}>
+          <Button variant="outline" onClick={goToday}>
             오늘
           </Button>
           <Button variant="ghost" size="icon" aria-label="다음 달" onClick={() => moveMonth(1)}>

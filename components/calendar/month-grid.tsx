@@ -20,8 +20,9 @@ type MonthGridProps = {
 export function MonthGrid({ year, month, selected, today, countsByDate, onSelect }: MonthGridProps) {
   const weeks = monthGrid(year, month)
   return (
-    <div role="grid" aria-label={`${formatMonthTitle(year, month)} 달력`} className="flex flex-col gap-1">
-      <div role="row" className="grid grid-cols-7 gap-1">
+    // 칸 간격 2px: 360px에서도 칸이 45px 이상(44px 터치 기준)이 되도록
+    <div role="grid" aria-label={`${formatMonthTitle(year, month)} 달력`} className="flex flex-col gap-0.5">
+      <div role="row" className="grid grid-cols-7 gap-0.5">
         {WEEKDAYS.map((d, i) => (
           <div
             key={d}
@@ -34,7 +35,7 @@ export function MonthGrid({ year, month, selected, today, countsByDate, onSelect
         ))}
       </div>
       {weeks.map((week, wi) => (
-        <div key={wi} role="row" className="grid grid-cols-7 gap-1">
+        <div key={wi} role="row" className="grid grid-cols-7 gap-0.5">
           {week.map((key, di) => {
             if (!key) return <div key={`empty-${wi}-${di}`} role="gridcell" aria-hidden="true" />
             const count = countsByDate.get(key) ?? 0

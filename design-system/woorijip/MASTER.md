@@ -73,10 +73,11 @@
 - 페이지 가로 여백 16px(`px-4`). 섹션 간격 40px, 카드 내부 20px(`--card-spacing`).
 - `--radius: 1rem` 하나에서 파생한다. 버튼·입력은 `rounded-md`(12.8px), 카드는 `rounded-xl`, 시트 상단은 `rounded-t-2xl`, 칩·아바타는 `rounded-full`. 페이지에서 임의 radius를 선언하지 않는다.
 - **터치 영역 최소 44px.** Button `default`(44)·`lg`(48)·`icon`(44)·`icon-lg`(48)를 모바일 기본으로 쓴다. `xs`/`sm`/`icon-xs`/`icon-sm`은 데스크톱·밀집 영역 전용이다.
+- shadcn 기본값을 모바일 기준으로 조정한 항목(`components/ui`): TabsList 52px(트리거 45px), Select 트리거 44px, Switch는 시각 32×18이지만 `::after`로 히트 영역 46px, 달력 칸 45px(360px, 칸 간격 2px), 텍스트 링크 버튼(`variant="link"`)은 `h-11`로 감싼다. 텍스트 입력은 44px, textarea는 그 이상.
 
 ## 5. 깊이·모션
 
-- 그림자: `shadow-card`(카드), `shadow-sheet`(바텀시트). 기능 UI의 그 밖의 요소는 경계(`ring-border`/`border-border`)로 구분한다. `shadow-scene`은 장면 전용이다.
+- 그림자: `shadow-card`(카드, 그리고 select·dropdown처럼 떠 있는 메뉴 내용에 `ring-1 ring-border`와 함께), `shadow-sheet`(바텀시트). 버튼·입력·스위치·탭 활성 상태는 그림자 없이 경계(`ring-border`/`border-border`)로 구분한다. shadcn 기본 `shadow-xs/sm/md/lg`는 쓰지 않는다. `shadow-scene`은 장면 전용이다.
 - UI 전환: `--motion-duration-ui` 180ms + `ease-ui`(ease-out). Tailwind 기본 transition에 연결돼 있다.
 - 장면 효과: `--motion-duration-scene` 400ms + `ease-scene`. 장면 컴포넌트에서만 쓴다.
 - `prefers-reduced-motion`이면 모든 전환과 애니메이션이 사실상 0이 된다. 스피너는 `motion-safe:animate-spin`.
@@ -84,7 +85,14 @@
 
 ## 6. 컴포넌트
 
-**shadcn(설치됨, `components/ui`)**: button, card, input, dialog, dropdown-menu, sheet, tabs, badge, separator, skeleton, tooltip. 버튼·입력·카드·대화창·시트는 반드시 이것을 쓴다.
+**shadcn(설치됨, `components/ui`)**: button, card, input, textarea, label, switch, select, dialog, dropdown-menu, sheet, tabs, badge, separator, skeleton, tooltip. 버튼·입력·카드·대화창·시트는 반드시 이것을 쓴다. 추가는 `npx shadcn@latest add <name>`(파일만 추가, 패키지 변경 없음).
+
+**native `<button>` 허용 예외(의미 있는 전용 구조에만):**
+| 위치 | 이유 | 지켜야 할 조건 |
+|---|---|---|
+| `components/calendar/month-grid.tsx` 날짜 칸 | `role="grid"`/`gridcell` 구조 안에서 7열 칸 크기·선택 상태를 직접 다룬다 | `type="button"`, `aria-label`(날짜·요일·오늘·일정 개수), `aria-pressed`(선택)·`aria-current="date"`(오늘), `min-h-11`+`aspect-square`, hover/active/focus-visible 링 |
+| `components/home/family-house-scene.tsx` 캐릭터 히트 영역 | SVG 장면 위에서 그림·이름표와 함께 움직이는 투명 래퍼 | `type="button"`, `aria-label="{이름} 프로필 보기"`, 폭 ≥44px(`min-w-11`), hover/active/focus-visible 링, 장식 SVG는 `aria-hidden` |
+그 밖의 일반 버튼·링크 버튼은 shadcn `Button`(`asChild` 포함)을 쓴다.
 
 **우리집 공통(`components/woorijip`)**
 | 컴포넌트 | 용도 |
@@ -106,7 +114,7 @@
 | `use-pause-reasons.ts` | 정지 사유 집합(user·hover·focus·pointer·sheet·hidden·offscreen). 하나라도 남아 있으면 멈추고 모두 해제될 때만 재개. reduced-motion이면 기본 정지(user)이며 '움직임 켜기' 버튼으로 바꿀 수 있다 |
 | `FamilyAvatar` / `SceneAvatar` | 캐릭터. 렌더러는 `avatar-renderers/basic-round.tsx`(임시 기본형) 하나이며 `family-avatar.tsx`의 `AvatarGlyph` 한 줄로 교체한다. 역할·성별로 외형을 정하지 않는다 |
 | `HomeSummary` | CTA → 오늘 일정(압축 행) → 내 할 일 → 최근 추억 |
-| `HomeDetailSheet` | 일정·구성원·가족 목록·알림·마음 전하기 안내를 담는 단일 바텀시트 |
+| `HomeDetailSheet` | 일정(캘린더 상태를 읽고 '캘린더에서 보기')·구성원('{이름}에게 마음 전하기' → 수신자만 미리 선택하고 /mind로)·가족 목록·알림('마음 수신함 열기')을 담는 단일 바텀시트. 마음 전하기 CTA 자체는 /mind 링크다 |
 | `AppShell` / `AppBottomNav` / `ComingSoon` (`components/woorijip`) | 하단 탭 화면 틀, pathname 기반 활성 탭, 준비 중 화면 |
 
 **마음 전하기(`components/mind`, `lib/mind`)** — 프론트 데모. 실제 AI·저장·알림·권한 검증은 없다.
@@ -115,7 +123,7 @@
 | `lib/mind/types.ts` | `MindMessage`(공유: id·fromId·toId·text·createdAt·status·response)와 `MindDraft`(개인: rawText·outgoingText·step·confirmToken). 원문은 메시지에 어떤 필드로도 넣지 않는다 |
 | `lib/mind/config.ts` | `MIND_MAX_LENGTH`(500)·`MIND_REPLY_MAX_LENGTH`(300). 임시 프론트 제한이며 UI 글자 수와 검증이 같은 값을 쓴다 |
 | `lib/mind/relationship-demo-adapter.ts` | AI 연결 지점. 데모 어댑터는 생성하지 않고 원문을 편집 초안으로 돌려준다. 실제 연결 시 `relationshipAdapter` 한 줄 교체. API URL·키는 넣지 않는다 |
-| `MindProvider` | 루트 레이아웃의 메모리 상태(데모 인물·메시지·초안). 라우트 이동 중 유지, 새로고침 시 초기화. 같은 확인 토큰으로는 한 번만 전송 |
+| `MindProvider` | 루트 레이아웃의 메모리 상태(메시지·초안). 현재 인물은 `DemoViewerProvider`에서 읽고, 초안은 작성한 인물(ownerId)에게만 보인다. 라우트 이동 중 유지, 새로고침 시 초기화. 같은 확인 토큰으로는 한 번만 전송 |
 | `/mind` (`MindScreen`) | 전체 화면 4단계: 작성(수신자·원문) → 다듬기(원문 읽기 전용 + `AdapterStatus` demo + 직접 작성) → 확인(수신자·최종 문장 재표시, 명시적 확인) → 완료('데모 수신함에 추가했어요'). 하단 탭 없음, 바닥 고정 버튼 |
 | `/inbox`, `/inbox/[id]` | 받은/보낸 탭, 카드(상대·전달 문장·시각·상태), 상세에서 답장·나중에·지금은 어려워요. 열람(read)은 응답이 아니다. 데모 인물 전환은 로그인이 아니며 전환 시 초안을 비운다 |
 | `use-return-focus.ts` | 트리거 없이 여는 Dialog의 포커스 복귀. 복귀 대상이 사라지면 fallback으로 |
@@ -139,7 +147,7 @@
 - 캐릭터 움직임은 시각 연출일 뿐이다. 접속 여부·감정 상태·활동량으로 설명하지 않는다. 점프·충돌 반동·층간 이동은 없다.
 - 집 상태 산정 정책은 미정이다. AI 화목도 계산이나 개인 대화·미접속·집안일 미완료를 벌점으로 연결하지 않는다. 5단계(작은 집 → 화분 → 꽃 → 정원 → 가랜드·무지개)는 미리보기 시안이며 `/design-system`에서만 바꿔 본다. 오류·로딩 상태로 집을 어둡게 만들지 않는다.
 - 일반 레이아웃(`section`, `nav`, `dl` 등)과 집·캐릭터 일러스트는 semantic HTML·SVG·전용 React 컴포넌트로 만든다. 모든 요소를 shadcn으로 억지 구현하지 않는다.
-- 날짜·시간은 `lib/format.ts`(ko-KR, Asia/Seoul 고정)를 쓴다.
+- 날짜·시간 책임 구분: **시각(instant, `Date`/ISO)** 표시는 `lib/format.ts`(ko-KR, Asia/Seoul 고정 — 메시지 작성 시각, 사진 날짜). **날짜 전용 `YYYY-MM-DD`·시간 `HH:mm` 문자열**은 `lib/calendar/date.ts`(Date로 바꾸지 않고 계산, 포맷할 때만 UTC 정오 사용 — 일정). 한쪽 값을 다른 쪽 함수에 넣지 않는다.
 - loading 버튼: `disabled` + `aria-busy` + 스피너 + 진행형 문구("저장하는 중").
 - 아이콘은 lucide. 장식 아이콘은 `aria-hidden`, 아이콘만 있는 버튼에는 `sr-only` 라벨을 단다.
 - 상태 3종(빈 상태·skeleton·오류+재시도)을 빠뜨리지 않는다.
@@ -149,8 +157,9 @@
 - 390px 기준, 360/390/430px 우선 검증. 콘텐츠 폭은 `max-w-md`(448px) 단일 열이다. PC 확장은 이후 별도로 정한다.
 - 높이는 `min-h-dvh`. viewport는 `viewport-fit=cover`, `interactive-widget=resizes-content`(키보드가 열리면 레이아웃이 줄어든다).
 - 안전 영역: 상단 헤더 `pt-[env(safe-area-inset-top)]`, 하단 탭·시트·푸터 `pb-[env(safe-area-inset-bottom)]`. 하단 탭이 있는 화면은 본문 아래 여백을 `--bottom-nav-height + safe-area`만큼 둔다.
-- **짧은 상세는 바텀시트**(`Sheet side="bottom"`, 최대 85dvh, 내부 스크롤, 닫으면 포커스 복귀).
-- **긴 입력(Relationship AI 작성 등)은 추후 전체 화면**으로 만든다. 시트에 긴 폼을 넣지 않는다.
+- **짧은 상세·선택은 바텀시트**(`Sheet side="bottom"`, 최대 85dvh, 내부 스크롤, 닫으면 포커스 복귀).
+- **새로 만드는 긴 작성 폼은 전체 화면**으로 만든다(/mind 방식: 자체 헤더 + 바닥 고정 버튼, 하단 탭 없음).
+- **임시 예외:** 캘린더 추가·수정 폼은 92dvh 시트(`calendar-screen.tsx`)다. 모바일 실기기에서 키보드가 열렸을 때의 동작 검증이 남아 있으며, 문제가 확인되면 전체 화면으로 옮긴다. 새 폼은 이 예외를 따르지 않는다.
 - 하단 탭: 우리집(`/home`) · 일정(`/calendar`) · 추억(`/memories`) · 더보기(`/more`). `APP_NAV_ITEMS` 한 곳에서 관리한다. 마음 전하기는 홈 CTA로 진입한다.
 - 집 장면은 `aspect-[5/3]`로 폭에 비례(360→216px, 390→234px, 430→258px), 최대 270px. 오늘 일정이 첫 화면 아래쪽에 일부 보이게 유지한다.
 
