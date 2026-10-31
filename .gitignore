@@ -45,3 +45,6 @@ next-env.d.ts
 packages/*/node_modules/
 packages/*/dist/
 !.env.example
+
+test-results/
+playwright-report/
