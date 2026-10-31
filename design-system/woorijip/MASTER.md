@@ -3,6 +3,7 @@
 이 문서는 우리집의 **유일한 공통 디자인 기준**이다.
 - 구현 원본: `app/globals.css`(토큰), `components/ui/*`(shadcn), `components/woorijip/*`(공통 조각).
 - 확인 화면: 개발 서버의 `/design-system`(가상 데이터, 프로덕션 404).
+- 백엔드 연동 준비(실제 타입·provider·교체 지점·미구현 목록): `docs/frontend-integration.md`. 디자인 기준은 이 문서 하나다.
 - 페이지별 문서(`design-system/woorijip/pages/<page>.md`)는 **콘텐츠와 배치만** 다룬다. 전역 색·폰트·버튼·카드·radius·그림자를 다시 정의하거나 덮어쓰지 않는다. 바꿔야 하면 이 문서와 토큰을 먼저 고친다.
 
 ## 1. 방향
