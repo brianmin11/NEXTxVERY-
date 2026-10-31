@@ -1,18 +1,27 @@
+"use client"
+
+import * as React from "react"
+import { Pause, Play } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import type { Family, HouseStage } from "@/lib/home.fixture"
 
-import { SceneAvatar } from "./family-avatar"
+import { FamilyAvatar } from "./family-avatar"
 import {
   FlowersLayer,
   GardenLayer,
   GarlandLayer,
   GroundLayer,
+  HOUSE_TRANSFORM,
   HouseLayer,
+  HouseShadowLayer,
   MailboxLayer,
   PlanterLayer,
   SCENE_BOX,
   SkyLayer,
 } from "./house-layers"
+import { usePauseReasons } from "./use-pause-reasons"
+import { initialSpot, useYardMotion, WALKER_BOX } from "./use-yard-motion"
 
 type FamilyHouseSceneProps = {
   family: Family
@@ -23,32 +32,21 @@ type FamilyHouseSceneProps = {
   /** origin은 시트를 닫은 뒤 포커스를 돌려줄 요소 */
   onMemberSelect: (memberId: string, origin: HTMLElement) => void
   onMoreSelect: (origin: HTMLElement) => void
+  /** 상세 시트가 열려 있는 동안 true → 이동을 멈춘다 */
+  motionPaused?: boolean
   className?: string
 }
 
-const AVATAR_SCALE = 0.68
-const AVATAR_W = 64 * AVATAR_SCALE
-const AVATAR_H = 72 * AVATAR_SCALE
 const LABEL_MAX = 4
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)"
 
-/** 인원수별 바닥 중앙 좌표. 집(120~298)을 피해 좌우에 배치한다. */
-const SPOTS: Record<number, Array<[number, number]>> = {
-  1: [[262, 210]],
-  2: [
-    [68, 206],
-    [266, 210],
-  ],
-  3: [
-    [68, 206],
-    [252, 210],
-    [306, 208],
-  ],
-  4: [
-    [68, 206],
-    [238, 210],
-    [292, 208],
-    [346, 206],
-  ],
+function subscribeReducedMotion(onChange: () => void) {
+  const mq = window.matchMedia(REDUCED_MOTION_QUERY)
+  mq.addEventListener("change", onChange)
+  return () => mq.removeEventListener("change", onChange)
+}
+function getReducedMotion() {
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches
 }
 
 function shortName(name: string) {
@@ -57,8 +55,11 @@ function shortName(name: string) {
 }
 
 /**
- * 오리지널 2.5D 미니어처 집 장면. SVG는 장식이고, 캐릭터 위에 투명한 실제 버튼을 겹쳐
- * 터치·키보드 모두 같은 동작을 한다. 모션은 없어서 reduced-motion에서도 그대로 정지 장면이다.
+ * 오리지널 2.5D SVG 집 장면(시안). 작은 집은 뒤쪽 중앙에 고정되고,
+ * 가족 캐릭터는 앞마당에서 각자 다른 경로·대기 시간으로 천천히 움직인다.
+ * 캐릭터·이름표·클릭 영역은 하나의 버튼 래퍼로 함께 움직이고,
+ * hover·focus·pointerdown·시트 열림·탭 숨김·화면 밖·사용자 정지 중에는 멈춘다.
+ * 움직임은 시각적 연출일 뿐 접속 여부나 감정 상태를 뜻하지 않는다.
  */
 export function FamilyHouseScene({
   family,
@@ -66,15 +67,51 @@ export function FamilyHouseScene({
   maxVisible = 4,
   onMemberSelect,
   onMoreSelect,
+  motionPaused = false,
   className,
 }: FamilyHouseSceneProps) {
   const limit = Math.max(1, Math.min(4, maxVisible))
   const visible = family.members.slice(0, limit)
   const rest = family.members.length - visible.length
-  const spots = SPOTS[visible.length] ?? SPOTS[4]
+
+  const containerRef = React.useRef<HTMLElement | null>(null)
+  const pause = usePauseReasons()
+  const { add, remove } = pause
+
+  // reduced-motion이면 기본 정지. 사용자가 버튼으로 바꾸면 그 선택이 우선한다.
+  const prefersReducedMotion = React.useSyncExternalStore(subscribeReducedMotion, getReducedMotion, () => false)
+  const [userOverride, setUserOverride] = React.useState<boolean | null>(null)
+  const userPaused = userOverride ?? prefersReducedMotion
+
+  React.useEffect(() => {
+    if (userPaused) add("user")
+    else remove("user")
+  }, [userPaused, add, remove])
+  React.useEffect(() => {
+    if (motionPaused) add("sheet")
+    else remove("sheet")
+  }, [motionPaused, add, remove])
+
+  // pointerdown은 창 어디서 떼더라도 해제한다.
+  React.useEffect(() => {
+    const release = () => remove("pointer")
+    window.addEventListener("pointerup", release)
+    window.addEventListener("pointercancel", release)
+    return () => {
+      window.removeEventListener("pointerup", release)
+      window.removeEventListener("pointercancel", release)
+    }
+  }, [remove])
+
+  const setAutoReason = React.useCallback(
+    (reason: "hidden" | "offscreen", on: boolean) => (on ? add(reason) : remove(reason)),
+    [add, remove]
+  )
+  const { register } = useYardMotion({ containerRef, count: visible.length, paused: pause.paused, setAutoReason })
 
   return (
     <section
+      ref={containerRef}
       aria-label="우리집 장면"
       className={`relative -mx-4 aspect-[5/3] max-h-[270px] w-[calc(100%+--spacing(8))] overflow-hidden bg-scene-sky ${className ?? ""}`}
     >
@@ -87,61 +124,70 @@ export function FamilyHouseScene({
       >
         <SkyLayer rainbow={stage >= 5} />
         <GroundLayer />
-        {stage >= 4 && <GardenLayer />}
-        <HouseLayer />
-        <MailboxLayer />
-        {stage >= 2 && <PlanterLayer />}
-        {stage >= 3 && <FlowersLayer />}
-        {stage >= 5 && <GarlandLayer />}
-        {visible.map((m, i) => {
-          const [x, y] = spots[i]
-          // 이웃한 이름표가 겹치지 않도록 홀수 번째는 한 칸 아래
-          const labelY = y + (i % 2 === 0 ? 3 : 16)
-          const label = shortName(m.name)
-          const width = Array.from(label).length * 11 + 12
-          return (
-            <g key={m.id}>
-              <SceneAvatar x={x} y={y} scale={AVATAR_SCALE} tone={m.tone} config={m.avatar} />
-              <rect x={x - width / 2} y={labelY} width={width} height="15" rx="7.5" fill="var(--card)" opacity="0.92" />
-              <text
-                x={x}
-                y={labelY + 11}
-                textAnchor="middle"
-                fontSize="11"
-                fontWeight="600"
-                fill="var(--foreground)"
-              >
-                {label}
-              </text>
-            </g>
-          )
-        })}
+        {/* 집과 장식은 같은 앵커·비율로 묶여 단계가 바뀌어도 위치가 같다 */}
+        <g transform={HOUSE_TRANSFORM}>
+          <HouseShadowLayer />
+          {stage >= 4 && <GardenLayer />}
+          <HouseLayer />
+          <MailboxLayer />
+          {stage >= 2 && <PlanterLayer />}
+          {stage >= 3 && <FlowersLayer />}
+          {stage >= 5 && <GarlandLayer />}
+        </g>
       </svg>
 
-      {/* 캐릭터 위 실제 버튼(투명). 좌표는 viewBox 기준 %로 맞춘다. */}
+      {/* 캐릭터: 그림·이름표·버튼이 한 래퍼로 움직인다 */}
       <ul className="absolute inset-0 m-0 list-none p-0">
         {visible.map((m, i) => {
-          const [x, y] = spots[i]
-          const w = Math.max(AVATAR_W, 48)
-          const h = AVATAR_H + 26
+          const [x, y] = initialSpot(i, visible.length)
           return (
-            <li key={m.id}>
+            <li key={m.id} className="contents">
               <button
+                ref={register(i)}
                 type="button"
+                data-walk="idle"
+                data-facing={i % 2 === 0 ? "right" : "left"}
                 onClick={(e) => onMemberSelect(m.id, e.currentTarget)}
+                onPointerEnter={() => add("hover")}
+                onPointerLeave={() => remove("hover")}
+                onPointerDown={() => add("pointer")}
+                onFocus={() => add("focus")}
+                onBlur={() => remove("focus")}
                 aria-label={`${m.name} 프로필 보기`}
-                className="absolute rounded-full outline-none hover:bg-foreground/5 focus-visible:ring-3 focus-visible:ring-ring/70 active:bg-foreground/10"
+                className="absolute flex min-w-11 flex-col items-center gap-0.5 rounded-full outline-none will-change-transform hover:bg-foreground/5 focus-visible:ring-3 focus-visible:ring-ring/70 active:bg-foreground/10"
                 style={{
-                  left: `${((x - w / 2) / SCENE_BOX.width) * 100}%`,
-                  top: `${((y - AVATAR_H - 4) / SCENE_BOX.height) * 100}%`,
-                  width: `${(w / SCENE_BOX.width) * 100}%`,
-                  height: `${(h / SCENE_BOX.height) * 100}%`,
+                  width: `${(WALKER_BOX.width / SCENE_BOX.width) * 100}%`,
+                  height: `${(WALKER_BOX.height / SCENE_BOX.height) * 100}%`,
+                  left: `${((x - WALKER_BOX.width / 2) / SCENE_BOX.width) * 100}%`,
+                  top: `${((y - WALKER_BOX.feetY) / SCENE_BOX.height) * 100}%`,
+                  zIndex: Math.round(y),
                 }}
-              />
+              >
+                <span className="yard-body block w-[85%]">
+                  <FamilyAvatar member={m} size={46} decorative className="h-auto w-full" />
+                </span>
+                <span
+                  aria-hidden="true"
+                  className="max-w-full truncate rounded-full bg-card/90 px-1.5 text-[11px] leading-4 font-semibold text-foreground"
+                >
+                  {shortName(m.name)}
+                </span>
+              </button>
             </li>
           )
         })}
       </ul>
+
+      <Button
+        variant="outline"
+        size="icon"
+        className="absolute top-3 left-3 rounded-full"
+        aria-pressed={userPaused}
+        aria-label={userPaused ? "움직임 켜기" : "움직임 멈추기"}
+        onClick={() => setUserOverride(!userPaused)}
+      >
+        {userPaused ? <Play className="size-5" aria-hidden="true" /> : <Pause className="size-5" aria-hidden="true" />}
+      </Button>
 
       {rest > 0 && (
         <Button

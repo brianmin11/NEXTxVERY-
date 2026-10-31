@@ -100,13 +100,16 @@
 | 컴포넌트 | 용도 |
 |---|---|
 | `HomeScreen` | /home 조립. `selection` 하나로 `HomeDetailSheet`만 연다(시트 중첩 금지) |
-| `FamilyHouseScene` | 오리지널 2.5D SVG 집 장면. `stage`(1~5)로 레이어만 바뀌고 카메라·집 크기는 고정. 캐릭터 위에 투명한 실제 버튼을 겹쳐 터치·키보드 동작을 같게 한다. 집 앞 표시 인원은 `maxVisible`(기본 4), 나머지는 `+N` |
-| `house-layers.tsx` | 하늘·땅·집·우편함·화분·꽃·정원·가랜드 레이어. 좌표계 0 0 400 240 |
+| `FamilyHouseScene` | 오리지널 2.5D SVG 집 장면(시안). 작은 집(장면 폭의 약 35%, `HOUSE_PLACEMENT`)을 뒤쪽 중앙에 고정하고 앞마당에서 캐릭터가 각자 움직인다. `stage`(1~5)로 레이어만 바뀌고 카메라·앵커·비율은 고정. 캐릭터·이름표·클릭 영역은 하나의 `<button>` 래퍼로 함께 움직이고 본체만 좌우 반전한다. 집 앞 표시 인원은 `maxVisible`(기본 4), 나머지는 `+N`. `motionPaused`로 시트 열림을 알린다 |
+| `house-layers.tsx` | 하늘·땅·집·우편함·화분·꽃·정원·가랜드 레이어. 장면 좌표계 0 0 400 240, 집 레이어는 집 좌표계(0.75배로 배치) |
+| `use-yard-motion.ts` | 단일 rAF 루프. 발 위치는 `YARD`(x 38~362, y 168~218) 안에서만 고르며 집 발자국(x 128~272, y<176)을 지나지 않는다. idle/walking(16/s)/running(44/s, 15%). React 상태 없이 래퍼 transform만 쓰고, 크기 변화는 ResizeObserver로 다시 놓는다. 정지 후 재개 시 경과 시간을 0부터 세어 순간이동하지 않는다 |
+| `use-pause-reasons.ts` | 정지 사유 집합(user·hover·focus·pointer·sheet·hidden·offscreen). 하나라도 남아 있으면 멈추고 모두 해제될 때만 재개. reduced-motion이면 기본 정지(user)이며 '움직임 켜기' 버튼으로 바꿀 수 있다 |
 | `FamilyAvatar` / `SceneAvatar` | 캐릭터. 렌더러는 `avatar-renderers/basic-round.tsx`(임시 기본형) 하나이며 `family-avatar.tsx`의 `AvatarGlyph` 한 줄로 교체한다. 역할·성별로 외형을 정하지 않는다 |
 | `HomeSummary` | CTA → 오늘 일정(압축 행) → 내 할 일 → 최근 추억 |
 | `HomeDetailSheet` | 일정·구성원·가족 목록·알림·마음 전하기 안내를 담는 단일 바텀시트 |
 | `AppShell` / `AppBottomNav` / `ComingSoon` (`components/woorijip`) | 하단 탭 화면 틀, pathname 기반 활성 탭, 준비 중 화면 |
 
+- 캐릭터 움직임은 시각 연출일 뿐이다. 접속 여부·감정 상태·활동량으로 설명하지 않는다. 점프·충돌 반동·층간 이동은 없다.
 - 집 상태 산정 정책은 미정이다. AI 화목도 계산이나 개인 대화·미접속·집안일 미완료를 벌점으로 연결하지 않는다. 5단계(작은 집 → 화분 → 꽃 → 정원 → 가랜드·무지개)는 미리보기 시안이며 `/design-system`에서만 바꿔 본다. 오류·로딩 상태로 집을 어둡게 만들지 않는다.
 - 일반 레이아웃(`section`, `nav`, `dl` 등)과 집·캐릭터 일러스트는 semantic HTML·SVG·전용 React 컴포넌트로 만든다. 모든 요소를 shadcn으로 억지 구현하지 않는다.
 - 날짜·시간은 `lib/format.ts`(ko-KR, Asia/Seoul 고정)를 쓴다.

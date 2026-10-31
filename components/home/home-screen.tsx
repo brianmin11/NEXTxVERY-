@@ -71,6 +71,7 @@ export function HomeScreen({ data }: HomeScreenProps) {
         stage={data.family.houseStage}
         onMemberSelect={(id, origin) => select({ type: "member", id }, origin)}
         onMoreSelect={(origin) => select({ type: "family" }, origin)}
+        motionPaused={open}
       />
       <HomeSummary data={data} onSelect={select} />
       <HomeDetailSheet

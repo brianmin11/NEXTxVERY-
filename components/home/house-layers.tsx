@@ -6,6 +6,14 @@ import type { HouseStage } from "@/lib/home.fixture"
  */
 export const SCENE_BOX = { width: 400, height: 240 } as const
 
+/**
+ * 집 그룹(아래 House/Mailbox/Planter/Flowers/Garden/Garland 레이어)의 장면 배치.
+ * 집 좌표계(폭 188, 바닥 y=202)를 0.75배로 줄여 뒤쪽 중앙(바닥 y≈150)에 고정한다.
+ * 장면 폭의 약 35%. 모든 단계에서 같은 앵커·비율을 쓴다.
+ */
+export const HOUSE_PLACEMENT = { scale: 0.75, x: 47, y: -1.5 } as const
+export const HOUSE_TRANSFORM = `translate(${HOUSE_PLACEMENT.x} ${HOUSE_PLACEMENT.y}) scale(${HOUSE_PLACEMENT.scale})`
+
 export const HOUSE_STAGE_LABELS: Record<HouseStage, string> = {
   1: "작은 집",
   2: "화분",
@@ -18,17 +26,18 @@ export function SkyLayer({ rainbow }: { rainbow: boolean }) {
   return (
     <g>
       <rect width="400" height="240" fill="var(--scene-sky)" />
-      <circle cx="52" cy="44" r="18" fill="var(--scene-sun)" opacity="0.9" />
+      {/* 왼쪽 위 정지 버튼(약 x 12~58, y 12~58)을 피해 놓는다 */}
+      <circle cx="80" cy="34" r="15" fill="var(--scene-sun)" opacity="0.9" />
       {rainbow && (
-        <g fill="none" strokeWidth="7" strokeLinecap="round" opacity="0.85">
-          <path d="M226 122a78 78 0 0 1 156 0" stroke="var(--deco-apricot)" />
-          <path d="M234 122a70 70 0 0 1 140 0" stroke="var(--deco-butter)" />
-          <path d="M242 122a62 62 0 0 1 124 0" stroke="var(--deco-sky)" />
+        <g fill="none" strokeWidth="6" strokeLinecap="round" opacity="0.85">
+          <path d="M222 98a60 60 0 0 1 120 0" stroke="var(--deco-apricot)" />
+          <path d="M229 98a53 53 0 0 1 106 0" stroke="var(--deco-butter)" />
+          <path d="M236 98a46 46 0 0 1 92 0" stroke="var(--deco-sky)" />
         </g>
       )}
       <g fill="var(--scene-cloud)" opacity="0.95">
-        <Cloud x={120} y={48} />
-        <Cloud x={300} y={34} scale={0.8} />
+        <Cloud x={126} y={20} scale={0.65} />
+        <Cloud x={352} y={26} scale={0.65} />
       </g>
     </g>
   )
@@ -44,15 +53,26 @@ function Cloud({ x, y, scale = 1 }: { x: number; y: number; scale?: number }) {
   )
 }
 
+/** 넓은 마당. 집 뒤(y≈140)부터 장면 아래까지 이어진다. */
 export function GroundLayer() {
   return (
     <g>
-      <ellipse cx="200" cy="214" rx="236" ry="40" fill="var(--scene-grass)" />
-      <ellipse cx="200" cy="224" rx="236" ry="30" fill="var(--scene-grass-dark)" opacity="0.5" />
-      {/* 집 그림자: 광원 반대쪽(오른쪽 아래)으로 */}
-      <ellipse cx="214" cy="203" rx="104" ry="11" fill="var(--scene-shadow)" />
+      <ellipse cx="200" cy="206" rx="268" ry="64" fill="var(--scene-grass)" />
+      <path d="M-70 226Q200 262 470 226V240H-70Z" fill="var(--scene-grass-dark)" opacity="0.45" />
+      {/* 마당 가장자리 덤불: 깊이감용 */}
+      <g fill="var(--scene-leaf)" opacity="0.9">
+        <circle cx="18" cy="214" r="10" />
+        <circle cx="30" cy="220" r="8" fill="var(--scene-leaf-dark)" />
+        <circle cx="382" cy="212" r="10" />
+        <circle cx="370" cy="219" r="8" fill="var(--scene-leaf-dark)" />
+      </g>
     </g>
   )
+}
+
+/** 집 그림자(집 좌표계). 광원 반대쪽(오른쪽 아래)으로 */
+export function HouseShadowLayer() {
+  return <ellipse cx="214" cy="203" rx="104" ry="11" fill="var(--scene-shadow)" />
 }
 
 export function HouseLayer() {
