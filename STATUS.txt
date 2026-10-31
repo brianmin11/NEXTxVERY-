@@ -8,7 +8,7 @@ Completed:
 - Responses Write edit explicitly approved, saved, and UI re-open verified.
 - Live model responses observed; semantic speaker attribution defect fixed in prompt2.
 - Evaluation offset/checkpoints/provenance, reflection/clarification stops, known failed-response usage preservation, cumulative limits, summary and blank human review export.
-- Typecheck/build and 68/68 local tests passed; independent QA reviewed 507f444, remaining checkpoint concerns subsequently fixed by main.
+- Typecheck/build and 69/69 local tests passed; independent QA reviewed 507f444, remaining checkpoint concerns subsequently fixed by main.
 
 Actual evaluation status:
 - 22 cumulative inference requests; 12 returned observable usage; 10 permission denials with unknown usage.
@@ -27,3 +27,5 @@ Next:
 - Human reviewers complete eval/results/human-review.jsonl; host developer runs integration checklist.
 
 Evidence: evidence/local-tests.tap, evidence/live-evaluation-status.json, docs/LIVE-EVALUATION.md, docs/INTEGRATION.md.
+
+Final QA: live report totals independently reconciled; partial-case classification and human-rating preservation fixed and regression-tested.
