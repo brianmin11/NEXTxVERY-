@@ -1,34 +1,48 @@
-import type { Metadata } from "next"
-import { Geist_Mono, Inter } from "next/font/google"
+import type { Metadata, Viewport } from "next"
+import { Geist_Mono } from "next/font/google"
 import localFont from "next/font/local"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { LOGO_SRC } from "@/components/logo"
+import { BRAND_NAME, LOGO_SRC } from "@/components/logo"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
-const fontDisplay = localFont({
-  src: "../public/fonts/CalSansVF.woff2",
-  weight: "400 700",
-  variable: "--font-display",
+// 한글·본문 기본 폰트. 공식 배포 v1.3.9의 가변 woff2 (public/fonts/Pretendard-OFL.txt).
+const fontPretendard = localFont({
+  src: "../public/fonts/PretendardVariable.woff2",
+  weight: "45 920",
+  variable: "--font-pretendard",
   display: "swap",
 })
 
-const fontSans = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
+// 영문 디스플레이 전용. 한글 글리프가 없어 --font-display 스택에서 Pretendard로 넘어간다.
+const fontCal = localFont({
+  src: "../public/fonts/CalSansVF.woff2",
+  weight: "400 700",
+  variable: "--font-cal",
   display: "swap",
+  preload: false,
 })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-geist-mono",
+  preload: false,
 })
 
 export const metadata: Metadata = {
-  title: "NEXT×VERY",
-  icons: { icon: LOGO_SRC },
+  title: { default: BRAND_NAME, template: `%s · ${BRAND_NAME}` },
+  description: "가족의 일정과 추억을 함께 담는 우리 가족만의 공간",
+  icons: { icon: { url: LOGO_SRC, type: "image/svg+xml" } },
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
+  themeColor: "#f7f5ef",
 }
 
 export default function RootLayout({
@@ -42,8 +56,8 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn(
         "font-sans antialiased",
-        fontDisplay.variable,
-        fontSans.variable,
+        fontPretendard.variable,
+        fontCal.variable,
         fontMono.variable
       )}
     >

@@ -1,8 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
+import { ThemeProvider as NextThemesProvider } from "next-themes"
 
+// 다크 토큰을 우리집 기준으로 검증하기 전까지 라이트 테마로 고정한다.
+// 단축키 테마 전환은 시연 중 오작동을 막기 위해 제거했다.
 function ThemeProvider({
   children,
   ...props
@@ -10,62 +12,15 @@ function ThemeProvider({
   return (
     <NextThemesProvider
       attribute="class"
-      defaultTheme="system"
-      enableSystem
+      defaultTheme="light"
+      forcedTheme="light"
+      enableSystem={false}
       disableTransitionOnChange
       {...props}
     >
-      <ThemeHotkey />
       {children}
     </NextThemesProvider>
   )
-}
-
-function isTypingTarget(target: EventTarget | null) {
-  if (!(target instanceof HTMLElement)) {
-    return false
-  }
-
-  return (
-    target.isContentEditable ||
-    target.tagName === "INPUT" ||
-    target.tagName === "TEXTAREA" ||
-    target.tagName === "SELECT"
-  )
-}
-
-function ThemeHotkey() {
-  const { resolvedTheme, setTheme } = useTheme()
-
-  React.useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.defaultPrevented || event.repeat) {
-        return
-      }
-
-      if (event.metaKey || event.ctrlKey || event.altKey) {
-        return
-      }
-
-      if (event.key.toLowerCase() !== "d") {
-        return
-      }
-
-      if (isTypingTarget(event.target)) {
-        return
-      }
-
-      setTheme(resolvedTheme === "dark" ? "light" : "dark")
-    }
-
-    window.addEventListener("keydown", onKeyDown)
-
-    return () => {
-      window.removeEventListener("keydown", onKeyDown)
-    }
-  }, [resolvedTheme, setTheme])
-
-  return null
 }
 
 export { ThemeProvider }

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 // The only logo asset. Replace public/logo.svg to rebrand everywhere
 // (nav, footer, favicon, OG image).
 export const LOGO_SRC = "/logo.svg"
-export const BRAND_NAME = "NEXT×VERY"
+export const BRAND_NAME = "우리집"
 
 type LogoProps = {
   size?: number
@@ -32,12 +32,12 @@ export function Logo({
         width={size}
         height={size}
         alt={withWordmark ? "" : BRAND_NAME}
-        className="shrink-0 dark:invert"
+        className="shrink-0"
       />
       {withWordmark && (
         <span
-          className="font-display font-semibold tracking-tight"
-          style={{ fontSize: size * 0.75 }}
+          className="font-sans font-bold tracking-tight"
+          style={{ fontSize: size * 0.75, fontWeight: 700 }}
         >
           {BRAND_NAME}
         </span>

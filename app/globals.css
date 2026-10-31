@@ -4,128 +4,201 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * 우리집 디자인 토큰. 기준 문서: design-system/woorijip/MASTER.md
+ * 페이지에서 색·radius·그림자를 임의로 선언하지 말고 여기 토큰만 쓴다.
+ */
+
 @theme inline {
-    --font-heading: var(--font-display);
-    --font-display: var(--font-display);
-    --font-sans: var(--font-sans);
-    --font-mono: var(--font-mono);
-    --color-sidebar-ring: var(--sidebar-ring);
-    --color-sidebar-border: var(--sidebar-border);
-    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-    --color-sidebar-accent: var(--sidebar-accent);
-    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-    --color-sidebar-primary: var(--sidebar-primary);
-    --color-sidebar-foreground: var(--sidebar-foreground);
-    --color-sidebar: var(--sidebar);
-    --color-chart-5: var(--chart-5);
-    --color-chart-4: var(--chart-4);
-    --color-chart-3: var(--chart-3);
-    --color-chart-2: var(--chart-2);
-    --color-chart-1: var(--chart-1);
-    --color-ring: var(--ring);
-    --color-input: var(--input);
-    --color-border: var(--border);
-    --color-destructive: var(--destructive);
-    --color-accent-foreground: var(--accent-foreground);
-    --color-accent: var(--accent);
-    --color-muted-foreground: var(--muted-foreground);
-    --color-muted: var(--muted);
-    --color-secondary-foreground: var(--secondary-foreground);
-    --color-secondary: var(--secondary);
-    --color-primary-foreground: var(--primary-foreground);
-    --color-primary: var(--primary);
-    --color-popover-foreground: var(--popover-foreground);
-    --color-popover: var(--popover);
-    --color-card-foreground: var(--card-foreground);
-    --color-card: var(--card);
-    --color-foreground: var(--foreground);
-    --color-background: var(--background);
-    --radius-sm: calc(var(--radius) * 0.6);
-    --radius-md: calc(var(--radius) * 0.8);
-    --radius-lg: var(--radius);
-    --radius-xl: calc(var(--radius) * 1.4);
-    --radius-2xl: calc(var(--radius) * 1.8);
-    --radius-3xl: calc(var(--radius) * 2.2);
-    --radius-4xl: calc(var(--radius) * 2.6);
+  /* 폰트: Pretendard가 한글·본문 기본. Cal Sans는 영문 디스플레이 전용이며 한글은 Pretendard로 떨어진다. */
+  --font-sans: var(--font-pretendard), var(--font-fallback-ko);
+  --font-display: var(--font-cal), var(--font-pretendard), var(--font-fallback-ko);
+  --font-heading: var(--font-pretendard), var(--font-fallback-ko);
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* 장식 전용(집·캐릭터·정원·아바타 배경). 글자색이나 흰 글자 버튼 배경으로 쓰지 않는다. */
+  --color-deco-apricot: var(--deco-apricot);
+  --color-deco-sky: var(--deco-sky);
+  --color-deco-butter: var(--deco-butter);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+
+  --shadow-card: var(--elevation-card);
+  --shadow-sheet: var(--elevation-sheet);
+  --shadow-scene: var(--elevation-scene);
+
+  --ease-ui: var(--motion-ease-ui);
+  --ease-scene: var(--motion-ease-scene);
+  --default-transition-duration: var(--motion-duration-ui);
+  --default-transition-timing-function: var(--motion-ease-ui);
 }
 
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.556 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+  --font-fallback-ko:
+    -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo",
+    "Noto Sans KR", "Malgun Gothic", sans-serif;
+
+  /* 기능 UI */
+  --background: #f7f5ef;
+  --foreground: #2e342f;
+  --card: #ffffff;
+  --card-foreground: #2e342f;
+  --popover: #ffffff;
+  --popover-foreground: #2e342f;
+  --primary: #426b50;
+  --primary-foreground: #ffffff;
+  --secondary: #e8eee4;
+  --secondary-foreground: #2e342f;
+  --muted: #efede6;
+  --muted-foreground: #626b63;
+  --accent: #e8eee4;
+  --accent-foreground: #2e342f;
+  --destructive: #b3402e;
+  --border: #dde3da;
+  /* 입력 테두리는 배경 대비 3:1 이상이 필요해 border보다 진하게 둔다. */
+  --input: #7e897f;
+  --ring: #426b50;
+  --chart-1: #426b50;
+  --chart-2: #7e9f86;
+  --chart-3: #b8dcec;
+  --chart-4: #f2b7a0;
+  --chart-5: #f5d98a;
+  --sidebar: #f7f5ef;
+  --sidebar-foreground: #2e342f;
+  --sidebar-primary: #426b50;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8eee4;
+  --sidebar-accent-foreground: #2e342f;
+  --sidebar-border: #dde3da;
+  --sidebar-ring: #426b50;
+
+  /* 장식 */
+  --deco-apricot: #f2b7a0;
+  --deco-sky: #b8dcec;
+  --deco-butter: #f5d98a;
+
+  --radius: 1rem;
+
+  /* 깊이: 기능 UI는 card/sheet만, scene은 집·캐릭터 장면 전용 */
+  --elevation-card: 0 1px 2px rgb(46 52 47 / 0.04), 0 2px 8px rgb(46 52 47 / 0.04);
+  --elevation-sheet: 0 -8px 24px rgb(46 52 47 / 0.08);
+  --elevation-scene: 0 8px 24px rgb(46 52 47 / 0.1);
+
+  /* 모션: UI 전환 180ms ease-out, 장면 효과는 별도 토큰 */
+  --motion-duration-ui: 180ms;
+  --motion-ease-ui: cubic-bezier(0, 0, 0.2, 1);
+  --motion-duration-scene: 400ms;
+  --motion-ease-scene: cubic-bezier(0.34, 1.2, 0.64, 1);
+
+  /* 하단 내비게이션 높이(안전 영역 제외) */
+  --bottom-nav-height: 4rem;
 }
 
+/* 다크 토큰은 기존 값 유지. 아직 우리집 기준으로 검증하지 않았고, ThemeProvider가 라이트로 고정한다. */
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-ui: 0.01ms;
+    --motion-duration-scene: 0.01ms;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    }
-  body {
-    @apply bg-background text-foreground;
-    }
+  }
   html {
     @apply font-sans;
-    }
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-background text-base leading-relaxed text-foreground;
+    /* 한국어는 어절 단위로 줄바꿈하고, 긴 영문·URL은 넘치지 않게 자른다. */
+    word-break: keep-all;
+    overflow-wrap: anywhere;
+  }
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
 }
