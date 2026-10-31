@@ -786,7 +786,7 @@ export function createV2Service({
         mime: v.mime,
       }
     } catch {
-      missing()
+      return missing()
     }
   }
   async function cleanup(): Promise<number> {
