@@ -1,6 +1,6 @@
 # 최신 프론트 백엔드 연동 계획
 
-작성: 2026-11-01 (Asia/Seoul). 상태: 계획 초안, 구현 미착수.
+작성: 2026-11-01 (Asia/Seoul). 상태: 초기 계획 기록. 이후 구현/검증 현황은 SERVICE-BACKEND-COMPLETION.md 및 evidence/VERIFICATION-V3.txt 참조.
 
 ## 1. 작업 의뢰와 기준
 
