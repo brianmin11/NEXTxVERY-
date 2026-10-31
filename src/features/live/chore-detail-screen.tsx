@@ -53,7 +53,7 @@ export function ChoreDetailScreen({ id }: { id: string }) {
   const chores = useChores()
   const chore = chores.choreById(id)
   const [notice, setNotice] = React.useState<string | null>(
-    params.get("saved") ? "데모 할 일에 반영했어요" : null
+    params.get("saved") ? "할 일에 반영했어요" : null
   )
   const [confirmOpen, setConfirmOpen] = React.useState(false)
   const { busyId, mark } = useBusyId()
@@ -77,7 +77,7 @@ export function ChoreDetailScreen({ id }: { id: string }) {
         <EmptyState
           icon={SearchX}
           title="이 집안일을 찾을 수 없어요"
-          description="삭제됐거나, 새로고침으로 데모 데이터가 초기화됐을 수 있어요."
+          description="삭제됐거나 접근할 수 없는 항목이에요."
           action={
             <Button asChild>
               <Link href="/chores">목록으로</Link>
@@ -223,7 +223,7 @@ export function ChoreDetailScreen({ id }: { id: string }) {
           )
         ) : (
           <p className="text-sm text-muted-foreground">
-            담당자나 만든 사람만 완료 표시를 바꿀 수 있어요 (프론트 데모 규칙).
+            담당자나 만든 사람만 완료 표시를 바꿀 수 있어요.
           </p>
         )}
         {mayEdit && (
@@ -254,7 +254,7 @@ export function ChoreDetailScreen({ id }: { id: string }) {
         )}
         {!mayEdit && !mayDelete && !done && (
           <p className="text-sm text-muted-foreground">
-            수정·삭제는 만든 사람만 할 수 있어요 (프론트 데모 규칙).
+            수정·삭제는 만든 사람만 할 수 있어요.
           </p>
         )}
       </section>
@@ -264,7 +264,7 @@ export function ChoreDetailScreen({ id }: { id: string }) {
           <DialogHeader>
             <DialogTitle>‘{chore.title}’을(를) 삭제할까요?</DialogTitle>
             <DialogDescription>
-              데모 할 일에서만 지워지고 되돌릴 수 없어요.
+              할 일에서만 지워지고 되돌릴 수 없어요.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

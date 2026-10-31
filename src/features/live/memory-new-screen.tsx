@@ -129,7 +129,7 @@ export function MemoryNewScreen() {
           variant="outline"
           className="h-6 self-start px-2.5 text-muted-foreground"
         >
-          프론트 데모 · 실제 업로드 및 가족 공유 미연결
+          가족에게 공유할 사진
         </Badge>
         <DemoViewerSwitch />
         <h1 className="text-2xl leading-snug font-bold tracking-tight">
@@ -145,8 +145,7 @@ export function MemoryNewScreen() {
             </span>
             <p className="font-semibold">추억에 추가했어요</p>
             <p className="text-sm text-muted-foreground">
-              실제 업로드나 가족에게 전송은 하지 않았어요. 이 탭에서만 보이고
-              새로고침하면 사라져요.
+              사진이 저장됐어요. 같은 가족이 추억에서 볼 수 있어요.
             </p>
           </div>
         ) : (
@@ -322,8 +321,7 @@ export function MemoryNewScreen() {
             </div>
 
             <p className="rounded-xl bg-secondary px-4 py-3 text-sm">
-              이 데모에서는 현재 브라우저 탭에서만 표시되며, 새로고침하면
-              사라져요. 실제 업로드·가족 공유는 아직 없어요.
+              등록 버튼을 누르면 사진과 설명이 가족에게 공유돼요.
             </p>
           </>
         )}
@@ -339,7 +337,7 @@ export function MemoryNewScreen() {
           mem.resetDraft()
           router.push("/memories")
         }}
-        description="앱 안에서 다른 화면으로 가면 선택한 사진과 입력은 유지돼요. 새로고침하거나 탭을 닫으면 사라져요(메모리에만 있는 데모예요)."
+        description="앱 안에서 다른 화면으로 가면 선택한 사진과 입력은 유지돼요. 새로고침하거나 탭을 닫으면 사라져요(저장 전 초안은 이 탭에만 남아요)."
       />
 
       <footer className="sticky bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">

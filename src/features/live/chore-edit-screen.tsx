@@ -66,8 +66,8 @@ export function ChoreEditScreen({ id }: { id: string }) {
           chore
             ? chore.status === "done"
               ? "완료된 항목은 완료를 취소한 뒤 수정할 수 있어요."
-              : "만든 사람만 수정할 수 있어요 (프론트 데모 규칙)."
-            : "삭제됐거나, 새로고침으로 데모 데이터가 초기화됐을 수 있어요."
+              : "만든 사람만 수정할 수 있어요."
+            : "삭제됐거나 접근할 수 없는 항목이에요."
         }
         action={
           <Button asChild>
@@ -142,7 +142,7 @@ function Editor({
           variant="outline"
           className="h-6 self-start px-2.5 text-muted-foreground"
         >
-          프론트 데모 · 실제 저장 및 알림 미연결
+          가족 집안일
         </Badge>
         <h1 className="text-2xl leading-snug font-bold tracking-tight">
           집안일 수정

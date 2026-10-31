@@ -73,12 +73,12 @@ export function ChoreNewScreen() {
           variant="outline"
           className="h-6 self-start px-2.5 text-muted-foreground"
         >
-          프론트 데모 · 실제 저장 및 알림 미연결
+          가족 집안일
         </Badge>
         <DemoViewerSwitch />
         <h1 className="text-2xl leading-snug font-bold tracking-tight">
           {draft.step === "done"
-            ? "데모 할 일에 추가했어요"
+            ? "할 일에 추가했어요"
             : "어떤 집안일을 나눌까요?"}
         </h1>
 
@@ -87,10 +87,9 @@ export function ChoreNewScreen() {
             <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-primary">
               <CircleCheck className="size-6" aria-hidden="true" />
             </span>
-            <p className="font-semibold">데모 할 일에 추가했어요</p>
+            <p className="font-semibold">할 일에 추가했어요</p>
             <p className="text-sm text-muted-foreground">
-              담당자에게 알림은 가지 않아요. 새로고침하면 사라지는 메모리
-              데모예요.
+              가족의 집안일 목록에 저장됐어요. 외부 알림은 보내지 않아요.
             </p>
           </div>
         ) : (

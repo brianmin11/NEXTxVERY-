@@ -57,7 +57,7 @@ export function MemoryDetailScreen({ id }: { id: string }) {
         <EmptyState
           icon={SearchX}
           title="이 추억을 찾을 수 없어요"
-          description="삭제됐거나, 새로고침으로 데모 사진이 사라졌을 수 있어요."
+          description="삭제됐거나 접근할 수 없는 사진이에요."
           action={
             <Button asChild>
               <Link href="/memories">목록으로</Link>
@@ -149,7 +149,7 @@ export function MemoryDetailScreen({ id }: { id: string }) {
         {canDelete
           ? "올린 사람이라서 삭제할 수 있어요"
           : "올린 사람만 삭제할 수 있어요"}{" "}
-        (프론트 데모 규칙).
+        .
       </p>
       {canDelete && (
         <Button
@@ -171,7 +171,7 @@ export function MemoryDetailScreen({ id }: { id: string }) {
             <DialogTitle>이 추억을 삭제할까요?</DialogTitle>
             <DialogDescription>
               {formatDateKeyFull(post.memoryDate)} ·{" "}
-              {post.caption || "설명 없음"}. 데모에서만 지워지고 되돌릴 수
+              {post.caption || "설명 없음"}. 가족의 추억에서 삭제되며 되돌릴 수
               없어요.
             </DialogDescription>
           </DialogHeader>

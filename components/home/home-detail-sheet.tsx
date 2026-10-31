@@ -39,7 +39,13 @@ type HomeDetailSheetProps = {
  * selection은 닫히는 동안에도 유지해 내용이 사라지며 깜빡이지 않게 한다.
  * 트리거 없이 여는 모달이라 Radix 기본 복귀가 동작하지 않으므로 직접 포커스를 돌려준다.
  */
-export function HomeDetailSheet({ data, selection, open, onOpenChange, returnFocusRef }: HomeDetailSheetProps) {
+export function HomeDetailSheet({
+  data,
+  selection,
+  open,
+  onOpenChange,
+  returnFocusRef,
+}: HomeDetailSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -52,7 +58,10 @@ export function HomeDetailSheet({ data, selection, open, onOpenChange, returnFoc
           }
         }}
       >
-        <div aria-hidden="true" className="mx-auto mt-2 h-1 w-10 rounded-full bg-border" />
+        <div
+          aria-hidden="true"
+          className="mx-auto mt-2 h-1 w-10 rounded-full bg-border"
+        />
         {selection && <SheetBody data={data} selection={selection} />}
         <SheetFooter className="px-5 pb-5">
           <SheetClose asChild>
@@ -66,23 +75,35 @@ export function HomeDetailSheet({ data, selection, open, onOpenChange, returnFoc
   )
 }
 
-function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelection }) {
+function SheetBody({
+  data,
+  selection,
+}: {
+  data: HomeData
+  selection: HomeSelection
+}) {
   const { family } = data
   const router = useRouter()
   const mind = useMind()
   const calendar = useCalendar()
-  const receivedCount = mind.messages.filter((m) => m.toId === mind.viewerId).length
+  const receivedCount = mind.messages.filter(
+    (m) => m.toId === mind.viewerId
+  ).length
 
   switch (selection.type) {
     case "schedule": {
       // 캘린더 상태를 그대로 읽는다. 수정·삭제는 /calendar에서 한다.
       const item = calendar.eventById(selection.id)
       if (!item) return <MissingBody />
-      const members = item.participantIds.map((id) => findMember(family, id)).filter((m) => m !== undefined)
+      const members = item.participantIds
+        .map((id) => findMember(family, id))
+        .filter((m) => m !== undefined)
       return (
         <>
           <SheetHeader className="px-5 pt-2">
-            <SheetTitle className="pr-10 text-xl font-bold">{item.title}</SheetTitle>
+            <SheetTitle className="pr-10 text-xl font-bold">
+              {item.title}
+            </SheetTitle>
             <SheetDescription className="tabular-nums">
               <time dateTime={item.date}>{formatDateKeyFull(item.date)}</time>
             </SheetDescription>
@@ -106,9 +127,13 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
                 </div>
               )}
             </dl>
-            {item.memo && <p className="leading-relaxed whitespace-pre-wrap">{item.memo}</p>}
+            {item.memo && (
+              <p className="leading-relaxed whitespace-pre-wrap">{item.memo}</p>
+            )}
             <section aria-label="참여하는 가족" className="flex flex-col gap-2">
-              <h3 className="text-sm font-medium text-muted-foreground">함께하는 가족 {members.length}명</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">
+                함께하는 가족 {members.length}명
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {members.map((m) => (
                   <MemberChip key={m.id} member={m} />
@@ -132,7 +157,9 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
       return (
         <>
           <SheetHeader className="px-5 pt-2">
-            <SheetTitle className="pr-10 text-xl font-bold">{member.name}</SheetTitle>
+            <SheetTitle className="pr-10 text-xl font-bold">
+              {member.name}
+            </SheetTitle>
             <SheetDescription>{member.role ?? "구성원"}</SheetDescription>
           </SheetHeader>
           <div className="flex flex-col items-center gap-4 px-5">
@@ -143,7 +170,10 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
                 className="w-full"
                 onClick={() => {
                   // 수신자만 미리 고른다. 이 동작으로 보내지지 않는다.
-                  mind.dispatch({ type: "draft/update", patch: { recipientId: member.id } })
+                  mind.dispatch({
+                    type: "draft/update",
+                    patch: { recipientId: member.id },
+                  })
                   router.push("/mind")
                 }}
               >
@@ -151,7 +181,9 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
                 {member.name}에게 마음 전하기
               </Button>
             )}
-            <p className="text-sm text-muted-foreground">캐릭터 꾸미기는 다음 단계에서 만들어요.</p>
+            <p className="text-sm text-muted-foreground">
+              캐릭터 꾸미기는 다음 단계에서 만들어요.
+            </p>
           </div>
         </>
       )
@@ -161,7 +193,9 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
       return (
         <>
           <SheetHeader className="px-5 pt-2">
-            <SheetTitle className="pr-10 text-xl font-bold">{family.name}</SheetTitle>
+            <SheetTitle className="pr-10 text-xl font-bold">
+              {family.name}
+            </SheetTitle>
             <SheetDescription>가족 {family.members.length}명</SheetDescription>
           </SheetHeader>
           <ul className="flex flex-col gap-3 px-5">
@@ -170,7 +204,9 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
                 <FamilyAvatar member={m} size={44} decorative />
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{m.name}</p>
-                  <p className="truncate text-sm text-muted-foreground">{m.role ?? "구성원"}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {m.role ?? "구성원"}
+                  </p>
                 </div>
               </li>
             ))}
@@ -183,23 +219,37 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
         <>
           <SheetHeader className="px-5 pt-2">
             <SheetTitle className="pr-10 text-xl font-bold">알림</SheetTitle>
-            <SheetDescription>가상 알림이에요. 실제로 저장되지 않아요.</SheetDescription>
+            <SheetDescription>
+              외부 알림은 아직 지원하지 않아요.
+            </SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-3 px-5">
             <Button variant="secondary" size="lg" className="w-full" asChild>
               <Link href="/inbox">
                 <Inbox aria-hidden="true" />
-                마음 수신함 열기{receivedCount > 0 && <span className="tabular-nums">· 받은 마음 {receivedCount}</span>}
+                마음 수신함 열기
+                {receivedCount > 0 && (
+                  <span className="tabular-nums">
+                    · 받은 마음 {receivedCount}
+                  </span>
+                )}
               </Link>
             </Button>
             {data.notifications.length === 0 ? (
-              <EmptyState icon={Bell} title="새 알림이 없어요" description="가족의 소식이 오면 여기에 보여요." />
+              <EmptyState
+                icon={Bell}
+                title="새 알림이 없어요"
+                description="가족의 소식이 오면 여기에 보여요."
+              />
             ) : (
               <ul className="flex flex-col divide-y divide-border rounded-xl bg-card ring-1 ring-border">
                 {data.notifications.map((n) => (
                   <li key={n.id} className="flex flex-col gap-0.5 px-4 py-3">
                     <p>{n.text}</p>
-                    <time className="text-sm text-muted-foreground tabular-nums" dateTime={n.at}>
+                    <time
+                      className="text-sm text-muted-foreground tabular-nums"
+                      dateTime={n.at}
+                    >
                       {formatTime(new Date(n.at))}
                     </time>
                   </li>
@@ -209,14 +259,15 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
           </div>
         </>
       )
-
   }
 }
 
 function MissingBody() {
   return (
     <SheetHeader className="px-5 pt-2">
-      <SheetTitle className="pr-10 text-xl font-bold">내용을 찾을 수 없어요</SheetTitle>
+      <SheetTitle className="pr-10 text-xl font-bold">
+        내용을 찾을 수 없어요
+      </SheetTitle>
       <SheetDescription>이미 지워졌거나 잘못된 항목이에요.</SheetDescription>
     </SheetHeader>
   )

@@ -18,7 +18,10 @@ import { useMemories } from "./memories-provider"
 
 /** 사진 대체 텍스트: 설명이 있으면 설명, 없으면 날짜·작성자로 만든 문장 */
 export function memoryAlt(post: MemoryPost, authorName: string) {
-  return post.caption.trim() || `${formatDateKey(post.memoryDate)} ${authorName}이(가) 올린 사진`
+  return (
+    post.caption.trim() ||
+    `${formatDateKey(post.memoryDate)} ${authorName}이(가) 올린 사진`
+  )
 }
 
 /** 가족 추억 목록(2열). 추억 날짜 내림차순, 같은 날짜는 등록 시각 내림차순. */
@@ -41,7 +44,7 @@ export function MemoriesScreen() {
       <DemoBadge />
       <DemoViewerSwitch />
       <p className="text-sm text-muted-foreground">
-        이 데모의 사진은 현재 브라우저 탭에서만 보이고 새로고침하면 사라져요. 실제 저장·가족 공유가 아니에요.
+        등록한 사진은 같은 가족만 볼 수 있어요.
       </p>
 
       {sortedPosts.length === 0 ? (

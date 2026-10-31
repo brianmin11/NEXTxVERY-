@@ -162,8 +162,7 @@ export function CalendarScreen() {
       <DemoBadge />
       <DemoViewerSwitch />
       <p className="text-sm text-muted-foreground">
-        메모리에만 있는 데모예요. 새로고침하면 추가·수정한 일정이 사라져요. 표시
-        시간대: {cal.timeZone}
+        가족과 공유하는 일정이에요. 표시 시간대: {cal.timeZone}
       </p>
 
       <section

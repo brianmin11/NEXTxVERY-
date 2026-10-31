@@ -41,7 +41,7 @@ export function InboxScreen({
       <DemoBadge />
       <DemoViewerSwitch />
       <p className="text-sm text-muted-foreground">
-        메모리에만 있는 데모예요. 새로고침하면 보낸 내용이 사라져요.
+        확인하고 보낸 문장만 상대방에게 전달돼요.
       </p>
       <Tabs value={tab} onValueChange={(v) => setTab(v as InboxTab)}>
         <TabsList aria-label="수신함 구분" className="w-full">

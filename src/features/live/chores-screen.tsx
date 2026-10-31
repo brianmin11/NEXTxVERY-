@@ -89,7 +89,7 @@ export function ChoresScreen() {
       <DemoBadge />
       <DemoViewerSwitch />
       <p className="text-sm text-muted-foreground">
-        메모리에만 있는 데모예요. 새로고침하면 추가·완료 기록이 사라져요.
+        가족과 나눈 집안일과 완료 기록을 확인해요.
       </p>
 
       <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)}>
