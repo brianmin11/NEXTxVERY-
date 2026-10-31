@@ -3,6 +3,7 @@ import { Geist_Mono } from "next/font/google"
 import localFont from "next/font/local"
 
 import "./globals.css"
+import { MindProvider } from "@/components/mind/mind-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { BRAND_NAME, LOGO_SRC } from "@/components/logo"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -63,7 +64,10 @@ export default function RootLayout({
     >
       <body>
         <ThemeProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            {/* 마음 전하기 데모 상태: 메모리 전용, 라우트 이동 중 유지 */}
+            <MindProvider>{children}</MindProvider>
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>

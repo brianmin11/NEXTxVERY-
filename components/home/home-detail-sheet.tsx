@@ -1,7 +1,10 @@
 "use client"
 
-import { Bell, Clock, Heart, MapPin } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { Bell, Clock, Heart, Inbox, MapPin } from "lucide-react"
 
+import { useMind } from "@/components/mind/mind-provider"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -63,6 +66,9 @@ export function HomeDetailSheet({ data, selection, open, onOpenChange, returnFoc
 
 function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelection }) {
   const { family } = data
+  const router = useRouter()
+  const mind = useMind()
+  const receivedCount = mind.messages.filter((m) => m.toId === mind.viewerId).length
 
   switch (selection.type) {
     case "schedule": {
@@ -122,6 +128,20 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
           </SheetHeader>
           <div className="flex flex-col items-center gap-4 px-5">
             <FamilyAvatar member={member} size={120} />
+            {member.id !== mind.viewerId && (
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  // 수신자만 미리 고른다. 이 동작으로 보내지지 않는다.
+                  mind.dispatch({ type: "draft/update", patch: { recipientId: member.id } })
+                  router.push("/mind")
+                }}
+              >
+                <Heart aria-hidden="true" />
+                {member.name}에게 마음 전하기
+              </Button>
+            )}
             <p className="text-sm text-muted-foreground">캐릭터 꾸미기는 다음 단계에서 만들어요.</p>
           </div>
         </>
@@ -156,7 +176,13 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
             <SheetTitle className="pr-10 text-xl font-bold">알림</SheetTitle>
             <SheetDescription>가상 알림이에요. 실제로 저장되지 않아요.</SheetDescription>
           </SheetHeader>
-          <div className="px-5">
+          <div className="flex flex-col gap-3 px-5">
+            <Button variant="secondary" size="lg" className="w-full" asChild>
+              <Link href="/inbox">
+                <Inbox aria-hidden="true" />
+                마음 수신함 열기{receivedCount > 0 && <span className="tabular-nums">· 받은 마음 {receivedCount}</span>}
+              </Link>
+            </Button>
             {data.notifications.length === 0 ? (
               <EmptyState icon={Bell} title="새 알림이 없어요" description="가족의 소식이 오면 여기에 보여요." />
             ) : (
@@ -175,22 +201,6 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
         </>
       )
 
-    case "heart":
-      return (
-        <>
-          <SheetHeader className="px-5 pt-2">
-            <SheetTitle className="flex items-center gap-2 pr-10 text-xl font-bold">
-              <Heart className="size-5 text-primary" aria-hidden="true" />
-              마음 전하기
-            </SheetTitle>
-            <SheetDescription>다음 단계에서 연결할 화면이에요.</SheetDescription>
-          </SheetHeader>
-          <p className="px-5 leading-relaxed">
-            여기서 나만 보는 원문을 쓰고, 전달할 문장을 다듬은 뒤 직접 확인하고 보내게 돼요. 지금은 입력과 전송이
-            되지 않아요.
-          </p>
-        </>
-      )
   }
 }
 

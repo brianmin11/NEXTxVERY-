@@ -12,7 +12,7 @@ export type BottomNavItem = {
 
 type BottomNavProps = {
   items: BottomNavItem[]
-  activeKey: string
+  activeKey?: string
   className?: string
 }
 

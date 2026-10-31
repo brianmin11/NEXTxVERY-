@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { ChevronRight, Circle, CircleCheck, Heart, Images } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -29,9 +30,11 @@ export function HomeSummary({ data, onSelect }: HomeSummaryProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <Button size="lg" className="w-full" onClick={(e) => onSelect({ type: "heart" }, e.currentTarget)}>
-        <Heart aria-hidden="true" />
-        마음 전하기
+      <Button size="lg" className="w-full" asChild>
+        <Link href="/mind">
+          <Heart aria-hidden="true" />
+          마음 전하기
+        </Link>
       </Button>
 
       <section className="flex flex-col gap-2" aria-labelledby="home-today">

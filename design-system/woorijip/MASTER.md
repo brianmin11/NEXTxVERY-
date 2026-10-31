@@ -109,6 +109,19 @@
 | `HomeDetailSheet` | 일정·구성원·가족 목록·알림·마음 전하기 안내를 담는 단일 바텀시트 |
 | `AppShell` / `AppBottomNav` / `ComingSoon` (`components/woorijip`) | 하단 탭 화면 틀, pathname 기반 활성 탭, 준비 중 화면 |
 
+**마음 전하기(`components/mind`, `lib/mind`)** — 프론트 데모. 실제 AI·저장·알림·권한 검증은 없다.
+| 조각 | 역할 |
+|---|---|
+| `lib/mind/types.ts` | `MindMessage`(공유: id·fromId·toId·text·createdAt·status·response)와 `MindDraft`(개인: rawText·outgoingText·step·confirmToken). 원문은 메시지에 어떤 필드로도 넣지 않는다 |
+| `lib/mind/config.ts` | `MIND_MAX_LENGTH`(500)·`MIND_REPLY_MAX_LENGTH`(300). 임시 프론트 제한이며 UI 글자 수와 검증이 같은 값을 쓴다 |
+| `lib/mind/relationship-demo-adapter.ts` | AI 연결 지점. 데모 어댑터는 생성하지 않고 원문을 편집 초안으로 돌려준다. 실제 연결 시 `relationshipAdapter` 한 줄 교체. API URL·키는 넣지 않는다 |
+| `MindProvider` | 루트 레이아웃의 메모리 상태(데모 인물·메시지·초안). 라우트 이동 중 유지, 새로고침 시 초기화. 같은 확인 토큰으로는 한 번만 전송 |
+| `/mind` (`MindScreen`) | 전체 화면 4단계: 작성(수신자·원문) → 다듬기(원문 읽기 전용 + `AdapterStatus` demo + 직접 작성) → 확인(수신자·최종 문장 재표시, 명시적 확인) → 완료('데모 수신함에 추가했어요'). 하단 탭 없음, 바닥 고정 버튼 |
+| `/inbox`, `/inbox/[id]` | 받은/보낸 탭, 카드(상대·전달 문장·시각·상태), 상세에서 답장·나중에·지금은 어려워요. 열람(read)은 응답이 아니다. 데모 인물 전환은 로그인이 아니며 전환 시 초안을 비운다 |
+| `use-return-focus.ts` | 트리거 없이 여는 Dialog의 포커스 복귀. 복귀 대상이 사라지면 fallback으로 |
+
+- 사용자가 쓰지 않은 시간·약속·사과를 자동으로 덧붙이지 않는다. '예시 흐름'은 합성 예시로 표시하고 작성 중인 내용을 묻지 않고 덮어쓰지 않는다.
+- 마음 전하기 진입: 홈 CTA(`/mind`), 프로필 시트의 '{이름}에게 마음 전하기'(수신자만 미리 선택), 알림 시트의 '마음 수신함 열기'.
 - 캐릭터 움직임은 시각 연출일 뿐이다. 접속 여부·감정 상태·활동량으로 설명하지 않는다. 점프·충돌 반동·층간 이동은 없다.
 - 집 상태 산정 정책은 미정이다. AI 화목도 계산이나 개인 대화·미접속·집안일 미완료를 벌점으로 연결하지 않는다. 5단계(작은 집 → 화분 → 꽃 → 정원 → 가랜드·무지개)는 미리보기 시안이며 `/design-system`에서만 바꿔 본다. 오류·로딩 상태로 집을 어둡게 만들지 않는다.
 - 일반 레이아웃(`section`, `nav`, `dl` 등)과 집·캐릭터 일러스트는 semantic HTML·SVG·전용 React 컴포넌트로 만든다. 모든 요소를 shadcn으로 억지 구현하지 않는다.

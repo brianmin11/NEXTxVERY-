@@ -10,8 +10,7 @@ export const APP_NAV_ITEMS: BottomNavItem[] = [
   { key: "more", label: "더보기", href: "/more", icon: Menu },
 ]
 
+/** 탭에 없는 경로(/mind, /inbox 등)에서는 어떤 탭도 활성으로 표시하지 않는다. */
 export function activeNavKey(pathname: string) {
-  return (
-    APP_NAV_ITEMS.find((i) => pathname === i.href || pathname.startsWith(`${i.href}/`))?.key ?? "home"
-  )
+  return APP_NAV_ITEMS.find((i) => pathname === i.href || pathname.startsWith(`${i.href}/`))?.key
 }
