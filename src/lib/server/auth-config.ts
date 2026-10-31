@@ -10,6 +10,8 @@ export type AuthMailMessage = {
 
 /** Inject a provider only after its domain, sender and release scope are approved. */
 export type AuthMailAdapter = {
+  /** Simulated adapters never represent successful delivery to a mailbox. */
+  delivery: "live" | "simulated"
   send(message: AuthMailMessage): Promise<void>
 }
 
@@ -109,6 +111,22 @@ export function createAuthOptions({
     )
   const verifyEmail = enabled(env, "AUTH_EMAIL_VERIFICATION_ENABLED")
   const resetPassword = enabled(env, "AUTH_PASSWORD_RESET_ENABLED")
+  const requireVerification = enabled(env, "AUTH_EMAIL_VERIFICATION_REQUIRED")
+  const deliveryReady = enabled(env, "AUTH_EMAIL_DELIVERY_READY")
+  if (mailer && mailer.delivery !== "live" && mailer.delivery !== "simulated") {
+    throw new Error("Auth mail adapter must declare its delivery capability")
+  }
+  if (env.NODE_ENV === "production" && mailer?.delivery === "simulated") {
+    throw new Error("Simulated auth mail adapters are forbidden in production")
+  }
+  if (
+    requireVerification &&
+    (!verifyEmail || !deliveryReady || mailer?.delivery !== "live")
+  ) {
+    throw new Error(
+      "Required email verification needs enabled verification, confirmed delivery readiness and a live mail adapter"
+    )
+  }
   if ((verifyEmail || resetPassword) && !mailer) {
     throw new Error(
       "Enabled auth email features require an explicitly configured mail adapter"
@@ -156,7 +174,7 @@ export function createAuthOptions({
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 12,
-      requireEmailVerification: verifyEmail,
+      requireEmailVerification: requireVerification,
       revokeSessionsOnPasswordReset: true,
       resetPasswordTokenExpiresIn: positiveSeconds(
         env,
@@ -164,6 +182,10 @@ export function createAuthOptions({
         900,
         3600
       ),
+      // Better Auth intentionally returns the same conditional 200 response for
+      // existing/unknown accounts and swallowed delivery failures. It acknowledges
+      // the request, NOT mailbox delivery. UI must say "request received"; only
+      // provider evidence can confirm delivery. Keep account existence private.
       ...(resetPassword
         ? {
             sendResetPassword: async ({ user, url, token }) =>
@@ -174,8 +196,10 @@ export function createAuthOptions({
     ...(verifyEmail
       ? {
           emailVerification: {
-            sendOnSignUp: true,
-            sendOnSignIn: true,
+            // Optional verification must not turn mail outages into login failures.
+            // Users request verification explicitly until delivery is confirmed.
+            sendOnSignUp: requireVerification,
+            sendOnSignIn: requireVerification,
             autoSignInAfterVerification: false,
             expiresIn: positiveSeconds(
               env,
