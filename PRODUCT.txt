@@ -1,0 +1,1 @@
+Family OS Relationship AI独立 TypeScript package. Current user implementation instructions take precedence over research and earlier full-backend/Expo plans. UI, auth, DB, authenticated approvals, execution, monthly billing and deployment are host responsibilities. No HTTP service. No live call or deployment approval.
