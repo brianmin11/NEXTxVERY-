@@ -28,15 +28,7 @@ export type Family = {
   houseStage: HouseStage
 }
 
-export type ScheduleItem = {
-  id: string
-  title: string
-  /** ISO 8601 */
-  startsAt: string
-  place?: string
-  memberIds: string[]
-  note?: string
-}
+// 일정은 lib/calendar/fixture.ts(seedEvents)가 원본이다. 홈과 캘린더가 같은 상태를 읽는다.
 
 export type ChoreItem = {
   id: string
@@ -62,7 +54,6 @@ export type HomeData = {
   family: Family
   /** 현재 보고 있는 구성원(가상) */
   viewerId: string
-  schedules: ScheduleItem[]
   chores: ChoreItem[]
   memories: MemoryItem[]
   notifications: NotificationItem[]
@@ -142,23 +133,6 @@ function homeFor(family: Family): HomeData {
   return {
     family,
     viewerId: first,
-    schedules: [
-      {
-        id: "sch-dinner",
-        title: "함께 저녁 먹기",
-        startsAt: "2026-10-31T19:00:00+09:00",
-        place: "우리집 거실",
-        memberIds: ids.slice(0, 5),
-        note: "할머니 생신 전에 미리 모여서 메뉴를 정해요. 늦으면 가족방에 먼저 알려 주세요.",
-      },
-      {
-        id: "sch-walk",
-        title: "저녁 산책",
-        startsAt: "2026-10-31T20:30:00+09:00",
-        place: "동네 공원",
-        memberIds: ids.slice(0, 2),
-      },
-    ],
     chores: [
       { id: "chore-dish", title: "설거지", assigneeId: first, done: false },
       { id: "chore-laundry", title: "빨래 개기", assigneeId: first, done: true },

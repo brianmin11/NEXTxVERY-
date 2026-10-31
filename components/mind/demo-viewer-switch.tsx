@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { useDemoViewer } from "@/components/demo/demo-viewer-provider"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -18,10 +19,11 @@ import { useReturnFocus } from "./use-return-focus"
 
 /**
  * 양쪽 화면을 확인하기 위한 데모 인물 전환. 로그인·인증·권한 검증이 아니다.
- * 작성 중인 내용이 있으면 바꾸기 전에 묻고, 바꾸면 초안을 비운다.
+ * 모든 데모 기능이 같은 인물을 읽는다. 마음 전하기 초안이 있으면 바꾸기 전에 묻고, 바꾸면 그 초안은 보이지 않는다.
  */
 export function DemoViewerSwitch() {
-  const { family, viewerId, draftDirty, dispatch } = useMind()
+  const { family, viewerId, setViewerId } = useDemoViewer()
+  const { draftDirty } = useMind()
   const [pending, setPending] = React.useState<string | null>(null)
   const returnFocus = useReturnFocus()
 
@@ -30,7 +32,7 @@ export function DemoViewerSwitch() {
     if (draftDirty) {
       returnFocus.capture()
       setPending(id)
-    } else dispatch({ type: "viewer/set", viewerId: id })
+    } else setViewerId(id)
   }
 
   return (
@@ -60,7 +62,7 @@ export function DemoViewerSwitch() {
             <Button
               variant="destructive"
               onClick={() => {
-                if (pending) dispatch({ type: "viewer/set", viewerId: pending })
+                if (pending) setViewerId(pending)
                 setPending(null)
               }}
             >

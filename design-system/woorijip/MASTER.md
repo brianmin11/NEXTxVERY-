@@ -120,6 +120,20 @@
 | `/inbox`, `/inbox/[id]` | 받은/보낸 탭, 카드(상대·전달 문장·시각·상태), 상세에서 답장·나중에·지금은 어려워요. 열람(read)은 응답이 아니다. 데모 인물 전환은 로그인이 아니며 전환 시 초안을 비운다 |
 | `use-return-focus.ts` | 트리거 없이 여는 Dialog의 포커스 복귀. 복귀 대상이 사라지면 fallback으로 |
 
+**가족 일정(`components/calendar`, `lib/calendar`)** — 프론트 데모. 실제 DB·외부 캘린더 동기화·알림은 없다.
+| 조각 | 역할 |
+|---|---|
+| `lib/calendar/types.ts` | `CalendarEvent`(id·title·category·date·allDay·startTime·endTime·location·memo·participantIds·createdByMemberId), 유형 enum·라벨 한 곳 |
+| `lib/calendar/config.ts` | 제목 40·장소 40·메모 200자(임시 프론트 제한), 데모 기본 시간대 Asia/Seoul |
+| `lib/calendar/date.ts` | 날짜는 `YYYY-MM-DD`, 시간은 `HH:mm` 문자열. 날짜 전용 값은 UTC 정오로만 포맷해 하루가 밀리지 않는다. 월 격자·월 이동·오늘 계산 |
+| `lib/calendar/validate.ts` | 제목 공백·날짜 형식·시간 역전 검증. 모르는 값을 자동으로 채우지 않는다 |
+| `lib/calendar/fixture.ts` | 오늘 기준 seed 5개(홈 '오늘 일정'과 같은 원본). 한 번만 만든다 |
+| `CalendarProvider` | 메모리 일정 상태, 저장 토큰으로 연타 중복 방지, 개발 환경 `?today=YYYY-MM-DD`로 오늘 고정 |
+| `/calendar` | 월간 7열 달력(칸 44px, 일정 점 + 접근 가능한 개수), 선택 날짜 목록, 상세 시트(작성자만 수정·삭제: 데모 규칙), 추가·수정 폼 시트(최대 92dvh, 유실 확인), 삭제 확인 |
+| `DemoViewerProvider` (`components/demo`) | 모든 데모 기능이 공유하는 현재 인물. 마음 전하기 초안은 작성한 인물에게만 보인다 |
+
+- 하루짜리 일정만 다룬다. 여러 날·반복·시간대 변환은 후속 범위다. 전달받은 마음을 일정에 자동으로 넣지 않는다.
+- 홈은 오늘 일정을 시간순 2개만 보여주고 '전체 보기'로 /calendar에 연결한다.
 - 사용자가 쓰지 않은 시간·약속·사과를 자동으로 덧붙이지 않는다. '예시 흐름'은 합성 예시로 표시하고 작성 중인 내용을 묻지 않고 덮어쓰지 않는다.
 - 마음 전하기 진입: 홈 CTA(`/mind`), 프로필 시트의 '{이름}에게 마음 전하기'(수신자만 미리 선택), 알림 시트의 '마음 수신함 열기'.
 - 캐릭터 움직임은 시각 연출일 뿐이다. 접속 여부·감정 상태·활동량으로 설명하지 않는다. 점프·충돌 반동·층간 이동은 없다.

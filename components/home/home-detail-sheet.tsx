@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Bell, Clock, Heart, Inbox, MapPin } from "lucide-react"
+import { Bell, CalendarDays, Clock, Heart, Inbox, MapPin } from "lucide-react"
 
+import { useCalendar } from "@/components/calendar/calendar-provider"
 import { useMind } from "@/components/mind/mind-provider"
 import { Button } from "@/components/ui/button"
 import {
@@ -17,7 +18,8 @@ import {
 } from "@/components/ui/sheet"
 import { MemberChip } from "@/components/woorijip/member"
 import { EmptyState } from "@/components/woorijip/state-views"
-import { formatFullDate, formatTime } from "@/lib/format"
+import { formatDateKeyFull, formatEventTime } from "@/lib/calendar/date"
+import { formatTime } from "@/lib/format"
 import { findMember, type HomeData } from "@/lib/home.fixture"
 
 import { FamilyAvatar } from "./family-avatar"
@@ -68,20 +70,21 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
   const { family } = data
   const router = useRouter()
   const mind = useMind()
+  const calendar = useCalendar()
   const receivedCount = mind.messages.filter((m) => m.toId === mind.viewerId).length
 
   switch (selection.type) {
     case "schedule": {
-      const item = data.schedules.find((s) => s.id === selection.id)
+      // 캘린더 상태를 그대로 읽는다. 수정·삭제는 /calendar에서 한다.
+      const item = calendar.eventById(selection.id)
       if (!item) return <MissingBody />
-      const date = new Date(item.startsAt)
-      const members = item.memberIds.map((id) => findMember(family, id)).filter((m) => m !== undefined)
+      const members = item.participantIds.map((id) => findMember(family, id)).filter((m) => m !== undefined)
       return (
         <>
           <SheetHeader className="px-5 pt-2">
             <SheetTitle className="pr-10 text-xl font-bold">{item.title}</SheetTitle>
             <SheetDescription className="tabular-nums">
-              <time dateTime={item.startsAt}>{formatFullDate(date)}</time>
+              <time dateTime={item.date}>{formatDateKeyFull(item.date)}</time>
             </SheetDescription>
           </SheetHeader>
           <div className="flex flex-col gap-4 px-5">
@@ -91,19 +94,19 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
                   <Clock className="size-4" aria-hidden="true" />
                   <span className="sr-only">시간</span>
                 </dt>
-                <dd className="tabular-nums">{formatTime(date)}</dd>
+                <dd className="tabular-nums">{formatEventTime(item)}</dd>
               </div>
-              {item.place && (
+              {item.location && (
                 <div className="flex items-center gap-2">
                   <dt className="text-muted-foreground">
                     <MapPin className="size-4" aria-hidden="true" />
                     <span className="sr-only">장소</span>
                   </dt>
-                  <dd>{item.place}</dd>
+                  <dd>{item.location}</dd>
                 </div>
               )}
             </dl>
-            {item.note && <p className="leading-relaxed">{item.note}</p>}
+            {item.memo && <p className="leading-relaxed whitespace-pre-wrap">{item.memo}</p>}
             <section aria-label="참여하는 가족" className="flex flex-col gap-2">
               <h3 className="text-sm font-medium text-muted-foreground">함께하는 가족 {members.length}명</h3>
               <div className="flex flex-wrap gap-2">
@@ -112,6 +115,12 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
                 ))}
               </div>
             </section>
+            <Button variant="outline" size="lg" className="w-full" asChild>
+              <Link href="/calendar">
+                <CalendarDays aria-hidden="true" />
+                캘린더에서 보기
+              </Link>
+            </Button>
           </div>
         </>
       )

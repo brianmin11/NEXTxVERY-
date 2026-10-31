@@ -3,6 +3,8 @@ import { Geist_Mono } from "next/font/google"
 import localFont from "next/font/local"
 
 import "./globals.css"
+import { CalendarProvider } from "@/components/calendar/calendar-provider"
+import { DemoViewerProvider } from "@/components/demo/demo-viewer-provider"
 import { MindProvider } from "@/components/mind/mind-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { BRAND_NAME, LOGO_SRC } from "@/components/logo"
@@ -65,8 +67,12 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <TooltipProvider>
-            {/* 마음 전하기 데모 상태: 메모리 전용, 라우트 이동 중 유지 */}
-            <MindProvider>{children}</MindProvider>
+            {/* 데모 상태(현재 인물·마음·일정): 메모리 전용, 라우트 이동 중 유지, 새로고침 시 초기화 */}
+            <DemoViewerProvider>
+              <MindProvider>
+                <CalendarProvider>{children}</CalendarProvider>
+              </MindProvider>
+            </DemoViewerProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>
