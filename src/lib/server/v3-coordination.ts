@@ -1,4 +1,6 @@
 import { createHash, randomUUID } from "node:crypto"
+import { asServiceDatabase } from "./service-database"
+import type { ServiceDatabase } from "../../contracts/storage"
 import type { DatabaseSync } from "node:sqlite"
 import { z } from "zod"
 import { AgreementDraft, type JointContext } from "@family-os/relationship-ai"
@@ -10,9 +12,8 @@ import type {
   CoordinationRoom,
 } from "../../contracts/coordination"
 import { V2Error, type V2Actor } from "./v2-service"
-
 type Options = {
-  db: DatabaseSync
+  db: DatabaseSync | ServiceDatabase
   propose?: (context: JointContext) => Promise<AgreementDraft>
 }
 type RecordRow = {
@@ -23,7 +24,10 @@ type RecordRow = {
   revision: number
   payload: string
 }
-type Member = { user_id: string; family_id: string }
+type Member = {
+  user_id: string
+  family_id: string
+}
 const identifier = z.string().min(1).max(128)
 const revision = z.number().int().positive()
 const requestId = z.string().min(8).max(128)
@@ -71,26 +75,33 @@ const sorted = (items: string[]) => [...new Set(items)].sort()
 const sameIds = (a: string[], b: string[]) =>
   canonical(sorted(a)) === canonical(sorted(b))
 const iso = (date: string, time: string) => `${date}T${time}:00+09:00`
-
 /** Only approved contributions and proposals are persisted. AI previews never enter receipts. */
-export function createCoordinationService({ db, propose }: Options) {
-  function member(actor: V2Actor): Member {
-    const result = db
+export function createCoordinationService({
+  db: inputDatabase,
+  propose,
+}: Options) {
+  const db = asServiceDatabase(inputDatabase)
+  async function member(actor: V2Actor): Promise<Member> {
+    const result = (await db
       .prepare("SELECT user_id,family_id FROM v2_members WHERE user_id=?")
-      .get(actor.id) as Member | undefined
+      .get(actor.id)) as Member | undefined
     if (!result) fail("FAMILY_REQUIRED", 403, "먼저 가족 공간에 참여해 주세요.")
     return result
   }
-  function record(actor: V2Actor, id: string, kind: string): RecordRow {
-    const membership = member(actor)
-    const result = db
+  async function record(
+    actor: V2Actor,
+    id: string,
+    kind: string
+  ): Promise<RecordRow> {
+    const membership = await member(actor)
+    const result = (await db
       .prepare("SELECT * FROM v2_records WHERE id=? AND kind=? AND family_id=?")
-      .get(id, kind, membership.family_id) as RecordRow | undefined
+      .get(id, kind, membership.family_id)) as RecordRow | undefined
     if (!result) missing()
     return result
   }
-  function room(actor: V2Actor, id: string): CoordinationRoom {
-    const row = record(actor, id, "coordination")
+  async function room(actor: V2Actor, id: string): Promise<CoordinationRoom> {
+    const row = await record(actor, id, "coordination")
     const value: CoordinationRoom = {
       ...JSON.parse(row.payload),
       revision: row.revision,
@@ -98,18 +109,22 @@ export function createCoordinationService({ db, propose }: Options) {
     if (!value.parties.includes(actor.id)) missing()
     return value
   }
-  function event(actor: V2Actor, id: string) {
-    const row = record(actor, id, "event")
+  async function event(actor: V2Actor, id: string) {
+    const row = await record(actor, id, "event")
     const value = {
       ...JSON.parse(row.payload),
       revision: row.revision,
-    } as CalendarEvent & { revision: number }
+    } as CalendarEvent & {
+      revision: number
+    }
     return { row, value }
   }
-  function checkParties(familyId: string, parties: string[]) {
-    const members = db
+  async function checkParties(familyId: string, parties: string[]) {
+    const members = (await db
       .prepare("SELECT user_id FROM v2_members WHERE family_id=?")
-      .all(familyId) as { user_id: string }[]
+      .all(familyId)) as {
+      user_id: string
+    }[]
     const ids = new Set(members.map((m) => m.user_id))
     if (parties.some((id) => !ids.has(id)))
       fail(
@@ -118,14 +133,14 @@ export function createCoordinationService({ db, propose }: Options) {
         "가족 구성원이 변경됐어요. 새 조율을 시작해 주세요."
       )
   }
-  function checkCurrent(actor: V2Actor, value: CoordinationRoom) {
+  async function checkCurrent(actor: V2Actor, value: CoordinationRoom) {
     if (Date.parse(value.expiresAt) <= Date.now())
       fail(
         "COORDINATION_EXPIRED",
         409,
         "조율이 만료됐어요. 새 조율을 시작해 주세요."
       )
-    const current = event(actor, value.event.id)
+    const current = await event(actor, value.event.id)
     if (current.value.revision !== value.event.revision) conflict()
     if (
       current.row.owner_id !== value.creatorId ||
@@ -137,7 +152,7 @@ export function createCoordinationService({ db, propose }: Options) {
       ])
     )
       conflict()
-    checkParties(value.familyId, value.parties)
+    await checkParties(value.familyId, value.parties)
     return current
   }
   function expected(value: CoordinationRoom, n: number) {
@@ -151,8 +166,8 @@ export function createCoordinationService({ db, propose }: Options) {
         "종료된 조율이에요. 새 조율을 시작해 주세요."
       )
   }
-  function save(value: CoordinationRoom, previousRevision: number) {
-    const result = db
+  async function save(value: CoordinationRoom, previousRevision: number) {
+    const result = await db
       .prepare(
         "UPDATE v2_records SET revision=?,payload=? WHERE id=? AND kind='coordination' AND revision=?"
       )
@@ -160,22 +175,27 @@ export function createCoordinationService({ db, propose }: Options) {
     if (result.changes !== 1) conflict()
     return value
   }
-  function mutation(
+  async function mutation(
     actor: V2Actor,
     method: string,
     path: string,
-    body: { requestId: string },
-    execute: () => CoordinationRoom
-  ): CoordinationRoom {
+    body: {
+      requestId: string
+    },
+    execute: () => Promise<CoordinationRoom>
+  ): Promise<CoordinationRoom> {
     const fingerprint = hash({ method, path, body })
-    db.exec("BEGIN IMMEDIATE")
-    try {
-      const prior = db
+    return db.transaction(async () => {
+      const prior = (await db
         .prepare(
           "SELECT payload_hash,result FROM v2_receipts WHERE actor_id=? AND request_id=?"
         )
-        .get(actor.id, body.requestId) as
-        { payload_hash: string; result: string } | undefined
+        .get(actor.id, body.requestId)) as
+        | {
+            payload_hash: string
+            result: string
+          }
+        | undefined
       if (prior) {
         if (prior.payload_hash !== fingerprint)
           fail(
@@ -188,25 +208,22 @@ export function createCoordinationService({ db, propose }: Options) {
         }
         if (!reference.coordinationId) conflict()
         // Recheck current access and return current state, never a withdrawn text snapshot.
-        const result = room(actor, reference.coordinationId)
-        db.exec("COMMIT")
+        const result = await room(actor, reference.coordinationId)
         return result
       }
-      const result = execute()
-      db.prepare(
-        "INSERT INTO v2_receipts(actor_id,request_id,payload_hash,result) VALUES(?,?,?,?)"
-      ).run(
-        actor.id,
-        body.requestId,
-        fingerprint,
-        JSON.stringify({ coordinationId: result.id })
-      )
-      db.exec("COMMIT")
+      const result = await execute()
+      await db
+        .prepare(
+          "INSERT INTO v2_receipts(actor_id,request_id,payload_hash,result) VALUES(?,?,?,?)"
+        )
+        .run(
+          actor.id,
+          body.requestId,
+          fingerprint,
+          JSON.stringify({ coordinationId: result.id })
+        )
       return result
-    } catch (error) {
-      if (db.isTransaction) db.exec("ROLLBACK")
-      throw error
-    }
+    })
   }
   function jointContext(actor: V2Actor, value: CoordinationRoom): JointContext {
     const purpose = `coordination:${value.id}`
@@ -337,7 +354,6 @@ export function createCoordinationService({ db, propose }: Options) {
       unsupportedReasons,
     }
   }
-
   async function request(
     actor: V2Actor,
     method: string,
@@ -348,13 +364,13 @@ export function createCoordinationService({ db, propose }: Options) {
     const path = rawPath.replace(/^\/+|\/+$/g, "")
     if (path === "coordinations") {
       if (method === "GET") {
-        const membership = member(actor)
+        const membership = await member(actor)
         return (
-          db
+          (await db
             .prepare(
               "SELECT * FROM v2_records WHERE kind='coordination' AND family_id=? ORDER BY id"
             )
-            .all(membership.family_id) as RecordRow[]
+            .all(membership.family_id)) as RecordRow[]
         )
           .map(
             (r) =>
@@ -374,8 +390,8 @@ export function createCoordinationService({ db, propose }: Options) {
           }),
           body
         )
-        return mutation(actor, method, path, b, () => {
-          const { row, value: current } = event(actor, b.eventId)
+        return await mutation(actor, method, path, b, async () => {
+          const { row, value: current } = await event(actor, b.eventId)
           if (
             current.createdByMemberId !== actor.id ||
             row.owner_id !== actor.id
@@ -402,7 +418,7 @@ export function createCoordinationService({ db, propose }: Options) {
               422,
               "두 명 이상 참여하는 시간 지정 일정을 선택해 주세요."
             )
-          checkParties(row.family_id, parties)
+          await checkParties(row.family_id, parties)
           const createdAt = new Date().toISOString()
           const result: CoordinationRoom = {
             id: randomUUID(),
@@ -425,15 +441,17 @@ export function createCoordinationService({ db, propose }: Options) {
             createdAt,
             expiresAt: new Date(Date.now() + 86400000).toISOString(),
           }
-          db.prepare(
-            "INSERT INTO v2_records(id,kind,family_id,owner_id,revision,payload) VALUES(?,'coordination',?,?,?,?)"
-          ).run(
-            result.id,
-            result.familyId,
-            actor.id,
-            result.revision,
-            JSON.stringify(result)
-          )
+          await db
+            .prepare(
+              "INSERT INTO v2_records(id,kind,family_id,owner_id,revision,payload) VALUES(?,'coordination',?,?,?,?)"
+            )
+            .run(
+              result.id,
+              result.familyId,
+              actor.id,
+              result.revision,
+              JSON.stringify(result)
+            )
           return result
         })
       }
@@ -443,14 +461,14 @@ export function createCoordinationService({ db, propose }: Options) {
     )
     if (!match) missing()
     const [, objectId, action] = match
-    if (method === "GET" && !action) return room(actor, objectId)
+    if (method === "GET" && !action) return await room(actor, objectId)
     if (method !== "POST" || !action) missing()
     if (action === "suggestions") {
       const b = parse(z.object({ expectedRevision: revision }), body)
-      const value = room(actor, objectId)
+      const value = await room(actor, objectId)
       expected(value, b.expectedRevision)
       editable(value)
-      checkCurrent(actor, value)
+      await checkCurrent(actor, value)
       if (!value.contributions.length)
         fail("INPUT_INVALID", 422, "먼저 함께 볼 의견을 공유해 주세요.")
       if (!propose)
@@ -464,7 +482,11 @@ export function createCoordinationService({ db, propose }: Options) {
         generated = await propose(jointContext(actor, value))
       } catch (error) {
         if (error instanceof V2Error) throw error
-        const code = (error as { code?: unknown } | null)?.code
+        const code = (
+          error as {
+            code?: unknown
+          } | null
+        )?.code
         if (code === "BUDGET_EXCEEDED" || code === "AI_BUDGET_EXCEEDED")
           fail(
             "AI_BUDGET_EXCEEDED",
@@ -477,22 +499,24 @@ export function createCoordinationService({ db, propose }: Options) {
           "AI 제안을 완료하지 못했어요. 직접 제안을 작성하거나 다시 시도해 주세요."
         )
       }
-      const latest = room(actor, objectId)
-      expected(latest, b.expectedRevision)
-      editable(latest)
-      checkCurrent(actor, latest)
-      return preview(generated, latest)
+      return db.transaction(async () => {
+        const latest = await room(actor, objectId)
+        expected(latest, b.expectedRevision)
+        editable(latest)
+        await checkCurrent(actor, latest)
+        return preview(generated, latest)
+      })
     }
     if (action === "contributions") {
       const b = parse(
         change.extend({ text: z.string().trim().min(1).max(500) }),
         body
       )
-      return mutation(actor, method, path, b, () => {
-        const value = room(actor, objectId)
+      return await mutation(actor, method, path, b, async () => {
+        const value = await room(actor, objectId)
         expected(value, b.expectedRevision)
         editable(value)
-        checkCurrent(actor, value)
+        await checkCurrent(actor, value)
         const prior = value.contributions.find(
           (item) => item.actorId === actor.id
         )
@@ -508,16 +532,16 @@ export function createCoordinationService({ db, propose }: Options) {
         value.decisions = []
         value.status = "open"
         value.revision++
-        return save(value, b.expectedRevision)
+        return await save(value, b.expectedRevision)
       })
     }
     if (action === "proposals") {
       const b = parse(change.extend({ proposal: proposalSchema }), body)
-      return mutation(actor, method, path, b, () => {
-        const value = room(actor, objectId)
+      return await mutation(actor, method, path, b, async () => {
+        const value = await room(actor, objectId)
         expected(value, b.expectedRevision)
         editable(value)
-        checkCurrent(actor, value)
+        await checkCurrent(actor, value)
         const version =
           Math.max(value.revision, value.proposal?.version ?? 0) + 1
         value.proposal = {
@@ -534,7 +558,7 @@ export function createCoordinationService({ db, propose }: Options) {
         value.decisions = []
         value.status = "proposed"
         value.revision++
-        return save(value, b.expectedRevision)
+        return await save(value, b.expectedRevision)
       })
     }
     if (action === "decisions") {
@@ -542,10 +566,10 @@ export function createCoordinationService({ db, propose }: Options) {
         change.extend({ decision: z.enum(["accept", "defer", "decline"]) }),
         body
       )
-      return mutation(actor, method, path, b, () => {
-        const value = room(actor, objectId)
+      return await mutation(actor, method, path, b, async () => {
+        const value = await room(actor, objectId)
         expected(value, b.expectedRevision)
-        checkCurrent(actor, value)
+        await checkCurrent(actor, value)
         if (!["proposed", "deferred"].includes(value.status) || !value.proposal)
           fail("PROPOSAL_REQUIRED", 409, "먼저 공유된 제안을 확인해 주세요.")
         value.decisions = value.decisions.filter(
@@ -563,13 +587,13 @@ export function createCoordinationService({ db, propose }: Options) {
               ? "deferred"
               : "proposed"
         value.revision++
-        return save(value, b.expectedRevision)
+        return await save(value, b.expectedRevision)
       })
     }
     if (action === "apply") {
       const b = parse(change, body)
-      return mutation(actor, method, path, b, () => {
-        const value = room(actor, objectId)
+      return await mutation(actor, method, path, b, async () => {
+        const value = await room(actor, objectId)
         if (actor.id !== value.creatorId)
           fail(
             "FORBIDDEN",
@@ -577,7 +601,7 @@ export function createCoordinationService({ db, propose }: Options) {
             "일정을 만든 사람만 합의 내용을 반영할 수 있어요."
           )
         expected(value, b.expectedRevision)
-        const current = checkCurrent(actor, value)
+        const current = await checkCurrent(actor, value)
         const proposal = value.proposal
         if (
           value.status !== "proposed" ||
@@ -604,7 +628,7 @@ export function createCoordinationService({ db, propose }: Options) {
           endTime: fields.endTime,
           revision: current.value.revision + 1,
         }
-        const result = db
+        const result = await db
           .prepare(
             "UPDATE v2_records SET revision=?,payload=? WHERE id=? AND kind='event' AND revision=? AND family_id=? AND owner_id=?"
           )
@@ -620,13 +644,13 @@ export function createCoordinationService({ db, propose }: Options) {
         value.status = "applied"
         value.resultEventRevision = updated.revision
         value.revision++
-        return save(value, b.expectedRevision)
+        return await save(value, b.expectedRevision)
       })
     }
     if (action === "withdraw") {
       const b = parse(change, body)
-      return mutation(actor, method, path, b, () => {
-        const value = room(actor, objectId)
+      return await mutation(actor, method, path, b, async () => {
+        const value = await room(actor, objectId)
         expected(value, b.expectedRevision)
         value.contributions = value.contributions.filter(
           (item) => item.actorId !== actor.id
@@ -635,7 +659,7 @@ export function createCoordinationService({ db, propose }: Options) {
         value.decisions = []
         value.status = "withdrawn"
         value.revision++
-        return save(value, b.expectedRevision)
+        return await save(value, b.expectedRevision)
       })
     }
     return missing()
