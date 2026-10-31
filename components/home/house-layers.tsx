@@ -1,4 +1,5 @@
-import type { HouseStage } from "@/lib/home.fixture"
+/** 집 시각 단계(개발용 미리보기 전용 시안). 사용자 홈에서는 쓰지 않는다. */
+export type HouseStage = 1 | 2 | 3 | 4 | 5
 
 /**
  * 집 장면의 순수 SVG 레이어. 좌표계 0 0 400 240, 바닥선 y≈200.

@@ -52,7 +52,12 @@
   --color-deco-apricot: var(--deco-apricot);
   --color-deco-sky: var(--deco-sky);
   --color-deco-butter: var(--deco-butter);
+  --color-deco-coral: var(--deco-coral);
+  --color-deco-sage: var(--deco-sage);
   --color-scene-sky: var(--scene-sky);
+  --color-home-hud: var(--home-hud);
+  --color-home-scene: var(--home-scene-bg);
+  --color-primary-deep: var(--primary-deep);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -65,6 +70,8 @@
   --shadow-card: var(--elevation-card);
   --shadow-sheet: var(--elevation-sheet);
   --shadow-scene: var(--elevation-scene);
+  --shadow-raised: var(--elevation-raised);
+  --shadow-raised-pressed: var(--elevation-raised-pressed);
 
   --ease-ui: var(--motion-ease-ui);
   --ease-scene: var(--motion-ease-scene);
@@ -78,43 +85,52 @@
     "Noto Sans KR", "Malgun Gothic", sans-serif;
 
   /* 기능 UI */
-  --background: #f7f5ef;
-  --foreground: #2e342f;
-  --card: #ffffff;
-  --card-foreground: #2e342f;
-  --popover: #ffffff;
-  --popover-foreground: #2e342f;
-  --primary: #426b50;
+  --background: #f7f5f0;
+  --foreground: #202521;
+  --card: #fffefa;
+  --card-foreground: #202521;
+  --popover: #fffefa;
+  --popover-foreground: #202521;
+  --primary: #385f4b;
   --primary-foreground: #ffffff;
-  --secondary: #e8eee4;
-  --secondary-foreground: #2e342f;
-  --muted: #efede6;
-  --muted-foreground: #626b63;
-  --accent: #e8eee4;
-  --accent-foreground: #2e342f;
-  --destructive: #b3402e;
-  --border: #dde3da;
+  --secondary: #dce8de;
+  --secondary-foreground: #202521;
+  --muted: #eeece7;
+  --muted-foreground: #676c66;
+  --accent: #dce8de;
+  --accent-foreground: #202521;
+  --destructive: #a8483e;
+  --border: #e5e3dd;
   /* 입력 테두리는 배경 대비 3:1 이상이 필요해 border보다 진하게 둔다. */
-  --input: #7e897f;
-  --ring: #426b50;
-  --chart-1: #426b50;
+  --input: #878c85;
+  --ring: #385f4b;
+  --chart-1: #385f4b;
   --chart-2: #7e9f86;
   --chart-3: #b8dcec;
   --chart-4: #f2b7a0;
   --chart-5: #f5d98a;
-  --sidebar: #f7f5ef;
-  --sidebar-foreground: #2e342f;
-  --sidebar-primary: #426b50;
+  --sidebar: #f7f5f0;
+  --sidebar-foreground: #202521;
+  --sidebar-primary: #385f4b;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e8eee4;
-  --sidebar-accent-foreground: #2e342f;
-  --sidebar-border: #dde3da;
-  --sidebar-ring: #426b50;
+  --sidebar-accent: #dce8de;
+  --sidebar-accent-foreground: #202521;
+  --sidebar-border: #e5e3dd;
+  --sidebar-ring: #385f4b;
 
-  /* 장식 */
+  /* 장식(아바타 이니셜 배경·강조 점·일정 색 막대). 글자색이나 흰 글자 버튼 배경으로 쓰지 않는다. */
   --deco-apricot: #f2b7a0;
   --deco-sky: #b8dcec;
   --deco-butter: #f5d98a;
+  --deco-coral: #d97661;
+  --deco-sage: #8eae93;
+
+  /* 홈 전용(게임형 가족 공간). 다른 화면에서는 쓰지 않는다. */
+  --home-header-from: #d6e7e0;
+  --home-header-to: #eef0dd;
+  --home-hud: rgb(34 55 44 / 0.72);
+  --home-scene-bg: #cfe0dc;
+  --primary-deep: #294b3a;
 
   /* 집·캐릭터 장면 전용(MASTER 2장). 기능 UI에서는 쓰지 않는다. */
   --scene-sky: #e9f2f7;
@@ -135,10 +151,12 @@
 
   --radius: 1rem;
 
-  /* 깊이: 기능 UI는 card/sheet만, scene은 집·캐릭터 장면 전용 */
+  /* 깊이: 기능 UI는 card/sheet만, scene·raised는 홈 장면·홈 CTA 전용 */
   --elevation-card: 0 1px 2px rgb(46 52 47 / 0.04), 0 2px 8px rgb(46 52 47 / 0.04);
-  --elevation-sheet: 0 -8px 24px rgb(46 52 47 / 0.08);
-  --elevation-scene: 0 8px 24px rgb(46 52 47 / 0.1);
+  --elevation-sheet: 0 -16px 45px rgb(42 47 40 / 0.12);
+  --elevation-scene: inset 0 -18px 30px rgb(42 73 50 / 0.12);
+  --elevation-raised: 0 6px 0 var(--primary-deep), 0 13px 22px rgb(56 95 75 / 0.17);
+  --elevation-raised-pressed: 0 2px 0 var(--primary-deep), 0 7px 14px rgb(56 95 75 / 0.15);
 
   /* 모션: UI 전환 180ms ease-out, 장면 효과는 별도 토큰 */
   --motion-duration-ui: 180ms;
@@ -220,6 +238,11 @@
   [data-walk="running"] .yard-body {
     animation: yard-bob 0.3s ease-in-out infinite;
   }
+}
+
+/* 픽셀 자산(테마 배경·캐릭터 레이어)은 확대해도 번지지 않게 그린다. */
+@utility pixelated {
+  image-rendering: pixelated;
 }
 
 @layer base {

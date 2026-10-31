@@ -68,7 +68,7 @@ export function HomeScreen({ data }: HomeScreenProps) {
       <DemoBadge />
       <FamilyHouseScene
         family={data.family}
-        stage={data.family.houseStage}
+        stage={3}
         onMemberSelect={(id, origin) => select({ type: "member", id }, origin)}
         onMoreSelect={(origin) => select({ type: "family" }, origin)}
         motionPaused={open}

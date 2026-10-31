@@ -20,7 +20,7 @@ import { MemberChip } from "@/components/woorijip/member"
 import { EmptyState } from "@/components/woorijip/state-views"
 import { formatDateKeyFull, formatEventTime } from "@/lib/calendar/date"
 import { formatTime } from "@/lib/format"
-import { findMember, type HomeData } from "@/lib/home.fixture"
+import { findMember, memberRoleLabel, type HomeData } from "@/lib/home.fixture"
 
 import { FamilyAvatar } from "./family-avatar"
 import type { HomeSelection } from "./home-selection"
@@ -133,7 +133,7 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
         <>
           <SheetHeader className="px-5 pt-2">
             <SheetTitle className="pr-10 text-xl font-bold">{member.name}</SheetTitle>
-            <SheetDescription>{member.role ?? "구성원"}</SheetDescription>
+            <SheetDescription>{memberRoleLabel(family, member)}</SheetDescription>
           </SheetHeader>
           <div className="flex flex-col items-center gap-4 px-5">
             <FamilyAvatar member={member} size={120} />
@@ -170,7 +170,7 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
                 <FamilyAvatar member={m} size={44} decorative />
                 <div className="min-w-0">
                   <p className="truncate font-semibold">{m.name}</p>
-                  <p className="truncate text-sm text-muted-foreground">{m.role ?? "구성원"}</p>
+                  <p className="truncate text-sm text-muted-foreground">{memberRoleLabel(family, m)}</p>
                 </div>
               </li>
             ))}

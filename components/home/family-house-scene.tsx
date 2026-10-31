@@ -4,7 +4,7 @@ import * as React from "react"
 import { Pause, Play } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import type { Family, HouseStage } from "@/lib/home.fixture"
+import type { Family } from "@/lib/home.fixture"
 
 import { FamilyAvatar } from "./family-avatar"
 import {
@@ -19,6 +19,7 @@ import {
   PlanterLayer,
   SCENE_BOX,
   SkyLayer,
+  type HouseStage,
 } from "./house-layers"
 import { usePauseReasons } from "./use-pause-reasons"
 import { initialSpot, useYardMotion, WALKER_BOX } from "./use-yard-motion"

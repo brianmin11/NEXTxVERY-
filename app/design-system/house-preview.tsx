@@ -5,13 +5,13 @@ import * as React from "react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FamilyAvatar } from "@/components/home/family-avatar"
 import { FamilyHouseScene } from "@/components/home/family-house-scene"
-import { HOUSE_STAGE_LABELS } from "@/components/home/house-layers"
+import { HOUSE_STAGE_LABELS, type HouseStage } from "@/components/home/house-layers"
 import {
   DEMO_FAMILY_EIGHT,
   DEMO_FAMILY_FOUR,
   DEMO_FAMILY_ONE,
+  memberRoleLabel,
   type Family,
-  type HouseStage,
 } from "@/lib/home.fixture"
 
 const FAMILIES: Record<string, Family> = {
@@ -66,7 +66,7 @@ export function HousePreview() {
         {picked === "__more"
           ? `+N 버튼: 가족 ${family.members.length}명 전체 목록 시트가 열려요(홈에서 확인).`
           : pickedMember
-            ? `선택: ${pickedMember.name} · ${pickedMember.role ?? "구성원"}`
+            ? `선택: ${pickedMember.name} · ${memberRoleLabel(family, pickedMember)}`
             : "캐릭터나 +N을 눌러 보세요."}
       </p>
       <div className="flex flex-wrap items-end gap-3 rounded-xl bg-card p-4 ring-1 ring-border">
