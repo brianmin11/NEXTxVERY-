@@ -60,7 +60,12 @@ export function useCharacterDrag({ sceneRef, onMove, onTap, onDragEnd }: Options
       if (e.button !== 0 && e.pointerType === "mouse") return
       drag.current = { pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, moved: false, lastX: e.clientX }
       startSpot.current = current
-      e.currentTarget.setPointerCapture(e.pointerId)
+      // 합성 이벤트나 일부 브라우저에서는 활성 포인터가 없어 예외가 난다. 캡처 없이도 드래그는 동작한다.
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId)
+      } catch {
+        /* noop */
+      }
     },
     onPointerMove: (e: React.PointerEvent<HTMLElement>) => {
       const d = drag.current
