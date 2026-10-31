@@ -119,7 +119,7 @@ export function EventForm({
           {mode === "create" ? "일정 추가" : "일정 수정"}
         </SheetTitle>
         <SheetDescription>
-          일정에만 반영돼요. 실제 저장·알림은 없어요.
+          가족 일정에 저장돼요. 외부 알림은 보내지 않아요.
         </SheetDescription>
       </SheetHeader>
 
