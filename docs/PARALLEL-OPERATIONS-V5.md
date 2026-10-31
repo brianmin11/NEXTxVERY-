@@ -17,3 +17,10 @@ src/lib/server/provider.ts, 새 AI policy/ledger 모듈, AI 관련 migration·�
 기존 getActor(headers) -> {id,name,email}|null 계약, Better Auth 사용자 ID와 family membership을 유지한다. AI 권한은 서버에서 얻은 actor.id를 기준으로 검사하며 클라이언트 제공 actor ID는 신뢰하지 않는다. 인증 세션은 provider/AI 예산/migration/공통 의존성/환경파일을 수정하지 않는다. 메인은 인증 소유 파일을 수정하지 않는다. 공통 변경 필요 시 메시지로 조율하고 통합 담당이 적용한다. 비밀파일을 worktree에 복사하지 않는다.
 
 완료는 각 독립 검사 후 통합 후보에서 로그인→AI권한→사용량예약→성공/한도/시간초과/장애→원문비보관을 확인해야 한다. 도메인·메일 실제 발송·유료 모델·공개 배포 미검증은 별도로 명시한다.
+
+## 시작 기록
+
+인증 세션: `우리집 운영 인증 보완 · 3번`, thread `01a19339-30ba-71b2-a6c5-f0fd5af5f958`, host local, 동일 해커톤 프로젝트. active/inProgress 확인.
+기준 SHA: f1d95c103074592551e36459cedbf491beae1e2a. auth-v5/api와 auth-v5/qa worktree 사용.
+AI 코드 점검: provider.ts의 SQLite reservations/v3_ai_rate 및 synthetic allowlist가 운영 전환 대상. 기존 RunOptions의 자동재시도0·일시입력 store:false는 유지해야 한다. 새 운영 한도는 사용자 선택 대기이며, 미설정 기본값은 비활성화로 진행한다.
+이 기록은 병렬 작업 시작 기록이며 3·4번 구현 완료를 의미하지 않는다.
