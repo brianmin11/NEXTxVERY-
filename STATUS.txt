@@ -19,7 +19,7 @@ Evidence:
 - Free eval plans: evidence/evaluation-plan-{development,holdout}.json.
 
 Not complete / not claimed:
-- No paid model calls or human language-quality ratings. API key not available in current environment. Account model access unverified.
+- Two authorized synthetic inference attempts denied (HTTP401, missing api.responses.write). Key configured and model retrieval succeeded; no successful generation or human language-quality ratings.
 - No real user/child data, auth/RLS/storage/deletion/approval/calendar integration, browser UI, deployment, family relationship effects or payment willingness verification.
 
 Approved scope (explicit user reply):
@@ -31,3 +31,5 @@ Approved scope (explicit user reply):
 API key preflight after approval: process environment and project .env.local absent; live evaluation not started.
 
 Paid evaluation preflight attempted after approval: stopped before provider request because key missing. Cumulative 128-call/USD12 ledger added and tested across restarts/concurrency.
+
+Latest live checkpoint: key configured, Models Read works, Responses Write missing (api.responses.write). Two attempts consumed reservation 0.163264USD / 2 of 128 slots; this is NOT observed billing. Actual token usage/cost unknown. Holdout not started. Local checks now 65/65 passed; diagnostic errors expose only HTTP status/scope names.

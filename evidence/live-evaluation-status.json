@@ -1,11 +1,21 @@
 {
-  "status": "not_run",
+  "status": "blocked_on_api_key_permission",
   "syntheticOnly": true,
   "paidApproval": true,
-  "apiKeyAvailableAtCheck": false,
-  "accountModelAccess": "unverified",
+  "apiKeyAvailableAtCheck": true,
+  "accountModelAccess": "models.retrieve succeeded",
+  "responseGeneration": "denied",
+  "providerStatus": 401,
+  "missingScopes": [
+    "api.responses.write"
+  ],
+  "attemptedInferenceCalls": 2,
+  "successfulInferenceCalls": 0,
+  "billedTokens": null,
+  "actualCostUsd": null,
+  "conservativeReservedUsd": 0.163264,
+  "remainingApprovedCallSlots": 126,
   "modelQuality": "unverified",
   "humanRatings": "not_collected",
-  "appIntegration": "unverified",
-  "blockingReason": "OPENAI_API_KEY not configured"
+  "appIntegration": "unverified"
 }

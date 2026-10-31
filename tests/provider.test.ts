@@ -21,3 +21,7 @@ test('SDK rate limit performs one attempt and marks retryable',async()=>{
 test('every stage output can become an OpenAI strict JSON schema locally',()=>{
  for(const schema of [PersonalResult,ShareCardDraft.extend({safetyDisposition:z.enum(['ordinary','private_support'])}),IssueAnalysis,AgreementDraft]){const format=zodTextFormat(schema,'test');assert.equal(format.strict,true);assert.ok(format.schema);}
 });
+test('permission diagnostics expose only status and scope names, never raw error or credentials',async()=>{
+ const a=new OpenAIAdapter('test','TEST_ONLY',transport({error:{message:'Missing scopes: api.responses.write. private-text secret-token'}},403));
+ await assert.rejects(a.generate(req),(e:any)=>{assert.deepEqual(e.providerDetails,{status:403,missingScopes:['api.responses.write']});assert.ok(!JSON.stringify(e).includes('secret-token'));return e.code==='POLICY_RESTRICTED';});
+});
