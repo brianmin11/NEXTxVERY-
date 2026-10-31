@@ -1,14 +1,12 @@
 import { createHash, createHmac, randomUUID } from "node:crypto"
-import {
-  mkdir,
-  readFile,
-  readdir,
-  stat,
-  unlink,
-  writeFile,
-} from "node:fs/promises"
 import { resolve } from "node:path"
 import type { DatabaseSync } from "node:sqlite"
+import { asServiceDatabase } from "./service-database"
+import { createLocalAssetStore } from "./asset-store"
+import type {
+  ServiceDatabase,
+  PrivateAssetStore,
+} from "../../contracts/storage"
 import sharp from "sharp"
 import { z } from "zod"
 import { isValidDateKey, isValidTimeKey } from "../../../lib/calendar/date"
@@ -16,8 +14,11 @@ import type { CalendarEvent } from "../../../lib/calendar/types"
 import type { Chore } from "../../../lib/chores/types"
 import type { MindMessage } from "../../../lib/mind/types"
 import type { MemoryPost } from "../../../lib/memories/types"
-
-export type V2Actor = { id: string; name: string; email?: string }
+export type V2Actor = {
+  id: string
+  name: string
+  email?: string
+}
 export class V2Error extends Error {
   constructor(
     public code: string,
@@ -115,8 +116,14 @@ type Row = {
   revision: number
   payload: string
 }
-type Membership = { user_id: string; family_id: string; name: string }
-type Versioned<T> = T & { revision: number }
+type Membership = {
+  user_id: string
+  family_id: string
+  name: string
+}
+type Versioned<T> = T & {
+  revision: number
+}
 export type RemoteAsset = {
   id: string
   kind: "remote"
@@ -133,56 +140,59 @@ type Asset = RemoteAsset & {
 }
 type Options = {
   inviteSecret?: string
-  db: DatabaseSync
+  db: DatabaseSync | ServiceDatabase
+  assetStore?: PrivateAssetStore
   uploadDir?: string
   suggest?: (
     rawText: string,
     recipientName: string,
-    context: { actorId: string; recipientId: string; familyId: string }
+    context: {
+      actorId: string
+      recipientId: string
+      familyId: string
+    }
   ) => Promise<string>
 }
-
 export function createV2Service({
-  db,
+  db: inputDatabase,
+  assetStore,
   uploadDir = resolve(".data/uploads"),
   suggest,
   inviteSecret,
 }: Options) {
-  function transaction<T>(fn: () => T): T {
-    db.exec("BEGIN IMMEDIATE")
-    try {
-      const result = fn()
-      db.exec("COMMIT")
-      return result
-    } catch (e) {
-      db.exec("ROLLBACK")
-      throw e
-    }
-  }
-  function member(actor: V2Actor): Membership {
-    const m = db
+  const db = asServiceDatabase(inputDatabase)
+  const store = assetStore ?? createLocalAssetStore(uploadDir)
+  const transaction = <T>(fn: () => Promise<T>) => db.transaction(fn)
+  async function member(actor: V2Actor): Promise<Membership> {
+    const m = (await db
       .prepare("SELECT * FROM v2_members WHERE user_id=?")
-      .get(actor.id) as Membership | undefined
+      .get(actor.id)) as Membership | undefined
     if (!m) fail("FAMILY_REQUIRED", 403, "먼저 가족 공간에 참여해 주세요.")
     return m
   }
-  function members(familyId: string) {
-    return db
+  async function members(familyId: string) {
+    return (await db
       .prepare("SELECT * FROM v2_members WHERE family_id=? ORDER BY user_id")
-      .all(familyId) as Membership[]
+      .all(familyId)) as Membership[]
   }
-  function checkMembers(familyId: string, ids: string[]) {
-    const allowed = new Set(members(familyId).map((m) => m.user_id))
+  async function checkMembers(familyId: string, ids: string[]) {
+    const allowed = new Set((await members(familyId)).map((m) => m.user_id))
     if (ids.some((x) => !allowed.has(x)) || new Set(ids).size !== ids.length)
       fail("INPUT_INVALID", 422, "같은 가족의 구성원을 선택해 주세요.")
   }
-  function session(actor: V2Actor) {
-    const m = db
+  async function session(actor: V2Actor) {
+    const m = (await db
       .prepare("SELECT * FROM v2_members WHERE user_id=?")
-      .get(actor.id) as Membership | undefined
+      .get(actor.id)) as Membership | undefined
     const family = m
-      ? (db.prepare("SELECT * FROM v2_families WHERE id=?").get(m.family_id) as
-          { id: string; name: string } | undefined)
+      ? ((await db
+          .prepare("SELECT * FROM v2_families WHERE id=?")
+          .get(m.family_id)) as
+          | {
+              id: string
+              name: string
+            }
+          | undefined)
       : undefined
     return {
       viewer: { id: actor.id, name: actor.name },
@@ -190,7 +200,7 @@ export function createV2Service({
         ? {
             ...family,
             houseStage: 1,
-            members: members(family.id).map((x) => ({
+            members: (await members(family.id)).map((x) => ({
               id: x.user_id,
               name: x.name,
               tone: "sage" as const,
@@ -200,66 +210,79 @@ export function createV2Service({
         : null,
     }
   }
-  function row(actor: V2Actor, kind: string, objectId: string): Row {
-    const m = member(actor),
-      r = db
+  async function row(
+    actor: V2Actor,
+    kind: string,
+    objectId: string
+  ): Promise<Row> {
+    const m = await member(actor),
+      r = (await db
         .prepare(
           "SELECT * FROM v2_records WHERE id=? AND kind=? AND family_id=?"
         )
-        .get(objectId, kind, m.family_id) as Row | undefined
+        .get(objectId, kind, m.family_id)) as Row | undefined
     if (!r) return missing()
     return r
   }
   function decode<T>(r: Row): Versioned<T> {
     return { ...JSON.parse(r.payload), revision: r.revision }
   }
-  function list<T>(actor: V2Actor, kind: string): Versioned<T>[] {
-    const m = member(actor)
+  async function list<T>(
+    actor: V2Actor,
+    kind: string
+  ): Promise<Versioned<T>[]> {
+    const m = await member(actor)
     return (
-      db
+      (await db
         .prepare(
           "SELECT * FROM v2_records WHERE family_id=? AND kind=? ORDER BY id"
         )
-        .all(m.family_id, kind) as Row[]
+        .all(m.family_id, kind)) as Row[]
     ).map((r) => decode<T>(r))
   }
-  function put<T extends { id: string; revision: number }>(
-    kind: string,
-    familyId: string,
-    ownerId: string,
-    value: T
-  ) {
-    db.prepare(
-      "INSERT INTO v2_records(id,kind,family_id,owner_id,revision,payload) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,payload=excluded.payload"
-    ).run(
-      value.id,
-      kind,
-      familyId,
-      ownerId,
-      value.revision,
-      JSON.stringify(value)
-    )
+  async function put<
+    T extends {
+      id: string
+      revision: number
+    },
+  >(kind: string, familyId: string, ownerId: string, value: T) {
+    await db
+      .prepare(
+        "INSERT INTO v2_records(id,kind,family_id,owner_id,revision,payload) VALUES(?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET revision=excluded.revision,payload=excluded.payload"
+      )
+      .run(
+        value.id,
+        kind,
+        familyId,
+        ownerId,
+        value.revision,
+        JSON.stringify(value)
+      )
     return value
   }
   function requireRevision(r: Row, value: number) {
     if (r.revision !== value) conflict()
   }
-  function mutate<T>(
+  async function mutate<T>(
     actor: V2Actor,
     method: string,
     path: string,
     body: unknown,
-    fn: () => T
-  ): T {
+    fn: () => Promise<T>
+  ): Promise<T> {
     const token = parse(z.object({ requestId }), body).requestId
     const payloadHash = hash(canonical({ method, path, body }))
-    return transaction(() => {
-      const old = db
+    return await transaction(async () => {
+      const old = (await db
         .prepare(
           "SELECT payload_hash,result FROM v2_receipts WHERE actor_id=? AND request_id=?"
         )
-        .get(actor.id, token) as
-        { payload_hash: string; result: string } | undefined
+        .get(actor.id, token)) as
+        | {
+            payload_hash: string
+            result: string
+          }
+        | undefined
       if (old) {
         if (old.payload_hash !== payloadHash)
           fail(
@@ -269,15 +292,17 @@ export function createV2Service({
           )
         return JSON.parse(old.result) as T
       }
-      const result = fn()
-      db.prepare(
-        "INSERT INTO v2_receipts(actor_id,request_id,payload_hash,result) VALUES(?,?,?,?)"
-      ).run(actor.id, token, payloadHash, JSON.stringify(result))
+      const result = await fn()
+      await db
+        .prepare(
+          "INSERT INTO v2_receipts(actor_id,request_id,payload_hash,result) VALUES(?,?,?,?)"
+        )
+        .run(actor.id, token, payloadHash, JSON.stringify(result))
       return result
     })
   }
-  function message(actor: V2Actor, objectId: string) {
-    const r = row(actor, "message", objectId),
+  async function message(actor: V2Actor, objectId: string) {
+    const r = await row(actor, "message", objectId),
       v = decode<MindMessage>(r)
     if (v.fromId !== actor.id && v.toId !== actor.id) missing()
     return { r, v }
@@ -293,8 +318,8 @@ export function createV2Service({
       bytes: a.bytes,
     }
   }
-  function asset(actor: V2Actor, objectId: string) {
-    const r = row(actor, "asset", objectId),
+  async function asset(actor: V2Actor, objectId: string) {
+    const r = await row(actor, "asset", objectId),
       v = decode<Asset>(r)
     if (
       v.state === "deleting" ||
@@ -305,7 +330,6 @@ export function createV2Service({
       missing()
     return { r, v }
   }
-
   async function request(
     actor: V2Actor,
     method: string,
@@ -314,25 +338,26 @@ export function createV2Service({
   ): Promise<unknown> {
     if (!actor?.id) fail("UNAUTHENTICATED", 401, "로그인이 필요해요.")
     path = path.replace(/^\/+|\/+$/g, "")
-    if (method === "GET" && path === "session") return session(actor)
+    if (method === "GET" && path === "session") return await session(actor)
     if (method === "POST" && path === "families") {
       const b = parse(z.object({ name: text(80), requestId }), body)
-      return mutate(actor, method, path, b, () => {
+      return await mutate(actor, method, path, b, async () => {
         if (
-          db
+          await db
             .prepare("SELECT user_id FROM v2_members WHERE user_id=?")
             .get(actor.id)
         )
           fail("ALREADY_JOINED", 409, "이미 가족에 참여하고 있어요.")
         const familyId = randomUUID()
-        db.prepare("INSERT INTO v2_families(id,name) VALUES(?,?)").run(
-          familyId,
-          b.name
-        )
-        db.prepare(
-          "INSERT INTO v2_members(user_id,family_id,name) VALUES(?,?,?)"
-        ).run(actor.id, familyId, actor.name)
-        return session(actor)
+        await db
+          .prepare("INSERT INTO v2_families(id,name) VALUES(?,?)")
+          .run(familyId, b.name)
+        await db
+          .prepare(
+            "INSERT INTO v2_members(user_id,family_id,name) VALUES(?,?,?)"
+          )
+          .run(actor.id, familyId, actor.name)
+        return await session(actor)
       })
     }
     if (method === "POST" && path === "family/join") {
@@ -340,28 +365,34 @@ export function createV2Service({
         z.object({ inviteCode: z.string().min(16).max(128), requestId }),
         body
       )
-      return mutate(actor, method, path, b, () => {
+      return await mutate(actor, method, path, b, async () => {
         if (
-          db
+          await db
             .prepare("SELECT user_id FROM v2_members WHERE user_id=?")
             .get(actor.id)
         )
           fail("ALREADY_JOINED", 409, "이미 가족에 참여하고 있어요.")
-        const invite = db
+        const invite = (await db
           .prepare(
             "SELECT family_id,expires_at FROM v2_invites WHERE code_hash=?"
           )
-          .get(hash(b.inviteCode)) as
-          { family_id: string; expires_at: string } | undefined
+          .get(hash(b.inviteCode))) as
+          | {
+              family_id: string
+              expires_at: string
+            }
+          | undefined
         if (!invite || Date.parse(invite.expires_at) <= Date.now())
           fail("INVITE_INVALID", 422, "초대 코드가 없거나 만료됐어요.")
-        db.prepare(
-          "INSERT INTO v2_members(user_id,family_id,name) VALUES(?,?,?)"
-        ).run(actor.id, invite.family_id, actor.name)
-        return session(actor)
+        await db
+          .prepare(
+            "INSERT INTO v2_members(user_id,family_id,name) VALUES(?,?,?)"
+          )
+          .run(actor.id, invite.family_id, actor.name)
+        return await session(actor)
       })
     }
-    const m = member(actor)
+    const m = await member(actor)
     if (method === "POST" && path === "family/invites") {
       const b = parse(z.object({ requestId }), body)
       if (!inviteSecret || inviteSecret.length < 32)
@@ -371,30 +402,36 @@ export function createV2Service({
           JSON.stringify(["v2-invite", actor.id, m.family_id, b.requestId])
         )
         .digest("base64url")
-      mutate(actor, method, path, b, () => {
-        db.prepare(
-          "INSERT INTO v2_invites(code_hash,family_id,expires_at) VALUES(?,?,?)"
-        ).run(
-          hash(inviteCode),
-          m.family_id,
-          new Date(Date.now() + 86400000).toISOString()
-        )
+      await mutate(actor, method, path, b, async () => {
+        await db
+          .prepare(
+            "INSERT INTO v2_invites(code_hash,family_id,expires_at) VALUES(?,?,?)"
+          )
+          .run(
+            hash(inviteCode),
+            m.family_id,
+            new Date(Date.now() + 86400000).toISOString()
+          )
         return { created: true }
       })
-      const storedInvite = db
+      const storedInvite = (await db
         .prepare("SELECT expires_at FROM v2_invites WHERE code_hash=?")
-        .get(hash(inviteCode)) as { expires_at: string } | undefined
+        .get(hash(inviteCode))) as
+        | {
+            expires_at: string
+          }
+        | undefined
       if (!storedInvite || Date.parse(storedInvite.expires_at) <= Date.now())
         fail("INVITE_EXPIRED", 409, "새 초대 코드를 만들어 주세요.")
       return { inviteCode }
     }
     if (path === "calendar/events") {
-      if (method === "GET") return list<CalendarEvent>(actor, "event")
+      if (method === "GET") return await list<CalendarEvent>(actor, "event")
       if (method === "POST") {
         const b = parse(z.object({ fields: calendarFields, requestId }), body)
-        return mutate(actor, method, path, b, () => {
-          checkMembers(m.family_id, b.fields.participantIds)
-          return put("event", m.family_id, actor.id, {
+        return await mutate(actor, method, path, b, async () => {
+          await checkMembers(m.family_id, b.fields.participantIds)
+          return await put("event", m.family_id, actor.id, {
             ...b.fields,
             id: randomUUID(),
             revision: 1,
@@ -407,7 +444,7 @@ export function createV2Service({
     if (match) {
       const objectId = match[1]
       if (method === "GET")
-        return decode<CalendarEvent>(row(actor, "event", objectId))
+        return decode<CalendarEvent>(await row(actor, "event", objectId))
       if (method === "PATCH" || method === "DELETE") {
         const b = parse(
           method === "PATCH"
@@ -419,19 +456,21 @@ export function createV2Service({
             : z.object({ expectedRevision: revision, requestId }),
           body
         )
-        return mutate(actor, method, path, b, () => {
-          const r = row(actor, "event", objectId)
+        return await mutate(actor, method, path, b, async () => {
+          const r = await row(actor, "event", objectId)
           if (r.owner_id !== actor.id) denied()
           requireRevision(r, b.expectedRevision)
           if (method === "DELETE") {
-            db.prepare("DELETE FROM v2_records WHERE id=?").run(r.id)
+            await db.prepare("DELETE FROM v2_records WHERE id=?").run(r.id)
             return { id: r.id, deleted: true }
           }
           const fields = (
-            b as unknown as { fields: z.infer<typeof calendarFields> }
+            b as unknown as {
+              fields: z.infer<typeof calendarFields>
+            }
           ).fields
-          checkMembers(m.family_id, fields.participantIds)
-          return put("event", m.family_id, actor.id, {
+          await checkMembers(m.family_id, fields.participantIds)
+          return await put("event", m.family_id, actor.id, {
             ...decode<CalendarEvent>(r),
             ...fields,
             revision: r.revision + 1,
@@ -440,13 +479,13 @@ export function createV2Service({
       }
     }
     if (path === "chores") {
-      if (method === "GET") return list<Chore>(actor, "chore")
+      if (method === "GET") return await list<Chore>(actor, "chore")
       if (method === "POST") {
         const b = parse(z.object({ fields: choreFields, requestId }), body)
-        return mutate(actor, method, path, b, () => {
-          checkMembers(m.family_id, [b.fields.assigneeMemberId])
+        return await mutate(actor, method, path, b, async () => {
+          await checkMembers(m.family_id, [b.fields.assigneeMemberId])
           const now = new Date().toISOString()
-          return put("chore", m.family_id, actor.id, {
+          return await put("chore", m.family_id, actor.id, {
             ...b.fields,
             id: randomUUID(),
             revision: 1,
@@ -464,7 +503,7 @@ export function createV2Service({
     if (match) {
       const objectId = match[1]
       if (method === "GET" && !match[2])
-        return decode<Chore>(row(actor, "chore", objectId))
+        return decode<Chore>(await row(actor, "chore", objectId))
       if (
         (method === "PUT" && match[2]) ||
         ((method === "PATCH" || method === "DELETE") && !match[2])
@@ -478,8 +517,8 @@ export function createV2Service({
               : z.object(common),
           body
         )
-        return mutate(actor, method, path, b, () => {
-          const r = row(actor, "chore", objectId),
+        return await mutate(actor, method, path, b, async () => {
+          const r = await row(actor, "chore", objectId),
             v = decode<Chore>(r)
           if (method === "PUT") {
             if (r.owner_id !== actor.id && v.assigneeMemberId !== actor.id)
@@ -487,7 +526,7 @@ export function createV2Service({
           } else if (r.owner_id !== actor.id) denied()
           requireRevision(r, b.expectedRevision)
           if (method === "DELETE") {
-            db.prepare("DELETE FROM v2_records WHERE id=?").run(r.id)
+            await db.prepare("DELETE FROM v2_records WHERE id=?").run(r.id)
             return { id: r.id, deleted: true }
           }
           if (method === "PATCH") {
@@ -498,20 +537,26 @@ export function createV2Service({
                 "완료한 할 일은 먼저 완료를 취소해 주세요."
               )
             const fields = (
-              b as unknown as { fields: z.infer<typeof choreFields> }
+              b as unknown as {
+                fields: z.infer<typeof choreFields>
+              }
             ).fields
-            checkMembers(m.family_id, [fields.assigneeMemberId])
-            return put("chore", m.family_id, r.owner_id, {
+            await checkMembers(m.family_id, [fields.assigneeMemberId])
+            return await put("chore", m.family_id, r.owner_id, {
               ...v,
               ...fields,
               updatedAt: new Date().toISOString(),
               revision: r.revision + 1,
             })
           }
-          const status = (b as unknown as { status: "todo" | "done" }).status
+          const status = (
+            b as unknown as {
+              status: "todo" | "done"
+            }
+          ).status
           if (v.status === status) return v
           const now = new Date().toISOString()
-          return put("chore", m.family_id, r.owner_id, {
+          return await put("chore", m.family_id, r.owner_id, {
             ...v,
             status,
             updatedAt: now,
@@ -534,7 +579,7 @@ export function createV2Service({
         }),
         body
       )
-      checkMembers(m.family_id, [b.recipientMemberId])
+      await checkMembers(m.family_id, [b.recipientMemberId])
       if (b.recipientMemberId === actor.id)
         fail("INPUT_INVALID", 422, "다른 가족을 골라 주세요.")
       if (!suggest)
@@ -543,7 +588,7 @@ export function createV2Service({
           503,
           "AI 제안이 아직 연결되지 않았어요. 직접 문장을 다듬어 전송할 수 있어요."
         )
-      const recipient = members(m.family_id).find(
+      const recipient = (await members(m.family_id)).find(
         (x) => x.user_id === b.recipientMemberId
       )!
       let proposed: string
@@ -577,7 +622,7 @@ export function createV2Service({
     }
     if (path === "mind/messages") {
       if (method === "GET")
-        return list<MindMessage>(actor, "message")
+        return (await list<MindMessage>(actor, "message"))
           .filter((v) => v.fromId === actor.id || v.toId === actor.id)
           .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       if (method === "POST") {
@@ -585,11 +630,11 @@ export function createV2Service({
           z.object({ text: text(500), recipientMemberId: id, requestId }),
           body
         )
-        return mutate(actor, method, path, b, () => {
-          checkMembers(m.family_id, [b.recipientMemberId])
+        return await mutate(actor, method, path, b, async () => {
+          await checkMembers(m.family_id, [b.recipientMemberId])
           if (b.recipientMemberId === actor.id)
             fail("INPUT_INVALID", 422, "다른 가족을 골라 주세요.")
-          return put("message", m.family_id, actor.id, {
+          return await put("message", m.family_id, actor.id, {
             id: randomUUID(),
             revision: 1,
             fromId: actor.id,
@@ -606,7 +651,7 @@ export function createV2Service({
     if (match) {
       const objectId = match[1],
         action = match[3]
-      if (method === "GET" && !action) return message(actor, objectId).v
+      if (method === "GET" && !action) return (await message(actor, objectId)).v
       if (method === "PUT" && (action === "read" || action === "response")) {
         const b = parse(
           action === "read"
@@ -622,12 +667,12 @@ export function createV2Service({
               }),
           body
         )
-        return mutate(actor, method, path, b, () => {
-          const { r, v } = message(actor, objectId)
+        return await mutate(actor, method, path, b, async () => {
+          const { r, v } = await message(actor, objectId)
           if (v.toId !== actor.id) denied()
           if (action === "read") {
             if (v.status !== "sent") return v
-            return put("message", m.family_id, r.owner_id, {
+            return await put("message", m.family_id, r.owner_id, {
               ...v,
               status: "read",
               revision: r.revision + 1,
@@ -636,12 +681,18 @@ export function createV2Service({
           const data = b as unknown as {
             expectedRevision: number
             response:
-              { kind: "reply"; text: string } | { kind: "later" | "declined" }
+              | {
+                  kind: "reply"
+                  text: string
+                }
+              | {
+                  kind: "later" | "declined"
+                }
           }
           requireRevision(r, data.expectedRevision)
           if (v.response)
             fail("ALREADY_RESPONDED", 409, "이미 응답한 메시지예요.")
-          return put("message", m.family_id, r.owner_id, {
+          return await put("message", m.family_id, r.owner_id, {
             ...v,
             status:
               data.response.kind === "reply" ? "replied" : data.response.kind,
@@ -653,14 +704,16 @@ export function createV2Service({
     }
     if (path === "memories") {
       if (method === "GET") {
-        const posts = list<MemoryPost>(actor, "memory").sort(
+        const posts = (await list<MemoryPost>(actor, "memory")).sort(
           (a, b) =>
             b.memoryDate.localeCompare(a.memoryDate) ||
             b.createdAt.localeCompare(a.createdAt)
         )
         return {
           posts,
-          assets: posts.map((p) => remote(asset(actor, p.assetId).v)),
+          assets: await Promise.all(
+            posts.map(async (p) => remote((await asset(actor, p.assetId)).v))
+          ),
         }
       }
       if (method === "POST") {
@@ -675,17 +728,17 @@ export function createV2Service({
           }),
           body
         )
-        return mutate(actor, method, path, b, () => {
-          const { r, v } = asset(actor, b.fields.assetId)
+        return await mutate(actor, method, path, b, async () => {
+          const { r, v } = await asset(actor, b.fields.assetId)
           if (r.owner_id !== actor.id) denied()
           if (v.state !== "pending")
             fail("ASSET_ATTACHED", 409, "이미 등록한 사진이에요.")
-          put("asset", m.family_id, actor.id, {
+          await put("asset", m.family_id, actor.id, {
             ...v,
             state: "attached",
             revision: r.revision + 1,
           })
-          return put("memory", m.family_id, actor.id, {
+          return await put("memory", m.family_id, actor.id, {
             ...b.fields,
             id: randomUUID(),
             authorId: actor.id,
@@ -699,24 +752,24 @@ export function createV2Service({
     if (match) {
       const objectId = match[1]
       if (method === "GET")
-        return decode<MemoryPost>(row(actor, "memory", objectId))
+        return decode<MemoryPost>(await row(actor, "memory", objectId))
       if (method === "DELETE") {
         const b = parse(
           z.object({ expectedRevision: revision, requestId }),
           body
         )
-        const result = mutate(actor, method, path, b, () => {
-          const r = row(actor, "memory", objectId)
+        const result = await mutate(actor, method, path, b, async () => {
+          const r = await row(actor, "memory", objectId)
           if (r.owner_id !== actor.id) denied()
           requireRevision(r, b.expectedRevision)
           const post = decode<MemoryPost>(r),
-            a = asset(actor, post.assetId)
-          put("asset", m.family_id, actor.id, {
+            a = await asset(actor, post.assetId)
+          await put("asset", m.family_id, actor.id, {
             ...a.v,
             state: "deleting",
             revision: a.r.revision + 1,
           })
-          db.prepare("DELETE FROM v2_records WHERE id=?").run(objectId)
+          await db.prepare("DELETE FROM v2_records WHERE id=?").run(objectId)
           return { id: objectId, deleted: true }
         })
         await cleanup()
@@ -725,13 +778,12 @@ export function createV2Service({
     }
     missing()
   }
-
   async function upload(
     actor: V2Actor,
     bytes: Uint8Array,
     mime: string
   ): Promise<RemoteAsset> {
-    const m = member(actor)
+    const m = await member(actor)
     if (bytes.byteLength > 10 * 1024 * 1024)
       fail("IMAGE_TOO_LARGE", 413, "사진은 10MiB 이하로 골라 주세요.")
     if (!["image/jpeg", "image/png", "image/webp"].includes(mime))
@@ -739,7 +791,7 @@ export function createV2Service({
     let encoded: Buffer, width: number, height: number
     try {
       const input = sharp(bytes, {
-          limitInputPixels: 20_000_000,
+          limitInputPixels: 20000000,
           animated: false,
           failOn: "warning",
         }),
@@ -768,12 +820,10 @@ export function createV2Service({
     }
     const assetId = randomUUID(),
       file = `${assetId}.webp`
-    await mkdir(uploadDir, { recursive: true, mode: 0o700 })
-    await writeFile(resolve(uploadDir, file), encoded, {
-      flag: "wx",
-      mode: 0o600,
-    })
-    const value: Asset & { revision: number } = {
+    await store.put(file, encoded)
+    const value: Asset & {
+      revision: number
+    } = {
       id: assetId,
       kind: "remote",
       url: `/api/v2/memories/assets/${assetId}/content`,
@@ -787,18 +837,20 @@ export function createV2Service({
       revision: 1,
     }
     try {
-      transaction(() => put("asset", m.family_id, actor.id, value))
+      await transaction(
+        async () => await put("asset", m.family_id, actor.id, value)
+      )
     } catch (e) {
-      await unlink(resolve(uploadDir, file)).catch(() => {})
+      await store.remove(file).catch(() => {})
       throw e
     }
     return remote(value)
   }
   async function content(actor: V2Actor, assetId: string) {
-    const { v } = asset(actor, assetId)
+    const { v } = await asset(actor, assetId)
     try {
       return {
-        bytes: new Uint8Array(await readFile(resolve(uploadDir, v.file))),
+        bytes: new Uint8Array(await store.get(v.file)),
         mime: v.mime,
       }
     } catch {
@@ -806,9 +858,9 @@ export function createV2Service({
     }
   }
   async function cleanup(): Promise<number> {
-    const rows = db
+    const rows = (await db
       .prepare("SELECT * FROM v2_records WHERE kind='asset'")
-      .all() as Row[]
+      .all()) as Row[]
     let count = 0
     for (const r of rows) {
       const a = decode<Asset>(r)
@@ -818,10 +870,10 @@ export function createV2Service({
           Date.parse(a.createdAt) < Date.now() - 86400000)
       ) {
         // Claim inside a transaction: cannot race a successful attach.
-        const claimed = transaction(() => {
-          const current = db
+        const claimed = await transaction(async () => {
+          const current = (await db
             .prepare("SELECT * FROM v2_records WHERE id=?")
-            .get(r.id) as Row | undefined
+            .get(r.id)) as Row | undefined
           if (!current) return false
           const v = decode<Asset>(current)
           if (
@@ -832,7 +884,7 @@ export function createV2Service({
             )
           )
             return false
-          put("asset", current.family_id, current.owner_id, {
+          await put("asset", current.family_id, current.owner_id, {
             ...v,
             state: "deleting",
             revision: current.revision + 1,
@@ -841,44 +893,36 @@ export function createV2Service({
         })
         if (!claimed) continue
         try {
-          await unlink(resolve(uploadDir, a.file))
+          await store.remove(a.file)
         } catch (e) {
           if ((e as NodeJS.ErrnoException).code !== "ENOENT") continue
         }
-        db.prepare("DELETE FROM v2_records WHERE id=? AND kind='asset'").run(
-          r.id
-        )
+        await db
+          .prepare("DELETE FROM v2_records WHERE id=? AND kind='asset'")
+          .run(r.id)
         count++
       }
     }
     // A crash after writing a file but before inserting its asset row can leave an orphan.
     // Only reclaim server-generated regular files older than the pending asset TTL.
-    const files = await readdir(uploadDir, { withFileTypes: true }).catch(
-      (error) => {
-        if ((error as NodeJS.ErrnoException).code === "ENOENT") return []
-        throw error
-      }
-    )
-    for (const entry of files) {
+    for await (const entry of store.list()) {
       if (
-        !entry.isFile() ||
         !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}\.webp$/.test(
-          entry.name
+          entry.key
         )
       )
         continue
-      const assetId = entry.name.slice(0, -5)
+      const assetId = entry.key.slice(0, -5)
       if (
-        db
+        await db
           .prepare("SELECT 1 FROM v2_records WHERE id=? AND kind='asset'")
           .get(assetId)
       )
         continue
       try {
-        const path = resolve(uploadDir, entry.name)
-        if ((await stat(path)).mtimeMs >= Date.now() - 86400000) continue
+        if (entry.modifiedAt >= Date.now() - 86400000) continue
         // New uploads have a fresh mtime; an in-flight upload cannot be reclaimed here.
-        await unlink(path)
+        await store.remove(entry.key)
         count++
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") continue
