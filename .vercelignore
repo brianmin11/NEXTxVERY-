@@ -1,0 +1,17 @@
+.git
+.claude
+.agents
+.codex
+.env*
+.data
+.next
+node_modules
+packages/*/node_modules
+packages/*/dist
+evidence
+packages/*/evidence
+test-results
+playwright-report
+*.log
+*.tsbuildinfo
+.DS_Store

@@ -17,6 +17,7 @@ import type { CalendarEvent } from "../../../lib/calendar/types"
 import type { Chore } from "../../../lib/chores/types"
 import type { MindMessage } from "../../../lib/mind/types"
 import type { MemoryPost } from "../../../lib/memories/types"
+import { MEMORY_MAX_BYTES, MEMORY_MAX_LABEL } from "../../../lib/memories/config"
 export type V2Actor = {
   id: string
   name: string
@@ -849,8 +850,8 @@ export function createV2Service({
     mime: string
   ): Promise<RemoteAsset> {
     const m = await member(actor)
-    if (bytes.byteLength > 10 * 1024 * 1024)
-      fail("IMAGE_TOO_LARGE", 413, "사진은 10MiB 이하로 골라 주세요.")
+    if (bytes.byteLength > MEMORY_MAX_BYTES)
+      fail("IMAGE_TOO_LARGE", 413, `사진은 ${MEMORY_MAX_LABEL} 이하로 골라 주세요.`)
     if (!["image/jpeg", "image/png", "image/webp"].includes(mime))
       fail("UNSUPPORTED_MEDIA", 415, "JPEG, PNG, WebP 사진만 사용할 수 있어요.")
     let encoded: Buffer, width: number, height: number

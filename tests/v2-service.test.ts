@@ -487,7 +487,7 @@ test("private images validate bytes, restrict pending assets, attach and delete 
       () =>
         f.service.upload(
           f.a,
-          new Uint8Array(10 * 1024 * 1024 + 1),
+          new Uint8Array(4 * 1024 * 1024 + 1),
           "image/png"
         ),
       413

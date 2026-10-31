@@ -2,7 +2,7 @@
   "schemaVersion": "1",
   "repositoryAndBranchWork": true,
   "paidModelCalls": true,
-  "publicDeployment": false,
+  "publicDeployment": true,
   "maxCostUsd": 12,
   "maxCalls": 128,
   "approvalId": "relationship-ai-synthetic-2026-10-31-01",
@@ -107,5 +107,36 @@
     "paidCallsApproved": false,
     "realUserTextTransmissionApproved": false,
     "userAnswer": "데모용: 사용자당 하루 20회·전체 하루 $5 상한"
+  },
+  "vercelRelease20261101": {
+    "approved": true,
+    "authorizationSource": "User: 아 옆에 다 켜놨는데 혹시 배포까지 해줄 수 있나",
+    "team": "j1-s25-k",
+    "teamId": "team_tRrBd4UOKttDmEoLvkuDWjty",
+    "project": "woorijip-nextxvery",
+    "projectId": "prj_Y7zteUI45jjvdpZYoR6HY8gOpQ2U",
+    "environment": "production",
+    "sourceBaseCommit": "f5835bd6b0cdd6916bb5237aa5011d5dddd88c64",
+    "visibility": "Public web URL with application login and existing family authorization",
+    "hostingPlan": "Hobby; no upgrade or paid add-on",
+    "storageProject": "pjpskzlihmakcgjffdiq",
+    "ai": "Existing explicitly approved demo activation reused; deployed source retains lower USD5 daily reservation cap and 20 calls per user",
+    "email": "Disabled; current sender is test-only",
+    "sourceChanges": [
+      "Unify photo limit at 4MiB for Vercel request size",
+      "Vercel deployment configuration and ignore rules"
+    ],
+    "secretRegistration": {
+      "approved": true,
+      "userAnswer": "해당 프로젝트에 비밀값 등록 및 배포 승인",
+      "destination": "J1S25K / woorijip-nextxvery / Production",
+      "secretKeys": [
+        "DATABASE_URL",
+        "SUPABASE_SERVICE_ROLE_KEY",
+        "BETTER_AUTH_SECRET",
+        "OPENAI_API_KEY"
+      ],
+      "additionalConfiguration": "Supabase connection settings; values not logged"
+    }
   }
 }
