@@ -20,3 +20,13 @@ PostgreSQL 비동기 어댑터/트랜잭션 직렬화, 비공개 Storage 어댑�
 운영 프로필 선택 실행: STORAGE_ENV_FILE=.env.supabase.local npm run local -- --production. 연결·migration 완료 전 전환하지 말 것.
 운영 프로필에서 INTEGRATION_LIVE_APPROVED=false 유지. 새 유료 AI 호출·공개 배포 없음.
 다음: 비밀번호 확인 → DATABASE_URL 비밀번호 재생성 → PG 연결/스키마 확인 → migration·비공개 bucket → 허용 테이블/사진 이관 및 실제 계정·저장·격리·복구 검증.
+
+2026-11-01 — 운영 저장소 v4 연결·이관·복구 검증 완료
+비밀번호 수정 후 Supabase 제품 PostgreSQL+비공개 사진 Storage 연결 성공. 사용자가 구체적인 계정·세션·사진 외부 전송을 승인했고 기존22계정/13가족/사진2개 이관 완료.
+원문 legacy 테이블 제외. 신규 합성계정/두 프로세스 중복방지·충돌/가족사진격리/직접DB접근차단 검증 통과.
+별도 recovery스키마+privatebucket에 실제 백업복원 및 두계정 일정·조율·사진checksum 재조회 성공.
+브라우저 로그인→자유입력일정저장→새로고침/다른가족조회 통과, 중복0. 스크린샷 evidence/storage-v4-calendar.png.
+최종코드 a514575: typecheck/lint/build 및 독립 QA28/28 통과. 초기간헐적연결timeout을 관찰해 pool/keepalive/timeout처리 보완; 최종실행검증 통과, 장시간부하·가용성 미검증.
+현재 localhost3120은 제품 원격저장소 사용, 복구/병렬검증 서버 종료. .env.local 실행기 기본프로필=.env.supabase.local, AI disabled.
+실행·백업·복구: docs/OPERATIONAL-STORAGE.md / evidence/VERIFICATION-V4.txt.
+후속: 운영AI 예산 중앙화·실제사용자 데이터처리 승인, 공개배포/도메인/관측·자동백업운영. 디자인은 다른 개발자 범위로 유지. 새유료모델호출·push·merge·공개배포 없음.
