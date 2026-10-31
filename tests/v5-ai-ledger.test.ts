@@ -3,7 +3,11 @@ import assert from "node:assert/strict"
 import { DatabaseSync } from "node:sqlite"
 import { createAiLedger } from "../src/lib/server/ai-ledger"
 import { asServiceDatabase } from "../src/lib/server/service-database"
-import { DEMO_AI_POLICY, type AiOutcome } from "../src/contracts/ai-operations"
+import {
+  DEMO_AI_POLICY,
+  type AiReservation,
+  type AiOutcome,
+} from "../src/contracts/ai-operations"
 import type { ServiceDatabase } from "../src/contracts/storage"
 const schema = `CREATE TABLE ai_reservations(
   id TEXT PRIMARY KEY,actor_id TEXT NOT NULL,day TEXT NOT NULL,
@@ -171,7 +175,7 @@ test("Seoul midnight resets daily budgets while past-day active leases still cou
     const previous = await Promise.all(
       ["a", "b", "c"].map((actor) => f.ledger.reserve(actor))
     )
-    assert(previous.every((r) => r.day === "2026-11-01"))
+    assert(previous.every((r: AiReservation) => r.day === "2026-11-01"))
     f.advance(30_000)
     await assert.rejects(f.ledger.reserve("d"), errorCode("AI_RATE_LIMIT"))
     await f.ledger.finish(previous[0].id, "timeout")
