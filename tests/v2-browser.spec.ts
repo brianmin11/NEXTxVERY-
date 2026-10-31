@@ -22,20 +22,34 @@ async function api(
   return (await response.json()).data
 }
 async function signup(context: BrowserContext, name: string) {
-  const response = await context.request.post(
-    `${baseURL}/api/auth/sign-up/email`,
-    {
+  const data = {
+    name,
+    email: `qa-${randomUUID()}@example.test`,
+    password: `Qa-${randomUUID()}!`,
+  }
+  const send = () =>
+    context.request.post(`${baseURL}/api/auth/sign-up/email`, {
       headers: { Origin: new URL(baseURL).origin },
-      data: {
-        name,
-        email: `qa-${randomUUID()}@example.test`,
-        password: `Qa-${randomUUID()}!`,
-      },
-    }
-  )
+      data,
+    })
+  let response = await send()
+  // Real authentication protections stay enabled. Respect a bounded rate-limit cooldown.
+  if (response.status() === 429) {
+    const seconds = Number(response.headers()["retry-after"])
+    await new Promise((resolve) =>
+      setTimeout(
+        resolve,
+        (Number.isFinite(seconds) && seconds > 0
+          ? Math.min(seconds + 1, 65)
+          : 61) * 1000
+      )
+    )
+    response = await send()
+  }
   expect(response.ok(), await response.text()).toBeTruthy()
   return (await response.json()).user
 }
+test.setTimeout(180_000)
 
 test("mobile browser calendar save persists across reload and another authenticated family member", async ({
   browser,
@@ -58,7 +72,10 @@ test("mobile browser calendar save persists across reload and another authentica
     })
     const page = await a.newPage()
     await page.goto(`${baseURL}/calendar`)
-    await page.getByRole("button", { name: "일정 추가", exact: true }).click()
+    await page
+      .getByRole("banner")
+      .getByRole("button", { name: "일정 추가", exact: true })
+      .click()
     const title = `함께 저녁 ${randomUUID().slice(0, 6)}`
     await page.getByLabel("제목", { exact: false }).fill(title)
     await page.getByLabel("시작", { exact: false }).fill("19:00")
@@ -229,13 +246,11 @@ test("chores, uploaded photos and manually refined messages survive real two-acc
       .png()
       .toBuffer()
     await page.goto(`${baseURL}/memories/new`)
-    await page
-      .locator("input[type=file]")
-      .setInputFiles({
-        name: "family.png",
-        mimeType: "image/png",
-        buffer: image,
-      })
+    await page.locator("input[type=file]").setInputFiles({
+      name: "family.png",
+      mimeType: "image/png",
+      buffer: image,
+    })
     const caption = `가족 사진 ${randomUUID().slice(0, 6)}`
     await page.getByLabel("설명 (선택)").fill(caption)
     await page.getByRole("button", { name: "추억 등록", exact: true }).click()
