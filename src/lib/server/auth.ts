@@ -2,7 +2,7 @@ import 'server-only';
 import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { getMigrations } from 'better-auth/db/migration';
 import { openDatabase } from './database';
-import type { Actor } from '../../contracts/family';
+type Actor = {id:string;name:string;email:string};
 const globalAuth=globalThis as unknown as { familyAuth?: Promise<ReturnType<typeof betterAuth>>; familyDb?: ReturnType<typeof openDatabase> };
 export function getDatabase(){return globalAuth.familyDb ??= openDatabase();}
 export function getAuth(){
