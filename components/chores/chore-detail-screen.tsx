@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { ArrowLeft, CalendarDays, Check, Clock, Pencil, SearchX, StickyNote, Trash2, Undo2, User } from "lucide-react"
+import { CalendarDays, Check, Clock, Pencil, SearchX, StickyNote, Trash2, Undo2, User } from "lucide-react"
 
 import { useDemoViewer } from "@/components/demo/demo-viewer-provider"
 import { FamilyAvatar } from "@/components/home/family-avatar"
@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { AppShell, DemoBadge } from "@/components/woorijip/app-shell"
+import { AppShell } from "@/components/woorijip/app-shell"
 import { EmptyState } from "@/components/woorijip/state-views"
 import { formatDateKeyFull } from "@/lib/calendar/date"
 import { canDeleteChore, canEditChore, canToggleChore } from "@/lib/chores/permissions"
@@ -42,16 +42,9 @@ export function ChoreDetailScreen({ id }: { id: string }) {
   const { busyId, mark } = useBusyId()
   const returnFocus = useReturnFocus()
 
-  const header = (
-    <Button variant="ghost" size="icon" aria-label="집안일 목록으로 돌아가기" onClick={() => router.push("/chores")}>
-      <ArrowLeft className="size-5" aria-hidden="true" />
-    </Button>
-  )
-
   if (!chore) {
     return (
-      <AppShell title={header}>
-        <DemoBadge />
+      <AppShell title="집안일" back="/chores" backLabel="집안일 목록으로 돌아가기">
         <EmptyState
           icon={SearchX}
           title="이 집안일을 찾을 수 없어요"
@@ -90,11 +83,10 @@ export function ChoreDetailScreen({ id }: { id: string }) {
   }
 
   return (
-    <AppShell title={header}>
-      <DemoBadge />
+    <AppShell title="집안일" back="/chores" backLabel="집안일 목록으로 돌아가기">
       <DemoViewerSwitch />
 
-      <article className="flex flex-col gap-4 rounded-xl bg-card p-4 ring-1 ring-border">
+      <article className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant={done ? "secondary" : "outline"} className="h-6 gap-1 px-2">
             {done ? <Check aria-hidden="true" /> : <Clock aria-hidden="true" />}

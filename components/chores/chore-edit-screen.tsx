@@ -3,12 +3,11 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { SearchX, X } from "lucide-react"
+import { SearchX } from "lucide-react"
 
 import { useDemoViewer } from "@/components/demo/demo-viewer-provider"
 import { DemoViewerSwitch } from "@/components/mind/demo-viewer-switch"
 import { useReturnFocus } from "@/components/mind/use-return-focus"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -18,7 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { AppShell, DemoBadge } from "@/components/woorijip/app-shell"
+import { AppShell } from "@/components/woorijip/app-shell"
+import { FlowPage } from "@/components/woorijip/flow-page"
 import { EmptyState } from "@/components/woorijip/state-views"
 import { canEditChore } from "@/lib/chores/permissions"
 import type { ChoreDraft } from "@/lib/chores/types"
@@ -29,21 +29,13 @@ import { useChores } from "./chores-provider"
 
 /** 집안일 수정(전체 화면). 복사한 초안을 편집하고 저장 전에는 원본을 바꾸지 않는다. */
 export function ChoreEditScreen({ id }: { id: string }) {
-  const router = useRouter()
   const { family, viewerId } = useDemoViewer()
   const chores = useChores()
   const chore = chores.choreById(id)
   return chore && canEditChore(chore, viewerId) ? (
     <Editor key={chore.id} initial={choreToDraft(chore)} choreId={chore.id} family={family} />
   ) : (
-    <AppShell
-      title={
-        <Button variant="ghost" size="icon" aria-label="집안일 목록으로 돌아가기" onClick={() => router.push("/chores")}>
-          <X className="size-5" aria-hidden="true" />
-        </Button>
-      }
-    >
-      <DemoBadge />
+    <AppShell title="집안일" back="/chores" backLabel="집안일 목록으로 돌아가기">
       <DemoViewerSwitch />
       <EmptyState
         icon={SearchX}
@@ -97,22 +89,23 @@ function Editor({ initial, choreId, family }: { initial: ChoreDraft; choreId: st
   }
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-md items-center justify-between gap-2 px-4">
-          <Button variant="ghost" size="icon" aria-label="수정 닫기" onClick={requestClose}>
-            <X className="size-5" aria-hidden="true" />
+    <FlowPage
+      title="집안일 수정"
+      back={requestClose}
+      backLabel="수정 닫기"
+      action={
+        <div className="grid grid-cols-2 gap-2">
+          <Button variant="outline" size="lg" onClick={requestClose}>
+            취소
           </Button>
-          <p className="text-sm font-medium text-muted-foreground">집안일 수정</p>
+          <Button size="lg" type="submit" form="chore-edit-form" disabled={!dirty}>
+            저장
+          </Button>
         </div>
-      </header>
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 pt-4 pb-6">
-        <Badge variant="outline" className="h-6 self-start px-2.5 text-muted-foreground">
-          프론트 데모 · 실제 저장 및 알림 미연결
-        </Badge>
-        <h1 className="text-2xl leading-snug font-bold tracking-tight">집안일 수정</h1>
-        <ChoreForm formId="chore-edit-form" draft={draft} family={family} onChange={(p) => setDraft((d) => ({ ...d, ...p }))} onSubmit={save} />
-      </main>
+      }
+    >
+      <p className="text-sm text-muted-foreground">저장하기 전까지 원래 집안일은 바뀌지 않아요. 실제 저장·알림은 없어요.</p>
+      <ChoreForm formId="chore-edit-form" draft={draft} family={family} onChange={(p) => setDraft((d) => ({ ...d, ...p }))} onSubmit={save} />
 
       <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>
         <DialogContent onCloseAutoFocus={returnFocus.onCloseAutoFocus}>
@@ -136,17 +129,6 @@ function Editor({ initial, choreId, family }: { initial: ChoreDraft; choreId: st
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <footer className="sticky bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto grid max-w-md grid-cols-2 gap-2 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+--spacing(3))]">
-          <Button variant="outline" size="lg" onClick={requestClose}>
-            취소
-          </Button>
-          <Button size="lg" type="submit" form="chore-edit-form" disabled={!dirty}>
-            저장
-          </Button>
-        </div>
-      </footer>
-    </div>
+    </FlowPage>
   )
 }

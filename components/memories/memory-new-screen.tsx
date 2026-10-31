@@ -3,16 +3,16 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { AlertCircle, CircleCheck, ImagePlus, Loader2, X } from "lucide-react"
+import { AlertCircle, CircleCheck, ImagePlus, Loader2 } from "lucide-react"
 
 import { useCalendar } from "@/components/calendar/calendar-provider"
 import { DemoViewerSwitch } from "@/components/mind/demo-viewer-switch"
 import { useReturnFocus } from "@/components/mind/use-return-focus"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { FlowPage } from "@/components/woorijip/flow-page"
 import { LeaveDialog } from "@/components/woorijip/leave-dialog"
 import { isValidDateKey } from "@/lib/calendar/date"
 import { MEMORY_ACCEPT_ATTR, MEMORY_ACCEPT_LABEL, MEMORY_CAPTION_MAX, MEMORY_MAX_LABEL } from "@/lib/memories/config"
@@ -49,6 +49,7 @@ export function MemoryNewScreen() {
 
   const dateValid = isValidDateKey(draft.memoryDate)
   const canSubmit = !!pendingAsset && dateValid && !picking && draft.step === "compose"
+  const done = draft.step === "done"
 
   async function handleFiles(files: FileList | null) {
     const file = files?.[0]
@@ -86,159 +87,177 @@ export function MemoryNewScreen() {
       return
     }
     // 완료 화면을 떠나면 다음 방문은 새 작성으로 시작한다(등록된 사진은 해제되지 않는다).
-    if (draft.step === "done") mem.resetDraft()
+    if (done) mem.resetDraft()
     router.push("/memories")
   }
 
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-md items-center justify-between gap-2 px-4">
-          <Button variant="ghost" size="icon" aria-label="작성 닫기" onClick={close}>
-            <X className="size-5" aria-hidden="true" />
-          </Button>
-          <p className="text-sm font-medium text-muted-foreground">{draft.step === "done" ? "완료" : "추억 등록"}</p>
-        </div>
-      </header>
-
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 pt-4 pb-6">
-        <Badge variant="outline" className="h-6 self-start px-2.5 text-muted-foreground">
-          프론트 데모 · 실제 업로드 및 가족 공유 미연결
-        </Badge>
-        <DemoViewerSwitch />
-        <h1 className="text-2xl leading-snug font-bold tracking-tight">
-          {draft.step === "done" ? "데모 추억에 추가했어요" : "어떤 순간을 남길까요?"}
-        </h1>
-
-        {draft.step === "done" ? (
-          <div className="flex flex-col items-center gap-3 rounded-xl bg-card px-6 py-10 text-center ring-1 ring-border">
-            <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-primary">
-              <CircleCheck className="size-6" aria-hidden="true" />
-            </span>
-            <p className="font-semibold">데모 추억에 추가했어요</p>
-            <p className="text-sm text-muted-foreground">
-              실제 업로드나 가족에게 전송은 하지 않았어요. 이 탭에서만 보이고 새로고침하면 사라져요.
-            </p>
+    <FlowPage
+      title={done ? "추억을 남겼어요" : "한 장의 추억 남기기"}
+      eyebrow={done ? "완료" : "새 추억"}
+      back={close}
+      backLabel="작성 닫기"
+      action={
+        done ? (
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" size="lg" asChild>
+              <Link href="/memories" onClick={() => mem.resetDraft()}>
+                목록으로
+              </Link>
+            </Button>
+            <Button size="lg" asChild>
+              <Link href={`/memories/${draft.createdPostId}`} onClick={() => mem.resetDraft()}>
+                추억 보기
+              </Link>
+            </Button>
+            <Button variant="ghost" className="col-span-2" onClick={() => mem.resetDraft()}>
+              새 추억 등록
+            </Button>
           </div>
         ) : (
           <>
-            <section aria-labelledby="mem-photo-label" className="flex flex-col gap-2">
-              <h2 id="mem-photo-label" className="text-sm font-semibold text-muted-foreground">
-                사진 <span className="text-destructive" aria-hidden="true">*</span>
-                <span className="sr-only"> (필수)</span>
-              </h2>
-              <input
-                ref={inputRef}
-                type="file"
-                accept={MEMORY_ACCEPT_ATTR}
-                className="sr-only"
-                tabIndex={-1}
-                aria-hidden="true"
-                onChange={(e) => void handleFiles(e.target.files)}
-              />
-              {pendingAsset ? (
-                <div className="flex flex-col gap-2">
-                  <div className="aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted ring-1 ring-border">
-                    <MemoryImage asset={pendingAsset} alt="선택한 사진 미리보기" fit="contain" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" onClick={() => inputRef.current?.click()} disabled={picking}>
-                      사진 교체
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => {
-                        requestRef.current++
-                        setPicking(false)
-                        setPickError(null)
-                        mem.clearPendingAsset()
-                      }}
-                    >
-                      선택 취소
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-input bg-card px-6 py-8 text-center">
-                  <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-primary">
-                    <ImagePlus className="size-6" aria-hidden="true" />
-                  </span>
-                  <Button onClick={() => inputRef.current?.click()} disabled={picking} aria-describedby="mem-photo-hint">
-                    {picking ? (
-                      <>
-                        <Loader2 className="motion-safe:animate-spin" aria-hidden="true" />
-                        사진을 확인하는 중
-                      </>
-                    ) : (
-                      "사진 선택"
-                    )}
-                  </Button>
-                  <p id="mem-photo-hint" className="text-sm text-muted-foreground">
-                    {MEMORY_ACCEPT_LABEL} · {MEMORY_MAX_LABEL} 이하 · 한 장
-                  </p>
-                </div>
-              )}
-              {picking && pendingAsset && (
-                <p role="status" className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />
-                  사진을 확인하는 중
-                </p>
-              )}
-              {pickError && (
-                <p role="alert" className="flex items-start gap-1.5 text-sm text-destructive">
-                  <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-                  {pickError}
-                </p>
-              )}
-            </section>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="mem-date" className="text-sm font-semibold text-muted-foreground">
-                추억 날짜 <span className="text-destructive" aria-hidden="true">*</span>
-                <span className="sr-only"> (필수)</span>
-              </Label>
-              <Input
-                id="mem-date"
-                type="date"
-                value={draft.memoryDate}
-                max={cal.today}
-                aria-invalid={dateTouched && !dateValid ? true : undefined}
-                aria-describedby={dateTouched && !dateValid ? "mem-date-error" : undefined}
-                onBlur={() => setDateTouched(true)}
-                onChange={(e) => mem.updateDraft({ memoryDate: e.target.value })}
-              />
-              {dateTouched && !dateValid && (
-                <p id="mem-date-error" role="alert" className="flex items-center gap-1.5 text-sm text-destructive">
-                  <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
-                  날짜를 골라 주세요.
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="mem-caption" className="text-sm font-semibold text-muted-foreground">
-                설명 (선택)
-              </Label>
-              <Textarea
-                id="mem-caption"
-                value={draft.caption}
-                maxLength={MEMORY_CAPTION_MAX}
-                rows={3}
-                placeholder="이날의 이야기를 짧게 남겨도 좋아요."
-                aria-describedby="mem-caption-count"
-                onChange={(e) => mem.updateDraft({ caption: e.target.value })}
-              />
-              <p id="mem-caption-count" className="self-end text-sm text-muted-foreground tabular-nums">
-                {draft.caption.length} / {MEMORY_CAPTION_MAX}
+            <Button size="lg" disabled={!canSubmit} aria-busy={picking} onClick={submit}>
+              추억 등록
+            </Button>
+            {!canSubmit && (
+              <p className="text-center text-sm text-muted-foreground">
+                {picking ? "사진을 확인하고 있어요." : !pendingAsset ? "사진을 고르면 등록할 수 있어요." : "추억 날짜를 골라 주세요."}
               </p>
-            </div>
-
-            <p className="rounded-xl bg-secondary px-4 py-3 text-sm">
-              이 데모에서는 현재 브라우저 탭에서만 표시되며, 새로고침하면 사라져요. 실제 업로드·가족 공유는 아직 없어요.
-            </p>
+            )}
           </>
-        )}
-      </main>
+        )
+      }
+    >
+      <DemoViewerSwitch />
+
+      {done ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl bg-card px-6 py-10 text-center ring-1 ring-border">
+          <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-primary">
+            <CircleCheck className="size-6" aria-hidden="true" />
+          </span>
+          <p className="font-semibold">데모 추억에 추가했어요</p>
+          <p className="text-sm text-muted-foreground">
+            실제 업로드나 가족에게 전송은 하지 않았어요. 이 탭에서만 보이고 새로고침하면 사라져요.
+          </p>
+        </div>
+      ) : (
+        <>
+          <section aria-labelledby="mem-photo-label" className="flex flex-col gap-2">
+            <h2 id="mem-photo-label" className="text-sm font-semibold text-muted-foreground">
+              사진 <span className="text-destructive" aria-hidden="true">*</span>
+              <span className="sr-only"> (필수)</span>
+            </h2>
+            <input
+              ref={inputRef}
+              type="file"
+              accept={MEMORY_ACCEPT_ATTR}
+              className="sr-only"
+              tabIndex={-1}
+              aria-hidden="true"
+              onChange={(e) => void handleFiles(e.target.files)}
+            />
+            {pendingAsset ? (
+              <div className="flex flex-col gap-2">
+                <div className="aspect-[4/3] w-full overflow-hidden rounded-lg bg-muted ring-1 ring-border">
+                  <MemoryImage asset={pendingAsset} alt="선택한 사진 미리보기" fit="contain" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" onClick={() => inputRef.current?.click()} disabled={picking}>
+                    사진 교체
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      requestRef.current++
+                      setPicking(false)
+                      setPickError(null)
+                      mem.clearPendingAsset()
+                    }}
+                  >
+                    선택 취소
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-input bg-card px-6 py-8 text-center">
+                <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-primary">
+                  <ImagePlus className="size-6" aria-hidden="true" />
+                </span>
+                <Button onClick={() => inputRef.current?.click()} disabled={picking} aria-describedby="mem-photo-hint">
+                  {picking ? (
+                    <>
+                      <Loader2 className="motion-safe:animate-spin" aria-hidden="true" />
+                      사진을 확인하는 중
+                    </>
+                  ) : (
+                    "사진 선택"
+                  )}
+                </Button>
+                <p id="mem-photo-hint" className="text-sm text-muted-foreground">
+                  {MEMORY_ACCEPT_LABEL} · {MEMORY_MAX_LABEL} 이하 · 한 장
+                </p>
+              </div>
+            )}
+            {picking && pendingAsset && (
+              <p role="status" className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />
+                사진을 확인하는 중
+              </p>
+            )}
+            {pickError && (
+              <p role="alert" className="flex items-start gap-1.5 text-sm text-destructive">
+                <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                {pickError}
+              </p>
+            )}
+          </section>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="mem-date" className="text-sm font-semibold text-muted-foreground">
+              추억 날짜 <span className="text-destructive" aria-hidden="true">*</span>
+              <span className="sr-only"> (필수)</span>
+            </Label>
+            <Input
+              id="mem-date"
+              type="date"
+              value={draft.memoryDate}
+              max={cal.today}
+              aria-invalid={dateTouched && !dateValid ? true : undefined}
+              aria-describedby={dateTouched && !dateValid ? "mem-date-error" : undefined}
+              onBlur={() => setDateTouched(true)}
+              onChange={(e) => mem.updateDraft({ memoryDate: e.target.value })}
+            />
+            {dateTouched && !dateValid && (
+              <p id="mem-date-error" role="alert" className="flex items-center gap-1.5 text-sm text-destructive">
+                <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
+                날짜를 골라 주세요.
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="mem-caption" className="text-sm font-semibold text-muted-foreground">
+              설명 (선택)
+            </Label>
+            <Textarea
+              id="mem-caption"
+              value={draft.caption}
+              maxLength={MEMORY_CAPTION_MAX}
+              rows={3}
+              placeholder="이날의 이야기를 짧게 남겨도 좋아요."
+              aria-describedby="mem-caption-count"
+              onChange={(e) => mem.updateDraft({ caption: e.target.value })}
+            />
+            <p id="mem-caption-count" className="self-end text-sm text-muted-foreground tabular-nums">
+              {draft.caption.length} / {MEMORY_CAPTION_MAX}
+            </p>
+          </div>
+
+          <p className="rounded-lg bg-secondary px-4 py-3 text-sm">
+            이 데모에서는 현재 브라우저 탭에서만 표시되며, 새로고침하면 사라져요. 실제 업로드·가족 공유는 아직 없어요.
+          </p>
+        </>
+      )}
 
       <LeaveDialog
         open={leaveOpen}
@@ -252,39 +271,6 @@ export function MemoryNewScreen() {
         }}
         description="앱 안에서 다른 화면으로 가면 선택한 사진과 입력은 유지돼요. 새로고침하거나 탭을 닫으면 사라져요(메모리에만 있는 데모예요)."
       />
-
-      <footer className="sticky bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto grid max-w-md gap-2 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+--spacing(3))]">
-          {draft.step === "done" ? (
-            <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" size="lg" asChild>
-                <Link href="/memories" onClick={() => mem.resetDraft()}>
-                  목록으로
-                </Link>
-              </Button>
-              <Button size="lg" asChild>
-                <Link href={`/memories/${draft.createdPostId}`} onClick={() => mem.resetDraft()}>
-                  추억 보기
-                </Link>
-              </Button>
-              <Button variant="ghost" className="col-span-2" onClick={() => mem.resetDraft()}>
-                새 추억 등록
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Button size="lg" disabled={!canSubmit} aria-busy={picking} onClick={submit}>
-                추억 등록
-              </Button>
-              {!canSubmit && (
-                <p className="text-center text-sm text-muted-foreground">
-                  {picking ? "사진을 확인하고 있어요." : !pendingAsset ? "사진을 고르면 등록할 수 있어요." : "추억 날짜를 골라 주세요."}
-                </p>
-              )}
-            </>
-          )}
-        </div>
-      </footer>
-    </div>
+    </FlowPage>
   )
 }

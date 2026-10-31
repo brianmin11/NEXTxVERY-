@@ -1,17 +1,18 @@
 "use client"
 
 import Link from "next/link"
-import { ImagePlus, Images } from "lucide-react"
+import { Camera, ImagePlus, Images } from "lucide-react"
 
 import { useDemoViewer } from "@/components/demo/demo-viewer-provider"
 import { DemoViewerSwitch } from "@/components/mind/demo-viewer-switch"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { AppShell, DemoBadge } from "@/components/woorijip/app-shell"
-import { PhotoCard } from "@/components/woorijip/photo-card"
+import { AppShell } from "@/components/woorijip/app-shell"
 import { EmptyState } from "@/components/woorijip/state-views"
 import { formatDateKey } from "@/lib/calendar/date"
 import { findMember } from "@/lib/home.fixture"
 import type { MemoryPost } from "@/lib/memories/types"
+import { cn } from "@/lib/utils"
 
 import { MemoryImage } from "./memory-image"
 import { useMemories } from "./memories-provider"
@@ -21,66 +22,78 @@ export function memoryAlt(post: MemoryPost, authorName: string) {
   return post.caption.trim() || `${formatDateKey(post.memoryDate)} ${authorName}이(가) 올린 사진`
 }
 
-/** 가족 추억 목록(2열). 추억 날짜 내림차순, 같은 날짜는 등록 시각 내림차순. */
+/** 가족 추억 목록. 첫 장면은 가로로 넓게, 나머지는 정사각 타일. 추억 날짜 내림차순, 같은 날짜는 등록 시각 내림차순. */
 export function MemoriesScreen() {
   const { family } = useDemoViewer()
   const { sortedPosts, assetById } = useMemories()
 
   return (
     <AppShell
-      title={<h1 className="text-lg font-bold">가족 추억</h1>}
+      title="추억"
+      eyebrow={`${sortedPosts.length}개의 장면`}
+      flush
       actions={
-        <Button variant="ghost" asChild>
+        <Button variant="ghost" size="icon" className="rounded-full" aria-label="추억 등록" asChild>
           <Link href="/memories/new">
-            <ImagePlus aria-hidden="true" />
-            추억 등록
+            <Camera className="size-5" aria-hidden="true" />
           </Link>
         </Button>
       }
     >
-      <DemoBadge />
-      <DemoViewerSwitch />
-      <p className="text-sm text-muted-foreground">
-        이 데모의 사진은 현재 브라우저 탭에서만 보이고 새로고침하면 사라져요. 실제 저장·가족 공유가 아니에요.
-      </p>
+      <div className="flex flex-col gap-3 px-4">
+        <DemoViewerSwitch />
+        <p className="text-sm text-muted-foreground">
+          이 데모의 사진은 현재 브라우저 탭에서만 보이고 새로고침하면 사라져요. 실제 저장·가족 공유가 아니에요.
+        </p>
+      </div>
 
       {sortedPosts.length === 0 ? (
-        <EmptyState
-          icon={Images}
-          title="아직 추억이 없어요"
-          description="첫 사진을 올려 가족과 함께 간직해 보세요."
-          action={
-            <Button asChild>
-              <Link href="/memories/new">
-                <ImagePlus aria-hidden="true" />
-                추억 등록
-              </Link>
-            </Button>
-          }
-        />
+        <div className="px-4">
+          <EmptyState
+            icon={Images}
+            title="아직 추억이 없어요"
+            description="첫 사진을 올려 가족과 함께 간직해 보세요."
+            action={
+              <Button asChild>
+                <Link href="/memories/new">
+                  <ImagePlus aria-hidden="true" />
+                  추억 등록
+                </Link>
+              </Button>
+            }
+          />
+        </div>
       ) : (
-        <ul className="grid grid-cols-2 gap-3">
-          {sortedPosts.map((post) => {
+        <ul className="grid grid-cols-2 gap-0.5 p-0.5">
+          {sortedPosts.map((post, i) => {
             const asset = assetById(post.assetId)
             const author = findMember(family, post.authorId)
             if (!asset || !author) return null
             const alt = memoryAlt(post, author.name)
+            const wide = i === 0
             return (
-              <li key={post.id}>
+              <li key={post.id} className={cn(wide && "col-span-2")}>
                 <Link
                   href={`/memories/${post.id}`}
                   aria-label={`${alt} · 상세 보기`}
-                  className="block rounded-xl outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:opacity-90"
+                  className={cn(
+                    "relative block w-full overflow-hidden bg-muted outline-none focus-visible:ring-3 focus-visible:ring-ring/70 focus-visible:ring-inset active:opacity-90",
+                    wide ? "aspect-[4/3] max-h-72" : "aspect-square"
+                  )}
                 >
-                  <PhotoCard
-                    caption={post.caption || "설명 없음"}
-                    dateLabel={formatDateKey(post.memoryDate)}
-                    dateTime={post.memoryDate}
-                    uploader={author}
-                    media={<MemoryImage asset={asset} alt="" fit="cover" />}
-                    aspect="square"
-                    badge={post.seed ? "예시" : undefined}
-                  />
+                  <MemoryImage asset={asset} alt="" fit="cover" />
+                  <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-[60%] bg-[linear-gradient(transparent,rgb(18_21_18/0.72))]" />
+                  <span aria-hidden="true" className="pointer-events-none absolute right-3 bottom-3 left-3 flex flex-col gap-0.5 text-left">
+                    <span className="line-clamp-1 text-sm font-bold text-white">{post.caption || "설명 없음"}</span>
+                    <time className="text-xs text-white/85 tabular-nums" dateTime={post.memoryDate}>
+                      {formatDateKey(post.memoryDate)}
+                    </time>
+                  </span>
+                  {post.seed && (
+                    <Badge variant="outline" className="absolute top-2 left-2 h-6 bg-card/90 px-2 text-muted-foreground">
+                      예시
+                    </Badge>
+                  )}
                 </Link>
               </li>
             )

@@ -1,11 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { CalendarDays, Check, ChevronRight, Clock } from "lucide-react"
+import { Check, ChevronRight, Clock } from "lucide-react"
 
-import { FamilyAvatar } from "@/components/home/family-avatar"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
 import { formatDateKey } from "@/lib/calendar/date"
 import type { DateKey } from "@/lib/calendar/types"
 import { canToggleChore } from "@/lib/chores/permissions"
@@ -32,8 +29,8 @@ type ChoreCardProps = {
 }
 
 /**
- * 완료 조작(왼쪽 체크)과 상세 진입(오른쪽 링크)은 형제 요소다. 버튼 안에 버튼을 넣지 않는다.
- * 완료 여부는 체크 아이콘 + 상태 텍스트 + 접근 가능한 이름으로 함께 전달한다.
+ * 집안일 한 줄(Figma 행). 완료 조작(왼쪽 체크)과 상세 진입(오른쪽 링크)은 형제 요소다. 버튼 안에 버튼을 넣지 않는다.
+ * 부모 목록이 경계선(divide-y)을 그리고, 완료 여부는 체크 아이콘 + 취소선 + 접근 가능한 이름으로 함께 전달한다.
  */
 export function ChoreCard({ chore, family, viewerId, today, busy = false, onSetStatus }: ChoreCardProps) {
   const assignee = findMember(family, chore.assigneeMemberId)
@@ -42,72 +39,60 @@ export function ChoreCard({ chore, family, viewerId, today, busy = false, onSetS
   const allowed = canToggleChore(chore, viewerId)
   const checkLabel = done ? `'${chore.title}' 완료 취소` : `'${chore.title}' 완료로 표시`
 
+  const circle = (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex size-[22px] items-center justify-center rounded-full border-[1.5px]",
+        done ? "border-primary bg-primary text-primary-foreground" : allowed ? "border-input bg-card" : "border-border bg-muted"
+      )}
+    >
+      {done && <Check className="size-3.5" strokeWidth={3} />}
+    </span>
+  )
+
   return (
-    <Card size="sm" className="py-0">
-      <div className="flex items-stretch gap-1 py-1 pr-1 pl-2">
-        {allowed ? (
-          <button
-            type="button"
-            role="checkbox"
-            aria-checked={done}
-            aria-label={checkLabel}
-            disabled={busy}
-            onClick={(e) => onSetStatus(chore.id, done ? "todo" : "done", e.currentTarget)}
-            className={cn(
-              "flex w-11 shrink-0 items-center justify-center self-center rounded-lg outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted disabled:opacity-50",
-              "min-h-11"
-            )}
-          >
-            <span
-              aria-hidden="true"
-              className={cn(
-                "flex size-6 items-center justify-center rounded-full border-2",
-                done ? "border-primary bg-primary text-primary-foreground" : "border-input bg-card"
-              )}
-            >
-              {done && <Check className="size-4" strokeWidth={3} />}
-            </span>
-          </button>
-        ) : (
-          <span className="flex w-11 shrink-0 items-center justify-center self-center" aria-hidden="true">
-            <span className={cn("flex size-6 items-center justify-center rounded-full border-2", done ? "border-primary bg-primary text-primary-foreground" : "border-border bg-muted")}>
-              {done && <Check className="size-4" strokeWidth={3} />}
-            </span>
-          </span>
-        )}
-        <Link
-          href={`/chores/${chore.id}`}
-          className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg py-2 pr-1 pl-1 outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted"
+    <div className="flex items-center gap-2 py-2 pr-1">
+      {allowed ? (
+        <button
+          type="button"
+          role="checkbox"
+          aria-checked={done}
+          aria-label={checkLabel}
+          disabled={busy}
+          onClick={(e) => onSetStatus(chore.id, done ? "todo" : "done", e.currentTarget)}
+          className="flex min-h-11 w-11 shrink-0 items-center justify-center self-center rounded-md outline-none transition-colors hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted disabled:opacity-50"
         >
-          <span className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className={cn("font-semibold", done && "text-muted-foreground line-through")}>
-              {chore.title}
-              <span className="sr-only">{done ? ", 완료" : ", 할 일"}</span>
-            </span>
-            <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-              {assignee && (
-                <span className="flex items-center gap-1">
-                  <FamilyAvatar member={assignee} size={20} decorative />
-                  {assignee.name}
-                </span>
-              )}
-              <span className="flex items-center gap-1 tabular-nums">
-                <CalendarDays className="size-3.5" aria-hidden="true" />
-                {due.text}
-              </span>
-              {due.overdue && (
-                <Badge variant="outline" className="h-5 gap-1 px-1.5 text-muted-foreground">
-                  <Clock aria-hidden="true" />
-                  기한 지남
-                </Badge>
-              )}
-              {!allowed && !done && <span className="sr-only">담당자나 작성자만 완료 표시할 수 있어요</span>}
-            </span>
+          {circle}
+        </button>
+      ) : (
+        <span className="flex min-h-11 w-11 shrink-0 items-center justify-center self-center" aria-hidden="true">
+          {circle}
+        </span>
+      )}
+      <Link
+        href={`/chores/${chore.id}`}
+        className="flex min-h-15 min-w-0 flex-1 items-center gap-2 rounded-md py-1 pr-1 pl-1 outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset active:bg-muted"
+      >
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className={cn("font-semibold", done && "text-muted-foreground line-through")}>
+            {chore.title}
+            <span className="sr-only">{done ? ", 완료" : ", 할 일"}</span>
           </span>
-          <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          <span className="sr-only">상세 보기</span>
-        </Link>
-      </div>
-    </Card>
+          <span className="text-sm text-muted-foreground">
+            {assignee?.name ?? "가족"}에게 지정됨 · <span className="tabular-nums">{due.text}</span>
+          </span>
+          {due.overdue && (
+            <span className="flex items-center gap-1 text-xs text-destructive">
+              <Clock className="size-3.5" aria-hidden="true" />
+              기한이 지났어요
+            </span>
+          )}
+          {!allowed && !done && <span className="sr-only">담당자나 작성자만 완료 표시할 수 있어요</span>}
+        </span>
+        <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <span className="sr-only">상세 보기</span>
+      </Link>
+    </div>
   )
 }

@@ -8,7 +8,7 @@ import { useDemoViewer } from "@/components/demo/demo-viewer-provider"
 import { DemoViewerSwitch } from "@/components/mind/demo-viewer-switch"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { AppShell, DemoBadge } from "@/components/woorijip/app-shell"
+import { AppShell } from "@/components/woorijip/app-shell"
 import { EmptyState } from "@/components/woorijip/state-views"
 import type { ChoreStatus } from "@/lib/chores/types"
 
@@ -59,43 +59,44 @@ export function ChoresScreen() {
 
   return (
     <AppShell
-      title={<h1 className="text-lg font-bold">집안일</h1>}
+      title="집안일"
+      mainClassName="gap-4"
       actions={
-        <Button variant="ghost" asChild>
+        <Button variant="ghost" size="icon" className="rounded-full" aria-label="할 일 추가" asChild>
           <Link href="/chores/new">
-            <Plus aria-hidden="true" />
-            추가
+            <Plus className="size-5" aria-hidden="true" />
           </Link>
         </Button>
       }
     >
-      <DemoBadge />
       <DemoViewerSwitch />
       <p className="text-sm text-muted-foreground">메모리에만 있는 데모예요. 새로고침하면 추가·완료 기록이 사라져요.</p>
 
-      <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)}>
-        <TabsList aria-label="범위" className="w-full">
-          <TabsTrigger value="mine" className="flex-1">
-            내 할 일
-          </TabsTrigger>
-          <TabsTrigger value="all" className="flex-1">
-            가족 전체
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-      <Tabs value={status} onValueChange={(v) => setStatus(v as ChoreStatus)}>
-        <TabsList aria-label="상태" className="w-full">
-          <TabsTrigger value="todo" className="flex-1">
-            할 일
-          </TabsTrigger>
-          <TabsTrigger value="done" className="flex-1">
-            완료
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="-mx-4 flex flex-col gap-1">
+        <Tabs value={scope} onValueChange={(v) => setScope(v as Scope)}>
+          <TabsList aria-label="범위" className="w-full">
+            <TabsTrigger value="mine" className="flex-1">
+              내 할 일
+            </TabsTrigger>
+            <TabsTrigger value="all" className="flex-1">
+              가족 전체
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Tabs value={status} onValueChange={(v) => setStatus(v as ChoreStatus)}>
+          <TabsList aria-label="상태" className="w-full">
+            <TabsTrigger value="todo" className="flex-1">
+              할 일
+            </TabsTrigger>
+            <TabsTrigger value="done" className="flex-1">
+              완료
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
 
       {notice && (
-        <p role="status" className="rounded-xl bg-secondary px-4 py-2 text-sm">
+        <p role="status" className="rounded-lg bg-secondary px-4 py-2 text-sm">
           {notice}
         </p>
       )}
@@ -117,13 +118,18 @@ export function ChoresScreen() {
           }
         />
       ) : (
-        <ul className="flex flex-col gap-2" aria-label={`${scope === "mine" ? "내" : "가족 전체"} ${status === "todo" ? "할 일" : "완료"} 목록`}>
-          {list.map((c) => (
-            <li key={c.id}>
-              <ChoreCard chore={c} family={family} viewerId={viewerId} today={chores.today} busy={busyId === c.id} onSetStatus={handleSetStatus} />
-            </li>
-          ))}
-        </ul>
+        <section className="flex flex-col gap-1" aria-label={`${scope === "mine" ? "내" : "가족 전체"} ${status === "todo" ? "할 일" : "완료"} 목록`}>
+          <p className="text-xs text-muted-foreground tabular-nums">
+            {status === "todo" ? "할 일" : "완료"} {list.length}
+          </p>
+          <ul className="flex flex-col divide-y divide-border border-t border-border">
+            {list.map((c) => (
+              <li key={c.id}>
+                <ChoreCard chore={c} family={family} viewerId={viewerId} today={chores.today} busy={busyId === c.id} onSetStatus={handleSetStatus} />
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </AppShell>
   )
