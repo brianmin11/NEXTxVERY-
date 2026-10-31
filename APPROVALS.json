@@ -19,5 +19,13 @@
     "branch": "codex/relationship-ai",
     "payload": "Relationship AI source, documentation and synthetic tests"
   },
-  "authorizationSource": "Explicit user replies approving branch push and synthetic evaluation up to USD12; no public deployment approval"
+  "authorizationSource": "Explicit user replies approving branch push and synthetic evaluation up to USD12; no public deployment approval",
+  "apiKeyPermissionEdit": {
+    "approved": true,
+    "keyName": "testkey",
+    "project": "Default project",
+    "added": "Responses Write",
+    "saved": true,
+    "authorizationSource": "User: save하고 바로 다음 단계까지 쭉 진행해줘"
+  }
 }

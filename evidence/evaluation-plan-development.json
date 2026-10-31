@@ -3,6 +3,7 @@
   "syntheticOnly": true,
   "model": "gpt-6.1-sol",
   "split": "development",
+  "offset": 0,
   "cases": 24,
   "maxCalls": 96,
   "retries": 0,

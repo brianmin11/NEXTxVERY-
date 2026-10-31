@@ -1,35 +1,29 @@
-2026-10-31 KST
-Repository: brianmin11/NEXTxVERY- (empty at clone)
+2026-10-31 KST — partial live evaluation checkpoint
+Repository: brianmin11/NEXTxVERY-
 Branch: codex/relationship-ai
-Package: @family-os/relationship-ai, schema 1.0
+Package: @family-os/relationship-ai, schema 1.0, prompt ko-relationship-2
 
-Completed local implementation:
-- Strict personal/shared contracts and bounded model runner.
-- Personal expression, private share draft with safety disposition, approved-card issue and agreement generation, revision/defer/decline.
-- SharedPrior hash/scope/source/latest-version checks; no acceptance inheritance.
-- Deterministic ChangePlanDraft, date/recurrence/overlap validation, transitive artifact invalidation.
-- OpenAI Responses SDK adapter; test-only adapter explicitly separated; no fallback.
-- 24 development and 8 holdout synthetic cases; evaluation runner, human rubric, JSON schema/examples, backend guide.
+Completed:
+- Independent TypeScript core, privacy/source/version boundaries, draft-only deterministic ChangePlan, OpenAI adapter, bounded runtime, schemas/examples/backend integration guide.
+- Responses Write edit explicitly approved, saved, and UI re-open verified.
+- Live model responses observed; semantic speaker attribution defect fixed in prompt2.
+- Evaluation offset/checkpoints/provenance, reflection/clarification stops, known failed-response usage preservation, cumulative limits, summary and blank human review export.
+- Typecheck/build and 68/68 local tests passed; independent QA reviewed 507f444, remaining checkpoint concerns subsequently fixed by main.
 
-Evidence:
-- npm run typecheck and npm run build passed.
-- 64/64 node:test checks passed (including cumulative evaluation-budget tests), evidence/local-tests.tap.
-- Independent QA at 3a067aa956bf479000f9bae71448956e1d06c170 passed all local commands and targeted regression reproduction.
-- Provider serialization/refusal/truncation/rate-limit tested through injected fake HTTP transport, NOT live provider.
-- Free eval plans: evidence/evaluation-plan-{development,holdout}.json.
+Actual evaluation status:
+- 22 cumulative inference requests; 12 returned observable usage; 10 permission denials with unknown usage.
+- Known-usage estimate subtotal USD0.093510; actual billed cost unknown.
+- Reserved USD1.795904 / USD12 and 22 / 128 slots, no auto retries.
+- Latest development: K01-K08 clarification_required; K09-K11 errors; K12-K24 unattempted. K09 personal stage completed before share permission error.
+- Holdout not started. Full live pipeline and human Korean quality review NOT complete.
+- Repeated intermittent HTTP401 missing api.responses.write despite saved permission and matching local key; further calls stopped to avoid repeated failures.
 
-Not complete / not claimed:
-- Two authorized synthetic inference attempts denied (HTTP401, missing api.responses.write). Key configured and model retrieval succeeded; no successful generation or human language-quality ratings.
-- No real user/child data, auth/RLS/storage/deletion/approval/calendar integration, browser UI, deployment, family relationship effects or payment willingness verification.
+Not claimed:
+- Real user/child data evaluation, auth/RLS/storage/deletion/approval/calendar integration, deployed UI, family benefit or payment willingness.
 
-Approved scope (explicit user reply):
-- OpenAI GPT-6.1 Sol; synthetic adult-roleplay only; development24 + holdout8, <=128 calls, 0 retries, output cap1200, input bytes32768.
-- Planning estimate USD2.304, conservative reservation USD10.448896, proposed total cap USD12 (tax/contract extras excluded).
-- Explicit paid-call and branch-push approval recorded in APPROVALS.json. Configure OPENAI_API_KEY in local ignored .env.local or server environment; never in chat/git.
-- Account access preflight before inference. Inspect development errors before holdout; extra tuning reruns require remaining authorized budget/call scope, otherwise new approval.
+Next:
+- Resolve/allow propagation of provider permission, then resume K12 (offset11), inspect K09-K11, finish development, freeze prompt, run holdout within remaining approval.
+- Preserve eval/results/budget.json; never reset approval ledger.
+- Human reviewers complete eval/results/human-review.jsonl; host developer runs integration checklist.
 
-API key preflight after approval: process environment and project .env.local absent; live evaluation not started.
-
-Paid evaluation preflight attempted after approval: stopped before provider request because key missing. Cumulative 128-call/USD12 ledger added and tested across restarts/concurrency.
-
-Latest live checkpoint: key configured, Models Read works, Responses Write missing (api.responses.write). Two attempts consumed reservation 0.163264USD / 2 of 128 slots; this is NOT observed billing. Actual token usage/cost unknown. Holdout not started. Local checks now 65/65 passed; diagnostic errors expose only HTTP status/scope names.
+Evidence: evidence/local-tests.tap, evidence/live-evaluation-status.json, docs/LIVE-EVALUATION.md, docs/INTEGRATION.md.

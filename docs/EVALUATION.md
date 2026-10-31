@@ -1,12 +1,12 @@
 # 평가 실행과 해석
 
-개발용 24개는 제공된 연구 합성 seed다. holdout 8개는 별도로 작성했으며 지금까지 실모델 실행 이력이 없다. 원문 seed에는 서버 동작 사례도 포함돼 있어 텍스트 모델 평가만으로 전체 시나리오가 검증되지는 않는다. 서버 경계는 node:test, 언어 품질은 사람 평가로 나눈다.
+개발용 24개는 제공된 연구 합성 seed다. holdout 8개는 별도로 작성했다. 실제 실행 여부는 evidence/live-evaluation-status.json과 최신 평가 보고서를 기준으로 확인한다. 원문 seed에는 서버 동작 사례도 포함돼 있어 텍스트 모델 평가만으로 전체 시나리오가 검증되지는 않는다. 서버 경계는 node:test, 언어 품질은 사람 평가로 나눈다.
 
 ## 실행
 
 `npm run eval:plan`과 `npm run eval:plan -- --split holdout`은 무료 로컬 계획만 출력한다. live는 APPROVALS.json의 paidModelCalls=true, maxCostUsd 기록 및 명시 --budget-usd, OPENAI_API_KEY가 모두 필요하다. 이 파일은 사람이 승인한 범위를 메인이 기록하며 키 보유가 승인은 아니다. 키 값은 서버 env 또는 gitignored .env.local에만 두고 채팅·패킷·커밋에 넣지 않는다. .env.example을 참고한다.
 
-승인 후 예: `npm run eval:live -- --split development --budget-usd 12`. 첫 평가 전 models.retrieve로 계정 접근을 확인한다. 현재 환경에서는 키가 없어 계정별 접근을 확인하지 못했다. CLI는 개인 정리→공유→분석→합의의 최대4호출/사례, 자동 재시도0. 위험 입력은 먼저 개인 지원으로 중단한다. 공유 카드의 hostVerified는 **성인 역할극 합성 fixture**이며 실제 인증 승인이 아니다. 모델 실패를 성공·fixture로 대체하지 않는다.
+승인 후 예: `npm run eval:live -- --split development --budget-usd 12`. 첫 평가 전 models.retrieve로 계정 접근을 확인한다. 계정 모델 조회와 Responses Write 권한 저장을 확인했다. 권한 오류는 별도 기록하며 성공한 추론과 구분한다. CLI는 개인 정리→공유→분석→합의의 최대4호출/사례, 자동 재시도0. 위험 입력은 먼저 개인 지원으로 중단한다. 공유 카드의 hostVerified는 **성인 역할극 합성 fixture**이며 실제 인증 승인이 아니다. 모델 실패를 성공·fixture로 대체하지 않는다.
 
 연구 seed 대부분은 단일 화자의 설명으로 시작하므로 다른 당사자 관점은 미확인으로 남아야 한다. holdout H01/H07에는 별도로 작성한 상대의 합성 승인 카드도 제공한다. 각 카드는 테스트 호스트가 승인한 fixture이며 모델이 대신 승인하지 않는다. 합의 생성 뒤 compileChangePlan을 실행해 blockers도 기록한다.
 
@@ -32,6 +32,12 @@
 
 명시적 사용자 승인으로 합성 32사례·최대128호출·총USD12가 APPROVALS.json에 기록됐다. 개발/holdout/재시작 모두 eval/results/budget.json의 누적 예약을 공유하고 budget.lock으로 동시 집행을 거부한다. 실패/중단 예약도 환급하지 않는다. 충돌·손상·비정상 종료로 남은 lock은 이전 실행 및 공급자 사용량을 확인한 뒤 수동 복구한다. ledger 삭제로 승인을 재사용하지 않는다.
 
-승인 후 키 사전검사에서 OPENAI_API_KEY가 없어 중단됐다. 유료 모델 요청은 0회, 한국어 품질은 미검증이다.
+최신 실행·비용·미검증 상태는 `evidence/live-evaluation-status.json` 및 `docs/LIVE-EVALUATION.md`에 기록한다. 초기 키 미설정 및 HTTP401 요청도 누적 ledger와 실행 이력에 포함하며 삭제하지 않는다.
 
-최신 실행: 키 설정 후 모델 조회 성공. 첫 사례와 권한 진단 요청 총2회가 HTTP401 / missing api.responses.write로 거부됐다. 성공한 생성은0회. 청구 토큰·실제 비용은 응답에 없어 null이다. 예약액0.163264USD는 실제 비용이 아니다. 키 권한 수정 전까지 후속 평가를 중단한다.
+## 재개와 결과 검토
+
+`node dist/eval/run.js --live --split development --offset 5 --budget-usd 12`는 0-based offset 5부터 이어간다. 자동 재시도는 없고, 운영자가 이전 결과와 잔여 승인량을 확인한 뒤 실행한다. 모델 권한 오류 또는 예약 상한에 도달하면 중단한다. `REFLECTION_ONLY`, `PRIVATE_SUPPORT`, `CLARIFICATION_REQUIRED`는 공유/합의를 강제로 진행하지 않는 정상 종료이며 전체 단계 성공을 뜻하지 않는다.
+
+각 호출은 caseId/stage, prompt/schema/policy 버전, 코드·데이터 해시와 알려진 usage를 기록한다. 각 단계 후 checkpoint를 저장하고 부분 실행 사례와 미시도 사례를 분리한다. `captured`는 성공 검증 전 합성 모델 출력이며, 일반 제품 로그와 분리된 gitignored 평가 폴더에서만 보존한다. rejected 출력도 승인된 결과처럼 사용하지 않는다.
+
+`node dist/eval/summarize.js`는 누적 요청/예약/알려진 토큰 비용/불명 사용량을 분리한 `eval/results/summary.json`과 평가자 2명용 `human-review.jsonl`을 만든다. 사람 점수는 비어 있으며 모델이 대신 채우지 않는다. 과거 버전 및 진단 요청이 누적 비용에는 포함되므로 최신 사례 수와 전체 호출 수는 다르다.

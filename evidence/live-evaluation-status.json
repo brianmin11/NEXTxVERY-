@@ -1,21 +1,184 @@
 {
-  "status": "blocked_on_api_key_permission",
+  "generatedAt": "2026-10-31T14:52:16.617Z",
   "syntheticOnly": true,
-  "paidApproval": true,
-  "apiKeyAvailableAtCheck": true,
+  "reports": [
+    "development-1793457167784.json",
+    "development-1793457219971.json",
+    "development-1793457743361.json",
+    "development-1793457782173.json",
+    "development-1793457842763.json",
+    "development-1793457895276.json",
+    "development-1793457953498.json",
+    "development-1793458001855.json",
+    "development-1793458115790.json",
+    "development-1793458185557.json",
+    "development-1793458250468.json"
+  ],
+  "latestCases": {
+    "CLARIFICATION_REQUIRED": 8,
+    "ERROR": 3
+  },
+  "latestByCase": [
+    {
+      "id": "K01",
+      "split": "development",
+      "file": "development-1793458001855.json",
+      "status": "CLARIFICATION_REQUIRED",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K02",
+      "split": "development",
+      "file": "development-1793458001855.json",
+      "status": "CLARIFICATION_REQUIRED",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K03",
+      "split": "development",
+      "file": "development-1793458001855.json",
+      "status": "CLARIFICATION_REQUIRED",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K04",
+      "split": "development",
+      "file": "development-1793458001855.json",
+      "status": "CLARIFICATION_REQUIRED",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K05",
+      "split": "development",
+      "file": "development-1793458001855.json",
+      "status": "CLARIFICATION_REQUIRED",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K06",
+      "split": "development",
+      "file": "development-1793458115790.json",
+      "status": "CLARIFICATION_REQUIRED",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K07",
+      "split": "development",
+      "file": "development-1793458115790.json",
+      "status": "CLARIFICATION_REQUIRED",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K08",
+      "split": "development",
+      "file": "development-1793458115790.json",
+      "status": "CLARIFICATION_REQUIRED",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K09",
+      "split": "development",
+      "file": "development-1793458115790.json",
+      "status": "ERROR",
+      "code": "POLICY_RESTRICTED",
+      "stage": "share",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K10",
+      "split": "development",
+      "file": "development-1793458185557.json",
+      "status": "ERROR",
+      "code": "POLICY_RESTRICTED",
+      "stage": "personal",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    },
+    {
+      "id": "K11",
+      "split": "development",
+      "file": "development-1793458250468.json",
+      "status": "ERROR",
+      "code": "POLICY_RESTRICTED",
+      "stage": "personal",
+      "promptVersions": [
+        "ko-relationship-2"
+      ]
+    }
+  ],
+  "neverAttemptedCaseIds": [
+    "K12",
+    "K13",
+    "K14",
+    "K15",
+    "K16",
+    "K17",
+    "K18",
+    "K19",
+    "K20",
+    "K21",
+    "K22",
+    "K23",
+    "K24",
+    "H01",
+    "H02",
+    "H03",
+    "H04",
+    "H05",
+    "H06",
+    "H07",
+    "H08"
+  ],
+  "providerRequests": 22,
+  "observedUsageRequests": 12,
+  "unknownUsageRequests": 10,
+  "observedInputTokens": 9555,
+  "observedOutputTokens": 7440,
+  "knownUsageEstimatedCostUsd": 0.09351,
+  "actualBilledCostUsd": null,
+  "stageRequests": {
+    "legacy-unlabelled": 4,
+    "personal": 17,
+    "share": 1
+  },
+  "providerOrRuntimeErrors": {
+    "POLICY_RESTRICTED": 10
+  },
+  "latestCaseErrors": {
+    "POLICY_RESTRICTED": 3
+  },
+  "reservedCalls": 22,
+  "conservativeReservedUsd": 1.7959039999999995,
+  "remainingApprovedCallSlots": 106,
+  "humanRatings": "NOT_COLLECTED",
+  "qualityVerdict": "NOT_HUMAN_VALIDATED",
+  "appIntegration": "NOT_VERIFIED",
+  "status": "partial_evaluation_blocked_by_intermittent_permission_error",
+  "apiKeyPermissionSaved": true,
   "accountModelAccess": "models.retrieve succeeded",
-  "responseGeneration": "denied",
-  "providerStatus": 401,
   "missingScopes": [
     "api.responses.write"
   ],
-  "attemptedInferenceCalls": 2,
-  "successfulInferenceCalls": 0,
-  "billedTokens": null,
-  "actualCostUsd": null,
-  "conservativeReservedUsd": 0.163264,
-  "remainingApprovedCallSlots": 126,
-  "modelQuality": "unverified",
-  "humanRatings": "not_collected",
-  "appIntegration": "unverified"
+  "modelQuality": "human review pending; no overall pass",
+  "fullPipelineLiveValidation": "NOT_COMPLETED",
+  "holdout": "NOT_STARTED"
 }

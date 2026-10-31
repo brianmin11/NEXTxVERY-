@@ -23,6 +23,7 @@ const result = await engine.personal(hostPreparedPrivateContext, callOptions);
 
 - [호스트 연결 계약과 함수별 책임](docs/INTEGRATION.md)
 - [실제 모델 평가·사람 검토 절차](docs/EVALUATION.md)
+- [실제 실행 결과와 중단 사유](docs/LIVE-EVALUATION.md)
 - [공급자 조건·알려진 한계](docs/LIMITATIONS.md)
 - [버전 있는 런타임 스키마](src/contracts/index.ts)
 - [실행 가능한 예제](examples/offline.ts)
