@@ -1,5 +1,7 @@
 import "server-only"
-import { betterAuth, type BetterAuthOptions } from "better-auth"
+import { betterAuth } from "better-auth"
+import { createAuthOptions } from "./auth-config"
+import { createAuthMailAdapterFromEnv } from "./auth-mail-resend"
 import { getMigrations } from "better-auth/db/migration"
 import { openDatabase } from "./database"
 import { asServiceDatabase } from "./service-database"
@@ -24,22 +26,10 @@ export function getDatabase(): ServiceDatabase {
 }
 export function getAuth() {
   return (globalAuth.familyAuth ??= (async () => {
-    const secret = process.env.BETTER_AUTH_SECRET
-    if (!secret || secret.length < 32)
-      throw new Error("BETTER_AUTH_SECRET must be configured")
-    const config: BetterAuthOptions = {
+    const config = createAuthOptions({
       database: getNativeDatabase(),
-      secret,
-      baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3100",
-      emailAndPassword: { enabled: true, minPasswordLength: 12 },
-      session: {
-        expiresIn: 86400,
-        updateAge: 3600,
-        cookieCache: { enabled: false },
-      },
-      rateLimit: { enabled: true, window: 60, max: 50 },
-      advanced: { cookiePrefix: "woorijip" },
-    }
+      mailer: createAuthMailAdapterFromEnv(),
+    })
     if (!process.env.DATABASE_URL) {
       const migrations = await getMigrations(config)
       await migrations.runMigrations()
