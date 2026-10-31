@@ -72,7 +72,7 @@ export function DemoViewerSwitch({ className }: { className?: string }) {
       </p>
       <Button
         variant="ghost"
-        className="h-9 shrink-0 px-2 text-xs"
+        className="h-11 shrink-0 px-2 text-xs"
         onClick={(e) => {
           sheetFocus.capture(e.currentTarget)
           setOpen(true)

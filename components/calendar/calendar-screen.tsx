@@ -103,7 +103,7 @@ export function CalendarScreen() {
             <h2 className="text-lg font-bold tabular-nums" aria-live="polite">
               {formatMonthTitle(cursor.year, cursor.month)}
             </h2>
-            <Button variant="ghost" className="h-9 px-2 text-sm text-primary" onClick={goToday}>
+            <Button variant="ghost" className="h-11 px-2 text-sm text-primary" onClick={goToday}>
               오늘
             </Button>
           </div>
