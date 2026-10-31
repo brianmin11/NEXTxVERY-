@@ -22,6 +22,7 @@ import type { HomeSelection } from "./home-selection"
 
 type HomeDetailSheetProps = {
   data: HomeData
+  live?: boolean
   selection: HomeSelection | null
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -34,7 +35,7 @@ type HomeDetailSheetProps = {
  * selection은 닫히는 동안에도 유지해 내용이 사라지며 깜빡이지 않게 한다.
  * 트리거 없이 여는 모달이라 Radix 기본 복귀가 동작하지 않으므로 직접 포커스를 돌려준다.
  */
-export function HomeDetailSheet({ data, selection, open, onOpenChange, returnFocusRef }: HomeDetailSheetProps) {
+export function HomeDetailSheet({ data, selection, open, onOpenChange, returnFocusRef, live = false }: HomeDetailSheetProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
@@ -48,7 +49,7 @@ export function HomeDetailSheet({ data, selection, open, onOpenChange, returnFoc
         }}
       >
         <div aria-hidden="true" className="mx-auto mt-2 h-1 w-10 rounded-full bg-border" />
-        {selection && <SheetBody data={data} selection={selection} />}
+        {selection && <SheetBody data={data} selection={selection} live={live} />}
         <SheetFooter className="px-5 pb-5">
           <SheetClose asChild>
             <Button variant="secondary" size="lg">
@@ -61,7 +62,7 @@ export function HomeDetailSheet({ data, selection, open, onOpenChange, returnFoc
   )
 }
 
-function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelection }) {
+function SheetBody({ data, selection, live }: { data: HomeData; selection: HomeSelection; live: boolean }) {
   const { family } = data
 
   switch (selection.type) {
@@ -154,7 +155,7 @@ function SheetBody({ data, selection }: { data: HomeData; selection: HomeSelecti
         <>
           <SheetHeader className="px-5 pt-2">
             <SheetTitle className="pr-10 text-xl font-bold">알림</SheetTitle>
-            <SheetDescription>가상 알림이에요. 실제로 저장되지 않아요.</SheetDescription>
+            <SheetDescription>{live ? "받은 요청과 조율은 마음 전하기에서 확인할 수 있어요." : "가상 알림이에요. 실제로 저장되지 않아요."}</SheetDescription>
           </SheetHeader>
           <div className="px-5">
             {data.notifications.length === 0 ? (

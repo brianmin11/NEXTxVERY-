@@ -1,0 +1,35 @@
+{
+  "candidate": "b5dc733c2014254ba43a1f70dbecb6f6cf6345b4",
+  "server": "http://localhost:3111",
+  "serverMode": "production",
+  "providerMode": "unconfigured",
+  "command": "npm run test:e2e -- tests/integration-browser.spec.ts",
+  "results": {
+    "passed": 3,
+    "failed": 0,
+    "durationSeconds": 4.1
+  },
+  "checks": [
+    "actual browser signup and two independent cookie sessions",
+    "household create and invitation join",
+    "calendar save and browser reload/requery",
+    "private input absent in other account JSON",
+    "390px no horizontal overflow and keyboard focus",
+    "provider unavailable returns 503 and keeps saved private input",
+    "unauthenticated read and cross-origin mutation rejected"
+  ],
+  "screenshots": [
+    "private-mobile-390.png",
+    "calendar-desktop.png",
+    "recovered-calendar-mobile.png"
+  ],
+  "visualReview": "Screenshots inspected independently; existing cream/green/Pretendard single-column UI preserved, readable labels and focus ring. Fixed bottom navigation visible; full-page capture includes scroll content.",
+  "notVerified": [
+    "real model calls",
+    "shared approval/plan execution through browser in this keyless run",
+    "external hosted database/RLS",
+    "deployment",
+    "human language quality"
+  ],
+  "sourceChanges": false
+}

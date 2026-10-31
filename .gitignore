@@ -40,3 +40,12 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.data/
+test-results/
+playwright-report/
+packages/relationship-ai/dist/
+TASK.json
+
+**/node_modules/
+!.env.example

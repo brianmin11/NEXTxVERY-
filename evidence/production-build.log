@@ -1,0 +1,48 @@
+
+> nextxvery@0.0.1 build
+> npm run build:engine && next build --webpack
+
+
+> nextxvery@0.0.1 build:engine
+> npm run build --workspace @family-os/relationship-ai
+
+
+> @family-os/relationship-ai@0.1.0 build
+> tsc
+
+▲ Next.js 16.4.3 (webpack)
+- Environments: .env.local
+✓ Running next.config.ts took 19ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 3.2s
+  Running TypeScript ...
+  Finished TypeScript in 1791ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/10) ...
+⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3111". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+  Generating static pages using 9 workers (2/10) 
+  Generating static pages using 9 workers (4/10) 
+  Generating static pages using 9 workers (7/10) 
+✓ Generating static pages using 9 workers (10/10) in 490ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/[...all]
+├ ƒ /api/family
+├ ○ /calendar
+├ ○ /design-system
+├ ƒ /home
+├ ○ /home/heart
+├ ○ /login
+├ ○ /memories
+├ ○ /more
+└ ○ /opengraph-image
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1",
+  "repositoryAndBranchWork": true,
+  "paidModelCalls": true,
+  "publicDeployment": false,
+  "maxCostUsd": 12,
+  "maxCalls": 128,
+  "approvalId": "relationship-ai-synthetic-2026-10-31-01",
+  "model": "gpt-6.1-sol",
+  "syntheticOnly": true,
+  "automaticRetries": 0,
+  "scope": {
+    "developmentCases": 24,
+    "holdoutCases": 8
+  },
+  "remotePush": {
+    "approved": true,
+    "repository": "https://github.com/brianmin11/NEXTxVERY-",
+    "branch": "codex/relationship-ai",
+    "payload": "Relationship AI source, documentation and synthetic tests"
+  },
+  "authorizationSource": "Explicit user replies approving branch push and synthetic evaluation up to USD12; no public deployment approval",
+  "apiKeyPermissionEdit": {
+    "approved": true,
+    "keyName": "testkey",
+    "project": "Default project",
+    "added": "Responses Write",
+    "saved": true,
+    "authorizationSource": "User: save하고 바로 다음 단계까지 쭉 진행해줘"
+  },
+  "integration": {
+    "branch": "codex/relationship-integration",
+    "userRequest": "별도 통합 브랜치에서 두 계정 요청 전달·조율·일정 변경·저장 및 실제 동작 검증",
+    "syntheticLiveApproved": true,
+    "maxCalls": 12,
+    "additionalMaxCostUsd": 2,
+    "cumulativeMaxCostUsd": 12,
+    "automaticRetries": 0,
+    "publicDeployment": false,
+    "priorReservedCalls": 109,
+    "priorReservedUsd": 8.897888000000004
+  }
+}

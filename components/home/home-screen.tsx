@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Bell, Users } from "lucide-react"
 
 import { Logo } from "@/components/logo"
@@ -15,20 +17,23 @@ import { HomeSummary } from "./home-summary"
 
 type HomeScreenProps = {
   data: HomeData
+  live?: boolean
 }
 
 /** 가족 홈 조립. 시트는 selectedItem 하나로만 열려 겹치지 않는다. */
-export function HomeScreen({ data }: HomeScreenProps) {
+export function HomeScreen({ data, live = false }: HomeScreenProps) {
+  const router = useRouter()
   const [selection, setSelection] = React.useState<HomeSelection | null>(null)
   const [open, setOpen] = React.useState(false)
   // 시트를 연 요소. 트리거 없이 여는 모달은 Radix가 포커스를 돌려주지 않아 직접 기억한다.
   const returnFocusRef = React.useRef<HTMLElement | null>(null)
 
   const select = React.useCallback((next: HomeSelection, origin?: HTMLElement | null) => {
+    if (live && next.type === "heart") { router.push("/home/heart"); return }
     returnFocusRef.current = origin ?? (document.activeElement as HTMLElement | null)
     setSelection(next)
     setOpen(true)
-  }, [])
+  }, [live, router])
 
   const unread = data.notifications.length
 
@@ -65,7 +70,7 @@ export function HomeScreen({ data }: HomeScreenProps) {
         </>
       }
     >
-      <DemoBadge />
+      {live ? <p className="text-sm text-muted-foreground">내 계정의 가족 공간이에요. <Link className="underline" href="/home/heart">받은 요청과 조율 보기</Link></p> : <DemoBadge />}
       <FamilyHouseScene
         family={data.family}
         stage={data.family.houseStage}
@@ -76,6 +81,7 @@ export function HomeScreen({ data }: HomeScreenProps) {
       <HomeSummary data={data} onSelect={select} />
       <HomeDetailSheet
         data={data}
+        live={live}
         selection={selection}
         open={open}
         onOpenChange={setOpen}

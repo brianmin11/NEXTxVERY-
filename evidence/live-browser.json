@@ -1,0 +1,16 @@
+{
+  "verifiedAt": "2026-10-31T16:51:45.654Z",
+  "provider": "live gpt-6.1-sol",
+  "twoAuthenticatedAccounts": true,
+  "privateIsolation": true,
+  "sharedCards": 2,
+  "jointAnalysis": true,
+  "agreement": true,
+  "requiredAcceptors": 2,
+  "appliedOnce": true,
+  "persistedScheduleRevision": 2,
+  "reloadVerified": true,
+  "browserPageErrors": [],
+  "scheduleId": "9b93628d-5dfb-4649-882c-0b27e9f7d357",
+  "coordinationId": "604be258-8733-4c15-b7fc-e0c29dc09cfe"
+}

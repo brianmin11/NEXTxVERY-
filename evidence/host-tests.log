@@ -1,0 +1,22 @@
+
+> nextxvery@0.0.1 test:host
+> node --import tsx --test tests/host*.test.ts
+
+✔ two participants approve exact shared text without leaking either private entry to the joint model or another account (45.385417ms)
+✔ proposed AI terms need explicit current-version acceptance from both actors; save is durable and exactly once (26.390334ms)
+✔ editing a resolved plan clears prior acceptances and rejects an old digest even with latest coordination revision (8.785ms)
+✔ revocation invalidates accepted but unapplied plan; approved text and private source do not reappear to recipients (8.53775ms)
+✔ revoking a source while model generation is in flight prevents late results from being published (3.881667ms)
+✔ two different target updates cannot concurrently reserve the same participant/time (16.020875ms)
+✔ manual calendar CRUD and resolved-plan execution enforce the same collision boundary (6.911292ms)
+✔ defer/decline use no new model call and block execution resolution (13.910708ms)
+✔ reflection and private support remain private; provider failure cannot become a successful draft (3.407583ms)
+✔ wrong request payload cannot reuse an idempotency key; household membership cannot be spoofed with payload ids (1.262375ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 506.103958

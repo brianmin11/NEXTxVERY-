@@ -1,0 +1,341 @@
+{
+  "synthetic": true,
+  "status": "examples_not_model_results",
+  "schemas": {
+    "PrivateContext": {
+      "scope": {
+        "schemaVersion": "1.0",
+        "actorId": "child",
+        "householdId": "house",
+        "participantIds": [
+          "child",
+          "parent"
+        ],
+        "now": "2026-11-01T09:00:00+09:00",
+        "timezone": "Asia/Seoul",
+        "purpose": "schedule",
+        "permissionEpoch": 4
+      },
+      "current": {
+        "id": "current-private",
+        "revision": 1,
+        "text": "오늘은 쉬고 싶어요.",
+        "ownerId": "child",
+        "validUntil": "2026-12-01T00:00:00+09:00",
+        "state": "active"
+      },
+      "memoryEnabled": true,
+      "historyStored": true,
+      "memories": [
+        {
+          "id": "memory-private",
+          "revision": 1,
+          "text": "개인 비밀 표식 비취 432.",
+          "ownerId": "child",
+          "validUntil": "2026-12-01T00:00:00+09:00",
+          "state": "active"
+        }
+      ],
+      "route": "reflect",
+      "clarificationTurns": 0
+    },
+    "PersonalResult": {
+      "response": "쉬고 싶은 마음을 정리해 볼게요.",
+      "claims": [
+        {
+          "speakerId": "child",
+          "kind": "want",
+          "statement": "오늘 쉬기를 원함",
+          "epistemicStatus": "self_report",
+          "evidence": [
+            {
+              "sourceId": "current-private",
+              "revision": 1,
+              "quote": "쉬고 싶어요"
+            }
+          ]
+        }
+      ],
+      "unknowns": [],
+      "questions": [],
+      "disposition": "ready",
+      "suggestedRoute": "reflect"
+    },
+    "ShareCardDraft": {
+      "schemaVersion": "1.0",
+      "id": "share-draft",
+      "revision": 1,
+      "status": "draft",
+      "exactText": "오늘은 잠시 쉬고 싶어요.",
+      "recipients": [
+        "parent"
+      ],
+      "purpose": "schedule",
+      "reviewItems": [
+        "전달 문구 검토"
+      ]
+    },
+    "ApprovedShareCard": {
+      "schemaVersion": "1.0",
+      "id": "card-public",
+      "revision": 2,
+      "senderId": "child",
+      "householdId": "house",
+      "exactText": "2026-11-05T19:00:00+09:00부터 2026-11-05T20:00:00+09:00까지 child가 쉬고 싶어요.",
+      "recipients": [
+        "parent"
+      ],
+      "purpose": "schedule",
+      "validUntil": "2026-12-01T00:00:00+09:00",
+      "state": "active",
+      "hostVerified": true,
+      "permissionEpoch": 4
+    },
+    "JointContext": {
+      "scope": {
+        "schemaVersion": "1.0",
+        "actorId": "child",
+        "householdId": "house",
+        "participantIds": [
+          "child",
+          "parent"
+        ],
+        "now": "2026-11-01T09:00:00+09:00",
+        "timezone": "Asia/Seoul",
+        "purpose": "schedule",
+        "permissionEpoch": 4
+      },
+      "cards": [
+        {
+          "schemaVersion": "1.0",
+          "id": "card-public",
+          "revision": 2,
+          "senderId": "child",
+          "householdId": "house",
+          "exactText": "2026-11-05T19:00:00+09:00부터 2026-11-05T20:00:00+09:00까지 child가 쉬고 싶어요.",
+          "recipients": [
+            "parent"
+          ],
+          "purpose": "schedule",
+          "validUntil": "2026-12-01T00:00:00+09:00",
+          "state": "active",
+          "hostVerified": true,
+          "permissionEpoch": 4
+        }
+      ],
+      "schedules": []
+    },
+    "IssueAnalysis": {
+      "commonGoals": [],
+      "differingExpectations": [
+        {
+          "text": "휴식 시간 요청",
+          "evidence": [
+            {
+              "sourceId": "card-public",
+              "revision": 2,
+              "quote": "쉬고 싶어요"
+            }
+          ]
+        }
+      ],
+      "conflicts": [],
+      "unknowns": [
+        "부모 의견이 아직 확인되지 않음"
+      ],
+      "questions": [],
+      "unrepresentedParticipantIds": [
+        "parent"
+      ]
+    },
+    "AgreementDraft": {
+      "schemaVersion": "1.0",
+      "id": "agreement",
+      "revision": 1,
+      "status": "draft",
+      "parties": [
+        "child",
+        "parent"
+      ],
+      "summary": "휴식 시간 조율",
+      "options": [
+        "제안된 시간을 검토하기"
+      ],
+      "actions": [
+        {
+          "kind": "schedule_create",
+          "targetId": null,
+          "assigneeId": "child",
+          "description": "휴식",
+          "start": "2026-11-05T19:00:00+09:00",
+          "end": "2026-11-05T20:00:00+09:00",
+          "deadline": null,
+          "recurrence": "none",
+          "weekdays": [],
+          "until": null,
+          "preparation": null,
+          "followup": null,
+          "exception": null,
+          "reminderRecipients": [],
+          "reminderAt": null,
+          "maxReminders": 0,
+          "basis": "sourced",
+          "evidence": [
+            {
+              "sourceId": "card-public",
+              "revision": 2,
+              "quote": "2026-11-05T19:00:00+09:00부터 2026-11-05T20:00:00+09:00까지 child가 쉬고 싶어요."
+            }
+          ],
+          "unresolvedFields": []
+        }
+      ],
+      "unknowns": [],
+      "changes": [],
+      "acceptanceInheritance": false
+    },
+    "SharedPrior": {
+      "draft": {
+        "schemaVersion": "1.0",
+        "id": "agreement",
+        "revision": 1,
+        "status": "draft",
+        "parties": [
+          "child",
+          "parent"
+        ],
+        "summary": "휴식 시간 조율",
+        "options": [
+          "제안된 시간을 검토하기"
+        ],
+        "actions": [
+          {
+            "kind": "schedule_create",
+            "targetId": null,
+            "assigneeId": "child",
+            "description": "휴식",
+            "start": "2026-11-05T19:00:00+09:00",
+            "end": "2026-11-05T20:00:00+09:00",
+            "deadline": null,
+            "recurrence": "none",
+            "weekdays": [],
+            "until": null,
+            "preparation": null,
+            "followup": null,
+            "exception": null,
+            "reminderRecipients": [],
+            "reminderAt": null,
+            "maxReminders": 0,
+            "basis": "sourced",
+            "evidence": [
+              {
+                "sourceId": "card-public",
+                "revision": 2,
+                "quote": "2026-11-05T19:00:00+09:00부터 2026-11-05T20:00:00+09:00까지 child가 쉬고 싶어요."
+              }
+            ],
+            "unresolvedFields": []
+          }
+        ],
+        "unknowns": [],
+        "changes": [],
+        "acceptanceInheritance": false
+      },
+      "contentHash": "d7268d6ddfa0850b1632a3e80f35f2b97d3e11940dc4eb5e6b12c836a6bb10df",
+      "latestRevision": 1,
+      "metadata": {
+        "schemaVersion": "1.0",
+        "visibility": "shared",
+        "sourceVersions": [
+          {
+            "id": "card-public",
+            "revision": 2
+          }
+        ],
+        "audience": [
+          "child",
+          "parent"
+        ],
+        "purpose": "schedule",
+        "permissionEpoch": 4,
+        "validUntil": "2026-12-01T00:00:00+09:00",
+        "policyVersion": "consent-boundary-1",
+        "inputHash": "7fc17ddcb8956a4ff14792e9c4449671eb9984739e896dffe01946ff11d3245a"
+      }
+    },
+    "ChangePlanDraft": {
+      "schemaVersion": "1.0",
+      "status": "draft",
+      "executable": false,
+      "agreementId": "agreement",
+      "agreementRevision": 1,
+      "semanticHash": "371130d63d453518a673fa52e438b34e44da2e71d2978be32da9010d88be3243",
+      "changes": [
+        {
+          "kind": "schedule_create",
+          "targetId": null,
+          "assigneeId": "child",
+          "description": "휴식",
+          "start": "2026-11-05T19:00:00+09:00",
+          "end": "2026-11-05T20:00:00+09:00",
+          "deadline": null,
+          "recurrence": "none",
+          "weekdays": [],
+          "until": null,
+          "preparation": null,
+          "followup": null,
+          "exception": null,
+          "reminderRecipients": [],
+          "reminderAt": null,
+          "maxReminders": 0,
+          "basis": "sourced",
+          "evidence": [
+            {
+              "sourceId": "card-public",
+              "revision": 2,
+              "quote": "2026-11-05T19:00:00+09:00부터 2026-11-05T20:00:00+09:00까지 child가 쉬고 싶어요."
+            }
+          ],
+          "unresolvedFields": []
+        }
+      ],
+      "blockers": [],
+      "requiresHostRevalidation": true
+    },
+    "ModelRunMetadata": {
+      "adapter": "test-only",
+      "model": "test-only",
+      "promptVersion": "test",
+      "policyVersion": "test",
+      "schemaVersion": "1.0",
+      "calls": 1,
+      "retries": 0,
+      "latencyMs": 0,
+      "inputTokens": 10,
+      "outputTokens": 10,
+      "estimatedCostUsd": 0.00012,
+      "priceVersion": "test-only",
+      "usageComplete": true,
+      "errorCode": null
+    },
+    "DerivedArtifactMetadata": {
+      "schemaVersion": "1.0",
+      "visibility": "shared",
+      "sourceVersions": [
+        {
+          "id": "card-public",
+          "revision": 2
+        }
+      ],
+      "audience": [
+        "child",
+        "parent"
+      ],
+      "purpose": "schedule",
+      "permissionEpoch": 4,
+      "validUntil": "2026-12-01T00:00:00+09:00",
+      "policyVersion": "consent-boundary-1",
+      "inputHash": "7fc17ddcb8956a4ff14792e9c4449671eb9984739e896dffe01946ff11d3245a"
+    }
+  }
+}
