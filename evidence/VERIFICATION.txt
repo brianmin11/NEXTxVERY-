@@ -11,3 +11,4 @@ Service tests additionally: hashed invite and no plaintext receipt, family isola
 CUA manual: synthetic account signup -> family creation -> home -> all-day event save -> reload retains record; console errors none. Desktop heading count1. Screenshots calendar-mobile-cua.png/calendar-desktop-cua.png/mind-mobile.png visually inspected.
 The automated full-page desktop screenshot duplicated sticky header during resizing; stable CUA screenshot is the accepted evidence.
 Not verified: physical phone, actual live model success, external DB/storage, public deployment. Models remain unavailable in HTTP until separately authorized transient provider is connected. Manual message delivery works.
+Final d763ce1 source build PASS; server stopped/restarted after saved CUA event. Existing session authenticated and saved event visible after reload (persistedAfterServerRestart:true). Local restart durability verified for account/family/calendar.
