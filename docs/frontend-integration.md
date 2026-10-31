@@ -30,8 +30,8 @@ NEXT_PUBLIC_APP_MODE=demo npx next dev -p 3200   # 메모리 데모만 보기
 | 환경변수 | 용도 | 로컬 값 예 |
 |---|---|---|
 | `BETTER_AUTH_SECRET` | 세션 서명·초대코드 HMAC(32자 이상) | 무작위 문자열 |
-| `BETTER_AUTH_URL` | 허용 origin(쓰기 요청의 `Origin` 검사) | `http://127.0.0.1:3100` |
-| `PORT` | 서버 포트 | `3100` |
+| `BETTER_AUTH_URL` | 허용 origin(쓰기 요청의 `Origin` 검사). 접속 주소·포트와 정확히 같아야 한다 | `http://127.0.0.1:3100` |
+| `PORT` | 서버 포트(`.env.example` 기본은 3120, 이 문서의 예는 3100) | `3100` |
 | `FAMILY_DB_PATH` / `FAMILY_UPLOAD_PATH` | 로컬 SQLite·사진 경로(`.data/`, git 제외) | 기본값 |
 | `DATABASE_URL`, `DATABASE_SCHEMA`, `DATABASE_SSL_CA`, `STORAGE_BACKEND`, `SUPABASE_*` | 운영 저장소(선택). `docs/OPERATIONAL-STORAGE.md` | 비공개 프로필 파일 |
 | `AI_MODE`, `AI_LIVE_APPROVED`, `OPENAI_KEY_ENV_FILE`, `INTEGRATION_*` | AI 활성화(선택). `docs/OPERATIONAL-AI.md` | 비활성 |
@@ -107,6 +107,7 @@ DB 준비: 로컬 SQLite는 첫 실행 때 `migrations/001-host.sql`·`002-v2.sq
 | 집안일: A 추가 → B '가족 전체'에서 조회, B는 A 담당 항목 완료 체크 불가(UI) | 통과 |
 | 데모 모드(`NEXT_PUBLIC_APP_MODE=demo`, 3200): 데모 가족 4인 홈, 프로토타입 제어, seed 집안일·데모 안내, `/login`은 데모 안내만 | 통과 |
 | 응답 유실·장시간 지연·동시 수정 409 | 단위 테스트로만(브라우저 미검증) |
+| 백엔드 Playwright E2E(`tests/*.spec.ts`), PostgreSQL/Supabase 프로필 | **미실행**(브라우저 설치·DB 없음) |
 | 360/430/데스크톱 회귀, 드래그·키보드·포커스 | Figma 단계 결과 유지(통합 후 재캡처는 390만) |
 | 실기기 | 미검증 |
 
