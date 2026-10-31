@@ -3,11 +3,8 @@ import { Geist_Mono } from "next/font/google"
 import localFont from "next/font/local"
 
 import "./globals.css"
-import { CalendarProvider } from "@/components/calendar/calendar-provider"
-import { ChoresProvider } from "@/components/chores/chores-provider"
-import { DemoViewerProvider } from "@/components/demo/demo-viewer-provider"
-import { MemoriesProvider } from "@/components/memories/memories-provider"
-import { MindProvider } from "@/components/mind/mind-provider"
+import { FamilyProvider } from "@/components/family/family-provider"
+import { FamilyScope } from "@/components/family/family-scope"
 import { ThemeProvider } from "@/components/theme-provider"
 import { BRAND_NAME, LOGO_SRC } from "@/components/logo"
 import { TooltipProvider } from "@/components/ui/tooltip"
@@ -38,7 +35,7 @@ const fontMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: { default: BRAND_NAME, template: `%s · ${BRAND_NAME}` },
-  description: "가족의 일정과 추억을 함께 담는 우리 가족만의 공간",
+  description: "가족의 마음과 일정, 추억과 할 일을 한 공간에서 나누는 우리 가족만의 공간",
   icons: { icon: { url: LOGO_SRC, type: "image/svg+xml" } },
 }
 
@@ -47,7 +44,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   interactiveWidget: "resizes-content",
-  themeColor: "#f7f5ef",
+  themeColor: "#f7f5f0",
 }
 
 export default function RootLayout({
@@ -69,16 +66,10 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <TooltipProvider>
-            {/* 데모 상태(현재 인물·마음·일정): 메모리 전용, 라우트 이동 중 유지, 새로고침 시 초기화 */}
-            <DemoViewerProvider>
-              <MindProvider>
-                <CalendarProvider>
-                  <MemoriesProvider>
-                    <ChoresProvider>{children}</ChoresProvider>
-                  </MemoriesProvider>
-                </CalendarProvider>
-              </MindProvider>
-            </DemoViewerProvider>
+            {/* 데모 상태: 가족·세션은 FamilyProvider, 가족 단위 데이터는 FamilyScope(가족 id로 다시 마운트). 메모리 전용, 새로고침 시 초기화 */}
+            <FamilyProvider>
+              <FamilyScope>{children}</FamilyScope>
+            </FamilyProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>

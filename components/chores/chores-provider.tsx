@@ -113,10 +113,10 @@ type ChoresContextValue = {
 
 const ChoresContext = React.createContext<ChoresContextValue | null>(null)
 
-export function ChoresProvider({ children }: { children: React.ReactNode }) {
+export function ChoresProvider({ children, seeded = true }: { children: React.ReactNode; seeded?: boolean }) {
   const { family, viewerId } = useDemoViewer()
   const [state, dispatch] = React.useReducer(reducer, null, () => ({
-    chores: seedChores(todayKey(), family.members.map((m) => m.id)),
+    chores: seeded ? seedChores(todayKey(), family.members.map((m) => m.id)) : [],
     draft: emptyDraft(null, family.members[0].id),
     usedTokens: [],
   }))

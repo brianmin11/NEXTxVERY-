@@ -55,7 +55,7 @@ const SEED_MESSAGES: MindMessage[] = [
   },
 ]
 
-const initialState: State = { messages: SEED_MESSAGES, draft: emptyDraft() }
+const initialState = (seeded: boolean): State => ({ messages: seeded ? SEED_MESSAGES : [], draft: emptyDraft() })
 
 function ownDraft(state: State, viewerId: string): OwnedDraft {
   return state.draft.ownerId === viewerId ? state.draft : emptyDraft(viewerId)
@@ -119,9 +119,9 @@ type MindContextValue = {
 
 const MindContext = React.createContext<MindContextValue | null>(null)
 
-export function MindProvider({ children }: { children: React.ReactNode }) {
+export function MindProvider({ children, seeded = true }: { children: React.ReactNode; seeded?: boolean }) {
   const { family, viewer, viewerId } = useDemoViewer()
-  const [state, rawDispatch] = React.useReducer(reducer, initialState)
+  const [state, rawDispatch] = React.useReducer(reducer, seeded, initialState)
   const draft = ownDraft(state, viewerId)
   const draftDirty = draft.step !== "sent" && (draft.rawText.trim() !== "" || draft.outgoingText.trim() !== "")
 

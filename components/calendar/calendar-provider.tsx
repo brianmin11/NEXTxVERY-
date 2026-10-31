@@ -81,12 +81,12 @@ type CalendarContextValue = {
 
 const CalendarContext = React.createContext<CalendarContextValue | null>(null)
 
-export function CalendarProvider({ children }: { children: React.ReactNode }) {
+export function CalendarProvider({ children, seeded = true }: { children: React.ReactNode; seeded?: boolean }) {
   const { family } = useDemoViewer()
   const today = React.useSyncExternalStore(subscribeNoop, readToday, readTodayServer)
   // seed는 마운트 때 한 번만 만든다. 라우트 이동으로 다시 초기화되지 않는다.
   const [state, dispatch] = React.useReducer(reducer, null, () => ({
-    events: seedEvents(readTodayServer(), family.members.map((m) => m.id)),
+    events: seeded ? seedEvents(readTodayServer(), family.members.map((m) => m.id)) : [],
     usedTokens: [],
   }))
 

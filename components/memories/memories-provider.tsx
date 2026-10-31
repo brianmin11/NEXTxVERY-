@@ -120,15 +120,26 @@ type MemoriesContextValue = {
 
 const MemoriesContext = React.createContext<MemoriesContextValue | null>(null)
 
-export function MemoriesProvider({ children }: { children: React.ReactNode }) {
+export function MemoriesProvider({ children, seeded = true }: { children: React.ReactNode; seeded?: boolean }) {
   const { family, viewerId } = useDemoViewer()
   const [state, dispatch] = React.useReducer(reducer, null, () => {
     const today = todayKey()
-    const seed = seedMemories(today, family.members.map((m) => m.id))
+    const seed = seeded ? seedMemories(today, family.members.map((m) => m.id)) : { posts: [], assets: [] }
     const assets: Record<string, MemoryAsset> = {}
     for (const a of seed.assets) assets[a.id] = a
     return { posts: seed.posts, assets, draft: emptyDraft(null, today), usedTokens: [] }
   })
+  // 가족 전환으로 이 provider가 사라질 때 임시 blob URL을 모두 해제한다(등록된 사진 포함). 화면 이동으로는 사라지지 않는다.
+  const assetsRef = React.useRef(state.assets)
+  React.useEffect(() => {
+    assetsRef.current = state.assets
+  })
+  React.useEffect(
+    () => () => {
+      for (const a of Object.values(assetsRef.current)) if (a.kind === "blob") revokeIfBlob(a.objectUrl)
+    },
+    []
+  )
   const today = todayKey()
   const draft = ownDraft(state, viewerId, today)
   const pendingAsset = draft.pendingAssetId ? state.assets[draft.pendingAssetId] : undefined
