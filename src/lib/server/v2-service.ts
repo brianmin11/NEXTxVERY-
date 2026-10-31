@@ -1,5 +1,12 @@
 import { createHash, createHmac, randomUUID } from "node:crypto"
-import { mkdir, readFile, unlink, writeFile } from "node:fs/promises"
+import {
+  mkdir,
+  readFile,
+  readdir,
+  stat,
+  unlink,
+  writeFile,
+} from "node:fs/promises"
 import { resolve } from "node:path"
 import type { DatabaseSync } from "node:sqlite"
 import sharp from "sharp"
@@ -842,6 +849,33 @@ export function createV2Service({
           r.id
         )
         count++
+      }
+    }
+    // A crash after writing a file but before inserting its asset row can leave an orphan.
+    // Only reclaim server-generated regular files older than the pending asset TTL.
+    const files = await readdir(uploadDir, { withFileTypes: true }).catch(
+      (error) => {
+        if ((error as NodeJS.ErrnoException).code === "ENOENT") return []
+        throw error
+      }
+    )
+    for (const entry of files) {
+      if (!entry.isFile() || !/^[a-f0-9-]+\.webp$/.test(entry.name)) continue
+      const assetId = entry.name.slice(0, -5)
+      if (
+        db
+          .prepare("SELECT 1 FROM v2_records WHERE id=? AND kind='asset'")
+          .get(assetId)
+      )
+        continue
+      try {
+        const path = resolve(uploadDir, entry.name)
+        if ((await stat(path)).mtimeMs >= Date.now() - 86400000) continue
+        // New uploads have a fresh mtime; an in-flight upload cannot be reclaimed here.
+        await unlink(path)
+        count++
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") continue
       }
     }
     return count
