@@ -173,3 +173,136 @@ test("direct inbox URL marks read, excludes outsiders, and rejects cross-origin 
     await Promise.all(contexts.map((context) => context.close()))
   }
 })
+
+test("chores, uploaded photos and manually refined messages survive real two-account workflows", async ({
+  browser,
+}) => {
+  const a = await browser.newContext({ viewport: { width: 390, height: 844 } }),
+    b = await browser.newContext({ viewport: { width: 390, height: 844 } })
+  try {
+    await signup(a, "작성 가족")
+    const receiver = await signup(b, "담당 가족")
+    await api(a, "POST", "families", {
+      name: "생활 QA 가족",
+      requestId: requestId(),
+    })
+    const invite = await api(a, "POST", "family/invites", {
+      requestId: requestId(),
+    })
+    await api(b, "POST", "family/join", {
+      inviteCode: invite.inviteCode,
+      requestId: requestId(),
+    })
+    const page = await a.newPage(),
+      pageB = await b.newPage()
+    const title = `설거지 ${randomUUID().slice(0, 6)}`
+    await page.goto(`${baseURL}/chores/new`)
+    await page.getByLabel("할 일", { exact: false }).fill(title)
+    await page
+      .getByRole("radiogroup", { name: "담당할 가족" })
+      .getByRole("radio", { name: "담당 가족" })
+      .click()
+    await page.getByRole("button", { name: "추가", exact: true }).click()
+    await expect(page.getByRole("link", { name: "할 일 보기" })).toBeVisible()
+    await pageB.goto(`${baseURL}/chores`)
+    await pageB
+      .getByRole("checkbox", { name: `'${title}' 완료로 표시`, exact: true })
+      .click()
+    await expect
+      .poll(
+        async () =>
+          (await api(b, "GET", "chores")).find(
+            (x: { title: string }) => x.title === title
+          )?.status
+      )
+      .toBe("done")
+    await pageB.reload()
+    await pageB.getByRole("tab", { name: "완료", exact: true }).click()
+    await expect(
+      pageB.getByRole("checkbox", { name: `'${title}' 완료 취소`, exact: true })
+    ).toBeChecked()
+
+    const sharp = (await import("sharp")).default
+    const image = await sharp({
+      create: { width: 32, height: 24, channels: 3, background: "#79a" },
+    })
+      .png()
+      .toBuffer()
+    await page.goto(`${baseURL}/memories/new`)
+    await page
+      .locator("input[type=file]")
+      .setInputFiles({
+        name: "family.png",
+        mimeType: "image/png",
+        buffer: image,
+      })
+    const caption = `가족 사진 ${randomUUID().slice(0, 6)}`
+    await page.getByLabel("설명 (선택)").fill(caption)
+    await page.getByRole("button", { name: "추억 등록", exact: true }).click()
+    await expect
+      .poll(async () =>
+        (await api(a, "GET", "memories")).posts.some(
+          (x: { caption: string }) => x.caption === caption
+        )
+      )
+      .toBe(true)
+    const memories = await api(a, "GET", "memories")
+    const post = memories.posts.find(
+      (x: { caption: string }) => x.caption === caption
+    )
+    await pageB.goto(`${baseURL}/memories/${post.id}`)
+    await expect(pageB.getByText(caption, { exact: true })).toBeVisible()
+    await pageB.reload()
+    await expect(pageB.getByText(caption, { exact: true })).toBeVisible()
+    const asset = await b.request.get(
+      `${baseURL}/api/v2/memories/assets/${post.assetId}/content`
+    )
+    expect(asset.ok()).toBeTruthy()
+    expect(asset.headers()["content-type"]).toMatch(/^image\//)
+
+    await page.goto(`${baseURL}/mind`)
+    const raw = `다른 사람에게 보이면 안 되는 원문 ${randomUUID()}`
+    await page.getByRole("radio", { name: "담당 가족" }).click()
+    await page.getByPlaceholder("지금 느끼는 그대로 적어도 괜찮아요.").fill(raw)
+    await page.getByRole("button", { name: "다음: 전달 문장 다듬기" }).click()
+    const failed = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/v2/mind/suggestions") &&
+        response.request().method() === "POST"
+    )
+    await page
+      .getByRole("button", { name: "AI 제안 받기", exact: true })
+      .click()
+    expect((await failed).status()).toBe(503)
+    const outgoing = `함께 이야기해요 ${randomUUID().slice(0, 6)}`
+    await page
+      .getByPlaceholder("상대에게 보일 문장을 직접 써 주세요.")
+      .fill(outgoing)
+    await page
+      .getByRole("button", { name: "전달 내용 확인", exact: true })
+      .click()
+    await page
+      .getByRole("button", { name: "확인하고 보내기", exact: true })
+      .click()
+    await expect
+      .poll(async () =>
+        (await api(b, "GET", "mind/messages")).some(
+          (x: { text: string }) => x.text === outgoing
+        )
+      )
+      .toBe(true)
+    const messages = await api(b, "GET", "mind/messages")
+    expect(JSON.stringify(messages)).not.toContain(raw)
+    const sent = messages.find((x: { text: string }) => x.text === outgoing)
+    expect(sent.toId).toBe(receiver.id)
+    await pageB.goto(`${baseURL}/inbox/${sent.id}`)
+    await expect(pageB.getByText(outgoing, { exact: true })).toBeVisible()
+    await pageB.screenshot({
+      path: test.info().outputPath("mind-mobile.png"),
+      fullPage: true,
+    })
+  } finally {
+    await a.close()
+    await b.close()
+  }
+})
