@@ -30,3 +30,10 @@ PostgreSQL 비동기 어댑터/트랜잭션 직렬화, 비공개 Storage 어댑�
 현재 localhost3120은 제품 원격저장소 사용, 복구/병렬검증 서버 종료. .env.local 실행기 기본프로필=.env.supabase.local, AI disabled.
 실행·백업·복구: docs/OPERATIONAL-STORAGE.md / evidence/VERIFICATION-V4.txt.
 후속: 운영AI 예산 중앙화·실제사용자 데이터처리 승인, 공개배포/도메인/관측·자동백업운영. 디자인은 다른 개발자 범위로 유지. 새유료모델호출·push·merge·공개배포 없음.
+
+2026-11-01 — 운영 AI v5 설정 구현 (라이브 비활성)
+사용자 선택20회/사용자/KST일,전체$5/일. PostgreSQL 원자적예약/동시3개/사용자1개/60초cooldown/120초lease 구현. 회당$0.15 보수예약으로 전체최대33회, 실패·취소도예산유지. 기존합성SQLite원장보존.
+제품/복구DB ai_reservations migration 적용. 원문·초안·그해시 미저장. 백업allowlist원장추가,라이브중복원거부.
+일반인증계정 경로는 준비했지만 AI_LIVE_APPROVED=false. 설정선택을 실제원문전송/유료호출승인으로간주하지않음.
+운영인증3번은 별도thread 01a19339-30ba-71b2-a6c5-f0fd5af5f958에서진행. 그 변경 통합후 최종연결검증별도. 새유료호출없음.
+문서 docs/OPERATIONAL-AI.md. 실제 PG recovery 두pool 한도검증통과. 회귀결과는 evidence/VERIFICATION-V5-AI.txt 참조.
