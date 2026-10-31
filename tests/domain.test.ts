@@ -121,3 +121,16 @@ test('ordinary share remains a private unapproved draft with server-controlled r
  const out=await createEngine(stub([draft]).runner).share(c,{id:'share',revision:1,recipients:['parent'],purpose:'schedule',constraintsOnly:true},options);
  assert.equal(out.value.status,'draft');assert.equal(out.metadata.visibility,'private');assert.deepEqual(out.value.recipients,['parent']);assert.ok(!('safetyDisposition' in out.value));
 });
+test('sourced action cannot invent a valid but unmentioned timestamp',()=>{
+ const a=agreement();a.actions[0]!.start='2026-11-06T19:00:00+09:00';a.actions[0]!.end='2026-11-06T20:00:00+09:00';blocked(a,jointContext());
+});
+test('model cannot expand agreement to a nonparticipant',async()=>{
+ const a=agreement();a.parties.push('outsider');
+ await assert.rejects(createEngine(stub([a]).runner).propose(jointContext(),{id:'agreement',revision:1},options),hasCode('SEMANTIC_INVALID'));
+});
+test('old approval versions and semantic hashes are independently rejected',()=>{
+ const plan=compileChangePlan(agreement(),jointContext());
+ const base={agreementId:plan.agreementId,revision:plan.agreementRevision,semanticHash:plan.semanticHash};
+ assert.equal(verifyAcceptanceVersion(plan,base),true);
+ for(const patch of [{agreementId:'another'},{revision:base.revision+1},{semanticHash:'different'}])assert.equal(verifyAcceptanceVersion(plan,{...base,...patch}),false);
+});
