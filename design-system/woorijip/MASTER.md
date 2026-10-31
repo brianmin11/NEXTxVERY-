@@ -111,11 +111,11 @@ Figma 값을 기본으로 하고 대비가 모자란 값만 보정했다.
 | `CharacterForm` / `CharacterEditorScreen` | 미리보기·이름·4개 라디오 그룹(가로 스크롤 스와치). 초안 → 저장/취소 |
 | `HouseStagePreview`(`house-layers.tsx`) | 예전 2.5D 집 성장 단계 시안. `/design-system` 전용, 테마와 합치지 않는다 |
 
-**가족·권한(`components/family`, `lib/family`)**: `FamilyProvider`(가족 목록·세션·테마·캐릭터·위치), `FamilyScope`(가족 id로 마음·일정·사진·집안일 provider 재마운트), `permissions.ts`(관리자: 테마·초대·가족 이름 / 본인: 캐릭터), `invite-adapter.ts`(초대 조회 교체 지점), `ThemeScreen`, `InviteSheet`, `RenameFamilyDialog`. 자세한 책임 분리는 `docs/frontend-integration.md`.
+**가족·권한(`components/family`, `lib/family`)**: `FamilyProvider`(모드에 따라 `LiveFamilyProvider`=서버 세션 / `DemoFamilyProvider`=메모리), `FamilyScope`(세션 게이트 + 가족 id로 기능 provider 재마운트), `permissions.ts`(관리자: 테마·초대·가족 이름 / 본인: 캐릭터, 서버가 재검증), `InviteSheet`(관리자가 24시간 코드 발급), `ThemeScreen`, `RenameFamilyDialog`, `components/auth/login-screen.tsx`(이메일/비밀번호). 자세한 책임 분리는 `docs/frontend-integration.md`.
 
 **온보딩(`components/onboarding`)**: `/welcome`, `/family/new`(가족 이름 → 내 캐릭터), `/join`(코드 조회 → 가족 확인 → 내 캐릭터). '로그인 완료'처럼 보이는 문구를 쓰지 않는다.
 
-**마음 전하기(`components/mind`)**: `/mind` 3단계(수신자·원문 → 전달 문장 직접 다듬기 → 전송 전 확인) + 완료. `/inbox` 행 목록, `/inbox/[id]` 상세 진입 시 읽음(수신자만), 답장·나중에·지금은 어려워요. `relationshipAdapter`가 AI 교체 지점.
+**마음 전하기(`components/mind`)**: `/mind` 3단계(수신자·원문 → 'AI 제안 받기'(라이브에서 명시적 요청 시만) 또는 직접 다듬기 → 전송 전 확인) + 완료. 제안은 편집 가능한 초안으로만 들어가고 라벨로 구분한다. `/inbox` 행 목록, `/inbox/[id]` 상세 진입 시 읽음(수신자만), 답장·나중에·지금은 어려워요. AI 실패·비활성은 `AdapterStatus error` + 직접 작성 안내. 구현은 `components/mind/mind-context.ts` 모양을 데모(`memory-mind-provider`)·라이브(`src/features/live/mind-provider`)가 함께 쓴다.
 
 **가족 일정(`components/calendar`)**: 달력(칸 44px, 선택일 32px 원, 코랄 점), 날짜 행 목록(세이지 막대), 상세 시트, 전체 화면 폼 `/calendar/new`·`/calendar/[id]/edit`. 날짜·시간은 `YYYY-MM-DD`/`HH:mm` 문자열.
 

@@ -25,6 +25,7 @@
 - 픽셀 자산 출처는 `public/assets/pixel/SOURCE.md`. 카탈로그(`lib/character/catalog.ts`, `lib/scene/themes.ts`)에는 실제 파일이 있는 항목만 등록한다.
 - 표시 브랜드는 `우리집`(`BRAND_NAME`). 저장소·패키지 이름은 바꾸지 않는다.
 - 앱 테마는 라이트 고정(다크 토큰 미검증). `/design-system`은 개발 전용 확인 페이지(프로덕션 404)이고 가상 데이터만 쓴다.
-- 상태 구조: `FamilyProvider`(가족·세션·권한·캐릭터·테마) → `FamilyScope`(가족 id로 마음·일정·사진·집안일 provider 재마운트). 같은 데이터의 원본을 두 군데 만들지 않고, 이름 문자열이 아니라 id로 본인·작성자·권한을 판정한다. 데모 인물·가족 전환은 `DemoViewerSwitch`·`/more` 프로토타입 제어로만 둔다.
+- 상태 구조: `FamilyProvider`(가족·세션·권한·캐릭터·테마) → `FamilyScope`(가족 id로 마음·일정·사진·집안일 provider 재마운트). 기본은 live(`components/family/live-session.tsx` + `src/features/live/*-provider.tsx`, `/api/v2`)이고 `NEXT_PUBLIC_APP_MODE=demo`일 때만 메모리 provider를 쓴다. 공용 모양은 `*-context.ts`에 있고 같은 데이터의 원본을 두 군데 만들지 않는다. 이름 문자열이 아니라 id로 본인·작성자·권한을 판정하고, 서버가 같은 규칙을 다시 검사한다. 데모 인물·가족 전환·seed·고정 초대코드는 데모 모드에서만 존재한다.
+- 백엔드 서버 코드(`src/lib/server`, `app/api`, `migrations`, `scripts`, `packages/relationship-ai`)는 팀원 소유다. 프론트 요구로 고칠 때는 기존 테스트(`tests/*.test.ts`)를 통과시키고 `docs/frontend-integration.md`에 적는다. 실제 키·운영 DB·AI 비용이 드는 명령은 승인 없이 실행하지 않는다.
 - 명령은 WSL(`/home/brianmin11/해커톤`)에서 실행한다. Windows git의 전역 safe.directory 설정은 바꾸지 않는다.
 - shadcn 컴포넌트 추가는 `npx shadcn@latest add <name>` 또는 shadcn MCP(`.mcp.json`)를 사용한다.
