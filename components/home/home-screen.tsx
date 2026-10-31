@@ -14,12 +14,9 @@ import { HomeDetailSheet } from "./home-detail-sheet"
 import type { HomeSelection } from "./home-selection"
 import { HomeSummary } from "./home-summary"
 
-type HomeScreenProps = {
-  data: HomeData
-}
 
 /** 가족 홈 조립. 시트는 selectedItem 하나로만 열려 겹치지 않는다. */
-export function HomeScreen(_props: HomeScreenProps) {
+export function HomeScreen() {
   const { family, viewerId } = useDemoViewer()
   const data: HomeData = { family, viewerId, notifications: [] }
   const [selection, setSelection] = React.useState<HomeSelection | null>(null)
