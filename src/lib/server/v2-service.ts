@@ -860,7 +860,13 @@ export function createV2Service({
       }
     )
     for (const entry of files) {
-      if (!entry.isFile() || !/^[a-f0-9-]+\.webp$/.test(entry.name)) continue
+      if (
+        !entry.isFile() ||
+        !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}\.webp$/.test(
+          entry.name
+        )
+      )
+        continue
       const assetId = entry.name.slice(0, -5)
       if (
         db
