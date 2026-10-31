@@ -14,7 +14,6 @@ import { HomeDetailSheet } from "./home-detail-sheet"
 import type { HomeSelection } from "./home-selection"
 import { HomeSummary } from "./home-summary"
 
-
 /** 가족 홈 조립. 시트는 selectedItem 하나로만 열려 겹치지 않는다. */
 export function HomeScreen() {
   const { family, viewerId } = useDemoViewer()
@@ -24,11 +23,15 @@ export function HomeScreen() {
   // 시트를 연 요소. 트리거 없이 여는 모달은 Radix가 포커스를 돌려주지 않아 직접 기억한다.
   const returnFocusRef = React.useRef<HTMLElement | null>(null)
 
-  const select = React.useCallback((next: HomeSelection, origin?: HTMLElement | null) => {
-    returnFocusRef.current = origin ?? (document.activeElement as HTMLElement | null)
-    setSelection(next)
-    setOpen(true)
-  }, [])
+  const select = React.useCallback(
+    (next: HomeSelection, origin?: HTMLElement | null) => {
+      returnFocusRef.current =
+        origin ?? (document.activeElement as HTMLElement | null)
+      setSelection(next)
+      setOpen(true)
+    },
+    []
+  )
 
   const unread = data.notifications.length
 
@@ -51,7 +54,10 @@ export function HomeScreen() {
           >
             <Bell className="size-5" aria-hidden="true" />
             {unread > 0 && (
-              <span aria-hidden="true" className="absolute top-2.5 right-2.5 size-2 rounded-full bg-primary ring-2 ring-background" />
+              <span
+                aria-hidden="true"
+                className="absolute top-2.5 right-2.5 size-2 rounded-full bg-primary ring-2 ring-background"
+              />
             )}
           </Button>
           <Button

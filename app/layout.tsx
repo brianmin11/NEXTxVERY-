@@ -31,8 +31,6 @@ const fontCal = localFont({
   preload: false,
 })
 
-
-
 export const metadata: Metadata = {
   title: { default: BRAND_NAME, template: `%s · ${BRAND_NAME}` },
   description: "가족의 일정과 추억을 함께 담는 우리 가족만의 공간",
@@ -66,15 +64,17 @@ export default function RootLayout({
         <ThemeProvider>
           <TooltipProvider>
             {/* 데모 상태(현재 인물·마음·일정): 메모리 전용, 라우트 이동 중 유지, 새로고침 시 초기화 */}
-            <LiveGate><DemoViewerProvider>
-              <MindProvider>
-                <CalendarProvider>
-                  <MemoriesProvider>
-                    <ChoresProvider>{children}</ChoresProvider>
-                  </MemoriesProvider>
-                </CalendarProvider>
-              </MindProvider>
-            </DemoViewerProvider></LiveGate>
+            <LiveGate>
+              <DemoViewerProvider>
+                <MindProvider>
+                  <CalendarProvider>
+                    <MemoriesProvider>
+                      <ChoresProvider>{children}</ChoresProvider>
+                    </MemoriesProvider>
+                  </CalendarProvider>
+                </MindProvider>
+              </DemoViewerProvider>
+            </LiveGate>
           </TooltipProvider>
         </ThemeProvider>
       </body>
