@@ -187,14 +187,14 @@ export function createV2Service({
         : null,
     }
   }
-  function row(actor: V2Actor, kind: string, objectId: string) {
+  function row(actor: V2Actor, kind: string, objectId: string): Row {
     const m = member(actor),
       r = db
         .prepare(
           "SELECT * FROM v2_records WHERE id=? AND kind=? AND family_id=?"
         )
         .get(objectId, kind, m.family_id) as Row | undefined
-    if (!r) missing()
+    if (!r) return missing()
     return r
   }
   function decode<T>(r: Row): Versioned<T> {
