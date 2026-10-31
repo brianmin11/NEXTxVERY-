@@ -2,6 +2,7 @@ import { getActor, getDatabase } from "@/src/lib/server/auth"
 import { createV2Service } from "@/src/lib/server/v2-service"
 import { relationshipProvider } from "@/src/lib/server/provider"
 import { createCoordinationService } from "@/src/lib/server/v3-coordination"
+import { configuredAssetStore } from "@/src/lib/server/asset-store"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 const privateHeaders = {
@@ -60,7 +61,7 @@ async function handle(
     const service = createV2Service({
       db: getDatabase(),
       inviteSecret: process.env.BETTER_AUTH_SECRET,
-      uploadDir: process.env.FAMILY_UPLOAD_PATH,
+      assetStore: configuredAssetStore(),
       suggest: provider.suggest,
     })
     if (request.method === "POST" && path === "memories/assets") {
