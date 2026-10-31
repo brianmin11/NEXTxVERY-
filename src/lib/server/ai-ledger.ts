@@ -17,7 +17,7 @@ export class AiLimitError extends Error {
 
 // PostgreSQL returns BIGINT aggregates as strings. Never round monetary values.
 function integer(value: unknown): bigint {
-  if (typeof value === "bigint" && value >= 0n) return value
+  if (typeof value === "bigint" && value >= BigInt(0)) return value
   if (typeof value === "number" && Number.isSafeInteger(value) && value >= 0)
     return BigInt(value)
   if (typeof value === "string" && /^\d+$/.test(value)) return BigInt(value)
@@ -98,7 +98,7 @@ export function createAiLedger(
           .get(actorId, startedAt)) as { calls: unknown; actor_calls: unknown }
         if (
           integer(active.calls) >= BigInt(policy.maxConcurrent) ||
-          integer(active.actor_calls) > 0n
+          integer(active.actor_calls) > BigInt(0)
         )
           throw new AiLimitError("AI_RATE_LIMIT")
 
