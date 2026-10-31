@@ -18,7 +18,7 @@ export class OpenAIAdapter implements ModelAdapter {
   }catch(e){
    if(e instanceof RelationshipError)throw e;
    if(req.signal.aborted)throw new RelationshipError('CANCELLED');
-   if(e instanceof OpenAI.APIError){if(e.status===429)throw new RelationshipError('RATE_LIMIT',true);if(e.status===401||e.status===403){const missingScopes=[...e.message.matchAll(/\b(?:api|model)\.[a-z][a-z_.]*(?:read|write|request)\b/g)].map(x=>x[0]);throw new RelationshipError('POLICY_RESTRICTED',false,{status:e.status,missingScopes:[...new Set(missingScopes)]});}if(e.status===400)throw new RelationshipError('INPUT_INVALID');throw new RelationshipError('PROVIDER_ERROR',(e.status??0)>=500);}
+   if(e instanceof OpenAI.APIError){if(e.status===429)throw new RelationshipError('RATE_LIMIT',true);if(e.status===401||e.status===403){const missingScopes=[...e.message.matchAll(/\b(?:api|model)\.(?:[a-z][a-z_]*\.)*(?:read|write|request)\b/g)].map(x=>x[0]);throw new RelationshipError('POLICY_RESTRICTED',false,{status:e.status,missingScopes:[...new Set(missingScopes)]});}if(e.status===400)throw new RelationshipError('INPUT_INVALID');throw new RelationshipError('PROVIDER_ERROR',(e.status??0)>=500);}
    throw new RelationshipError('PROVIDER_ERROR',true);
   }
  }
