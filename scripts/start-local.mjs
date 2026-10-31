@@ -11,7 +11,7 @@ if(process.env.DATABASE_URL && process.env.STORAGE_BACKEND !== 'supabase') {
   throw new Error('PostgreSQL runtime requires the private Supabase asset store');
 }
 // Pass a key file only for an explicitly enabled, approved synthetic integration.
-if(process.env.INTEGRATION_LIVE_APPROVED === 'true' && process.env.OPENAI_KEY_ENV_FILE) {
+if((process.env.INTEGRATION_LIVE_APPROVED === 'true' || process.env.AI_LIVE_APPROVED === 'true') && process.env.OPENAI_KEY_ENV_FILE) {
   loadEnvFile(process.env.OPENAI_KEY_ENV_FILE);
 }
 const mode=process.argv.includes('--production')?'start':'dev';
