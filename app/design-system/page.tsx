@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import { AlertCircle, CalendarDays, CalendarPlus, Heart, House, Images, Trash2 } from "lucide-react"
+import { AlertCircle, CalendarDays, CalendarPlus, Trash2 } from "lucide-react"
 
 import { Logo } from "@/components/logo"
+import { APP_NAV_ITEMS } from "@/components/woorijip/nav-items"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,6 +18,7 @@ import { EmptyState } from "@/components/woorijip/state-views"
 import { formatFullDate } from "@/lib/format"
 
 import { LoadingButtonDemo, RetryDemo, SheetDemo } from "./demos"
+import { HousePreview } from "./house-preview"
 
 export const metadata: Metadata = {
   title: "디자인 확인",
@@ -34,12 +36,8 @@ const MEMBERS: Member[] = [
 const DINNER_AT = "2026-10-31T19:00:00+09:00"
 const PHOTO_AT = "2026-10-25T14:30:00+09:00"
 
-const NAV_ITEMS: BottomNavItem[] = [
-  { key: "home", label: "우리집", href: "/design-system?tab=home", icon: House },
-  { key: "calendar", label: "일정", href: "/design-system?tab=calendar", icon: CalendarDays },
-  { key: "memories", label: "추억", href: "/design-system?tab=memories", icon: Images },
-  { key: "heart", label: "마음", href: "/design-system?tab=heart", icon: Heart },
-]
+// 앱 공통 탭과 같은 구성. 여기서는 ?tab=으로 활성 상태만 바꿔 본다.
+const NAV_ITEMS: BottomNavItem[] = APP_NAV_ITEMS.map((i) => ({ ...i, href: `/design-system?tab=${i.key}` }))
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -231,6 +229,12 @@ export default async function DesignSystemPage({
             </div>
           </div>
           <RetryDemo members={MEMBERS.slice(0, 3)} startsAt={DINNER_AT} />
+        </Section>
+
+        <Separator />
+
+        <Section title="집 장면 · 5단계 시안 (개발 전용)">
+          <HousePreview />
         </Section>
 
         <Separator />

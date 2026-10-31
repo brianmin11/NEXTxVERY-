@@ -48,6 +48,8 @@
 - **흰 글자 버튼 배경이나 작은 글자색으로 쓰지 않는다**(흰 글자는 1.7:1로 실패).
 - 페이지마다 새 팔레트를 만들지 않는다.
 
+**장면 팔레트(`--scene-*`, 집·캐릭터 장면 전용):** sky `#E9F2F7`, grass `#CFE2BF` / dark `#B3CF9F`, wall `#FFF8EC` / shade `#EAD9BF`, roof = apricot / shade `#D8927A`, wood `#B98A5E`, window = butter, leaf `#86B07C` / dark `#628F5C`, fence `#F6EFE2`, shadow `rgb(46 52 47 / .12)`, sun = butter. 기능 UI에서는 쓰지 않는다. 장면 안의 글자(이름표)는 `card` 바탕 위 `foreground`만 쓴다.
+
 **색만으로 상태를 구분하지 않는다.** 오류·수락·완료·활성은 항상 문구나 아이콘을 함께 쓴다. 예: 오류는 `AlertCircle` + 문장, 활성 탭은 색 + 굵기 + 표시줄 + `aria-current`.
 
 ## 3. 타이포그래피
@@ -94,6 +96,18 @@
 | `EmptyState` / `ErrorState` | 빈 상태(무엇이 없는지 + 다음 행동 하나), 오류(`role="alert"` + 아이콘 + 재시도) |
 | `BottomNav` | 하단 4탭, safe-area 포함, `aria-current` |
 
+**홈(`components/home`)**
+| 컴포넌트 | 용도 |
+|---|---|
+| `HomeScreen` | /home 조립. `selection` 하나로 `HomeDetailSheet`만 연다(시트 중첩 금지) |
+| `FamilyHouseScene` | 오리지널 2.5D SVG 집 장면. `stage`(1~5)로 레이어만 바뀌고 카메라·집 크기는 고정. 캐릭터 위에 투명한 실제 버튼을 겹쳐 터치·키보드 동작을 같게 한다. 집 앞 표시 인원은 `maxVisible`(기본 4), 나머지는 `+N` |
+| `house-layers.tsx` | 하늘·땅·집·우편함·화분·꽃·정원·가랜드 레이어. 좌표계 0 0 400 240 |
+| `FamilyAvatar` / `SceneAvatar` | 캐릭터. 렌더러는 `avatar-renderers/basic-round.tsx`(임시 기본형) 하나이며 `family-avatar.tsx`의 `AvatarGlyph` 한 줄로 교체한다. 역할·성별로 외형을 정하지 않는다 |
+| `HomeSummary` | CTA → 오늘 일정(압축 행) → 내 할 일 → 최근 추억 |
+| `HomeDetailSheet` | 일정·구성원·가족 목록·알림·마음 전하기 안내를 담는 단일 바텀시트 |
+| `AppShell` / `AppBottomNav` / `ComingSoon` (`components/woorijip`) | 하단 탭 화면 틀, pathname 기반 활성 탭, 준비 중 화면 |
+
+- 집 상태 산정 정책은 미정이다. AI 화목도 계산이나 개인 대화·미접속·집안일 미완료를 벌점으로 연결하지 않는다. 5단계(작은 집 → 화분 → 꽃 → 정원 → 가랜드·무지개)는 미리보기 시안이며 `/design-system`에서만 바꿔 본다. 오류·로딩 상태로 집을 어둡게 만들지 않는다.
 - 일반 레이아웃(`section`, `nav`, `dl` 등)과 집·캐릭터 일러스트는 semantic HTML·SVG·전용 React 컴포넌트로 만든다. 모든 요소를 shadcn으로 억지 구현하지 않는다.
 - 날짜·시간은 `lib/format.ts`(ko-KR, Asia/Seoul 고정)를 쓴다.
 - loading 버튼: `disabled` + `aria-busy` + 스피너 + 진행형 문구("저장하는 중").
@@ -107,7 +121,8 @@
 - 안전 영역: 상단 헤더 `pt-[env(safe-area-inset-top)]`, 하단 탭·시트·푸터 `pb-[env(safe-area-inset-bottom)]`. 하단 탭이 있는 화면은 본문 아래 여백을 `--bottom-nav-height + safe-area`만큼 둔다.
 - **짧은 상세는 바텀시트**(`Sheet side="bottom"`, 최대 85dvh, 내부 스크롤, 닫으면 포커스 복귀).
 - **긴 입력(Relationship AI 작성 등)은 추후 전체 화면**으로 만든다. 시트에 긴 폼을 넣지 않는다.
-- 하단 탭(안): 우리집 · 일정 · 추억 · 마음. 가사분담은 우리집 안에서 접근한다. 확정은 다음 모듈에서 한다.
+- 하단 탭: 우리집(`/home`) · 일정(`/calendar`) · 추억(`/memories`) · 더보기(`/more`). `APP_NAV_ITEMS` 한 곳에서 관리한다. 마음 전하기는 홈 CTA로 진입한다.
+- 집 장면은 `aspect-[5/3]`로 폭에 비례(360→216px, 390→234px, 430→258px), 최대 270px. 오늘 일정이 첫 화면 아래쪽에 일부 보이게 유지한다.
 
 ## 8. 테마
 

@@ -52,6 +52,7 @@
   --color-deco-apricot: var(--deco-apricot);
   --color-deco-sky: var(--deco-sky);
   --color-deco-butter: var(--deco-butter);
+  --color-scene-sky: var(--scene-sky);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -114,6 +115,23 @@
   --deco-apricot: #f2b7a0;
   --deco-sky: #b8dcec;
   --deco-butter: #f5d98a;
+
+  /* 집·캐릭터 장면 전용(MASTER 2장). 기능 UI에서는 쓰지 않는다. */
+  --scene-sky: #e9f2f7;
+  --scene-cloud: #ffffff;
+  --scene-sun: var(--deco-butter);
+  --scene-grass: #cfe2bf;
+  --scene-grass-dark: #b3cf9f;
+  --scene-wall: #fff8ec;
+  --scene-wall-shade: #ead9bf;
+  --scene-roof: var(--deco-apricot);
+  --scene-roof-shade: #d8927a;
+  --scene-wood: #b98a5e;
+  --scene-window: var(--deco-butter);
+  --scene-leaf: #86b07c;
+  --scene-leaf-dark: #628f5c;
+  --scene-fence: #f6efe2;
+  --scene-shadow: rgb(46 52 47 / 0.12);
 
   --radius: 1rem;
 
