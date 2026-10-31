@@ -5,6 +5,7 @@ import localFont from "next/font/local"
 import "./globals.css"
 import { CalendarProvider } from "@/components/calendar/calendar-provider"
 import { DemoViewerProvider } from "@/components/demo/demo-viewer-provider"
+import { MemoriesProvider } from "@/components/memories/memories-provider"
 import { MindProvider } from "@/components/mind/mind-provider"
 import { ThemeProvider } from "@/components/theme-provider"
 import { BRAND_NAME, LOGO_SRC } from "@/components/logo"
@@ -70,7 +71,9 @@ export default function RootLayout({
             {/* 데모 상태(현재 인물·마음·일정): 메모리 전용, 라우트 이동 중 유지, 새로고침 시 초기화 */}
             <DemoViewerProvider>
               <MindProvider>
-                <CalendarProvider>{children}</CalendarProvider>
+                <CalendarProvider>
+                  <MemoriesProvider>{children}</MemoriesProvider>
+                </CalendarProvider>
               </MindProvider>
             </DemoViewerProvider>
           </TooltipProvider>

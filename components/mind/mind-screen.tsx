@@ -25,6 +25,8 @@ import type { MindMessage } from "@/lib/mind/types"
 import { AdapterStatus } from "./adapter-status"
 import { DemoViewerSwitch } from "./demo-viewer-switch"
 import { useMind } from "./mind-provider"
+import { LeaveDialog } from "@/components/woorijip/leave-dialog"
+
 import { RecipientPicker } from "./recipient-picker"
 import { useReturnFocus } from "./use-return-focus"
 
@@ -438,38 +440,3 @@ function StepActions({
   }
 }
 
-function LeaveDialog({
-  open,
-  onOpenChange,
-  onCloseAutoFocus,
-  onLeave,
-  onDiscard,
-}: {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onCloseAutoFocus: (event: Event) => void
-  onLeave: () => void
-  onDiscard: () => void
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onCloseAutoFocus={onCloseAutoFocus}>
-        <DialogHeader>
-          <DialogTitle>작성 중인 내용이 있어요</DialogTitle>
-          <DialogDescription>
-            앱 안에서 다른 화면으로 가면 내용은 유지돼요. 새로고침하거나 탭을 닫으면 사라져요(메모리에만 있는 데모예요).
-          </DialogDescription>
-        </DialogHeader>
-        <DialogFooter className="flex-col gap-2 sm:flex-col">
-          <Button onClick={() => onOpenChange(false)}>계속 작성</Button>
-          <Button variant="outline" onClick={onLeave}>
-            내용 두고 나가기
-          </Button>
-          <Button variant="destructive" onClick={onDiscard}>
-            내용 지우고 나가기
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}

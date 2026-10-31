@@ -37,12 +37,7 @@ export type ChoreItem = {
   done: boolean
 }
 
-export type MemoryItem = {
-  id: string
-  caption: string
-  takenAt: string
-  uploaderId: string
-}
+// 추억 사진은 lib/memories/fixture.ts(seedMemories)가 원본이다. 홈과 /memories가 같은 상태를 읽는다.
 
 export type NotificationItem = {
   id: string
@@ -55,7 +50,6 @@ export type HomeData = {
   /** 현재 보고 있는 구성원(가상) */
   viewerId: string
   chores: ChoreItem[]
-  memories: MemoryItem[]
   notifications: NotificationItem[]
 }
 
@@ -137,17 +131,6 @@ function homeFor(family: Family): HomeData {
       { id: "chore-dish", title: "설거지", assigneeId: first, done: false },
       { id: "chore-laundry", title: "빨래 개기", assigneeId: first, done: true },
     ],
-    memories:
-      family.members.length > 1
-        ? [
-            {
-              id: "mem-picnic",
-              caption: "가을 소풍에서 다 같이 찍은 사진",
-              takenAt: "2026-10-25T14:30:00+09:00",
-              uploaderId: ids[1],
-            },
-          ]
-        : [],
     notifications:
       family.members.length > 1
         ? [

@@ -1,10 +1,10 @@
 import type { Metadata } from "next"
-import { Images } from "lucide-react"
 
-import { ComingSoon } from "@/components/woorijip/coming-soon"
+import { MemoriesScreen } from "@/components/memories/memories-screen"
 
-export const metadata: Metadata = { title: "추억" }
+export const metadata: Metadata = { title: "가족 추억" }
 
+// 프론트 데모: 사진은 브라우저 탭 안 메모리에만 있고 실제 업로드·공유는 없다.
 export default function MemoriesPage() {
-  return <ComingSoon title="추억" description="사진과 추억을 모아 보는 화면을 다음 단계에서 만들어요." icon={Images} />
+  return <MemoriesScreen />
 }

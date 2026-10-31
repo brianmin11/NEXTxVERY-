@@ -4,14 +4,17 @@ import Link from "next/link"
 import { ChevronRight, Circle, CircleCheck, Heart, Images } from "lucide-react"
 
 import { useCalendar } from "@/components/calendar/calendar-provider"
+import { MemoryImage } from "@/components/memories/memory-image"
+import { memoryAlt } from "@/components/memories/memories-screen"
+import { useMemories } from "@/components/memories/memories-provider"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { MemberStack } from "@/components/woorijip/member"
-import { PhotoCard } from "@/components/woorijip/photo-card"
 import { EmptyState } from "@/components/woorijip/state-views"
 import { formatEventTime } from "@/lib/calendar/date"
 import { findMember, type HomeData } from "@/lib/home.fixture"
+import { HOME_MEMORY_LIMIT } from "@/lib/memories/config"
 
 import type { HomeSelection } from "./home-selection"
 
@@ -29,13 +32,14 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 
 /** 집 장면 아래: CTA → 오늘 일정(캘린더 상태) → 내 할 일 → 최근 추억. 한 열, 항목마다 밀도를 다르게 둔다. */
 export function HomeSummary({ data, onSelect }: HomeSummaryProps) {
-  const { family, chores, memories } = data
+  const { family, chores } = data
   const cal = useCalendar()
+  const memories = useMemories()
   const todays = cal.eventsOn(cal.today)
   const shown = todays.slice(0, HOME_EVENT_LIMIT)
   const myChores = chores.filter((c) => c.assigneeId === data.viewerId).slice(0, 2)
-  const latestMemory = memories[0]
-  const uploader = latestMemory ? findMember(family, latestMemory.uploaderId) : undefined
+  // 홈은 등록 시각 내림차순으로 최근 것만
+  const recentMemories = memories.recentPosts.slice(0, HOME_MEMORY_LIMIT)
 
   return (
     <div className="flex flex-col gap-6">
@@ -120,17 +124,45 @@ export function HomeSummary({ data, onSelect }: HomeSummaryProps) {
       </section>
 
       <section className="flex flex-col gap-2" aria-labelledby="home-memory">
-        <SectionTitle>
-          <span id="home-memory">최근 추억</span>
-        </SectionTitle>
-        {latestMemory && uploader ? (
-          <PhotoCard caption={latestMemory.caption} takenAt={new Date(latestMemory.takenAt)} uploader={uploader} />
-        ) : (
+        <div className="flex items-center justify-between gap-2">
+          <SectionTitle>
+            <span id="home-memory">최근 추억</span>
+          </SectionTitle>
+          <Button variant="link" className="-mr-2 h-11 px-2 text-sm" asChild>
+            <Link href="/memories">전체 보기</Link>
+          </Button>
+        </div>
+        {recentMemories.length === 0 ? (
           <EmptyState
             icon={Images}
             title="아직 추억이 없어요"
-            description="첫 사진은 다음 단계에서 올릴 수 있어요."
+            description="첫 사진을 올려 보세요."
+            action={
+              <Button asChild>
+                <Link href="/memories/new">추억 등록</Link>
+              </Button>
+            }
           />
+        ) : (
+          <ul className="grid grid-cols-3 gap-2">
+            {recentMemories.map((post) => {
+              const asset = memories.assetById(post.assetId)
+              const author = findMember(family, post.authorId)
+              if (!asset || !author) return null
+              const alt = memoryAlt(post, author.name)
+              return (
+                <li key={post.id}>
+                  <Link
+                    href={`/memories/${post.id}`}
+                    aria-label={`${alt} · 상세 보기`}
+                    className="block aspect-square overflow-hidden rounded-xl bg-muted ring-1 ring-border outline-none focus-visible:ring-3 focus-visible:ring-ring/50 active:opacity-90"
+                  >
+                    <MemoryImage asset={asset} alt="" fit="cover" />
+                  </Link>
+                </li>
+              )
+            })}
+          </ul>
         )}
       </section>
     </div>

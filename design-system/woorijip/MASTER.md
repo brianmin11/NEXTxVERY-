@@ -73,7 +73,8 @@
 - 페이지 가로 여백 16px(`px-4`). 섹션 간격 40px, 카드 내부 20px(`--card-spacing`).
 - `--radius: 1rem` 하나에서 파생한다. 버튼·입력은 `rounded-md`(12.8px), 카드는 `rounded-xl`, 시트 상단은 `rounded-t-2xl`, 칩·아바타는 `rounded-full`. 페이지에서 임의 radius를 선언하지 않는다.
 - **터치 영역 최소 44px.** Button `default`(44)·`lg`(48)·`icon`(44)·`icon-lg`(48)를 모바일 기본으로 쓴다. `xs`/`sm`/`icon-xs`/`icon-sm`은 데스크톱·밀집 영역 전용이다.
-- shadcn 기본값을 모바일 기준으로 조정한 항목(`components/ui`): TabsList 52px(트리거 45px), Select 트리거 44px, Switch는 시각 32×18이지만 `::after`로 히트 영역 46px, 달력 칸 45px(360px, 칸 간격 2px), 텍스트 링크 버튼(`variant="link"`)은 `h-11`로 감싼다. 텍스트 입력은 44px, textarea는 그 이상.
+- shadcn 기본값을 모바일 기준으로 조정한 항목(`components/ui`): TabsList 52px(트리거 45px), Select 트리거 44px, Switch는 시각 32×18이지만 `::after`로 히트 영역 46px, 텍스트 링크 버튼(`variant="link"`)은 `h-11`로 감싼다. 텍스트 입력은 44px, textarea는 그 이상.
+- **4px 그리드 예외:** 달력 칸 간격은 2px(`month-grid.tsx`)다. 360px에서 7열 칸이 44px 이상이 되게 하기 위한 예외이며, 다른 곳의 간격은 4px 그리드를 유지한다.
 
 ## 5. 깊이·모션
 
@@ -99,7 +100,8 @@
 |---|---|
 | `MemberAvatar` / `MemberStack` / `MemberChip` / `MemberProfile` | 구성원 표시. 색은 `tone`(apricot·sky·butter·sage)으로만 지정 |
 | `ScheduleCard` / `ScheduleCardSkeleton` | 일정 카드와 같은 크기의 로딩 자리 |
-| `PhotoCard` | 4:3 사진 틀 + 캡션(2줄 말줄임) + 올린 사람·날짜 |
+| `PhotoCard` | 4:3(또는 정사각) 사진 틀 + 캡션(2줄 말줄임) + 올린 사람·날짜(`takenAt` 또는 `dateLabel/dateTime`), 선택 배지 |
+| `LeaveDialog` | 작성 화면 공용 유실 확인(계속 작성 / 내용 두고 나가기 / 내용 지우고 나가기) |
 | `PrivateNoteCard` | 비공개 원문 ↔ 전달용 문장 분리, 승인 전 미전달 안내 |
 | `EmptyState` / `ErrorState` | 빈 상태(무엇이 없는지 + 다음 행동 하나), 오류(`role="alert"` + 아이콘 + 재시도) |
 | `BottomNav` | 하단 4탭, safe-area 포함, `aria-current` |
@@ -141,6 +143,23 @@
 | `DemoViewerProvider` (`components/demo`) | 모든 데모 기능이 공유하는 현재 인물. 마음 전하기 초안은 작성한 인물에게만 보인다 |
 
 - 하루짜리 일정만 다룬다. 여러 날·반복·시간대 변환은 후속 범위다. 전달받은 마음을 일정에 자동으로 넣지 않는다.
+
+**가족 추억 사진(`components/memories`, `lib/memories`)** — 프론트 데모. 실제 업로드·저장·가족 공유·AI 분석은 없다.
+| 조각 | 역할 |
+|---|---|
+| `lib/memories/types.ts` | `MemoryPost`(id·authorId·memoryDate·caption·createdAt·assetId)와 `MemoryAsset`(blob: object URL / placeholder: 합성 예시)을 분리. blob URL은 탭 안 임시 주소이며 서버의 영구 식별자가 아니다 |
+| `lib/memories/config.ts` | 10MiB·JPEG/PNG/WebP·설명 200자(임시 프론트 제한). 프론트 검증은 서버 보안 검증을 대신하지 않는다 |
+| `lib/memories/image.ts` | MIME → 용량 → 브라우저 디코딩 순으로 검사해 미지원·용량 초과·손상을 구분. 성공 시 object URL 발급 |
+| `lib/memories/fixture.ts` | 오늘 기준 seed 2개. 프로젝트에 사진 자산이 없어 로컬 합성 SVG '예시 이미지'를 쓴다. 외부 사진을 가져오지 않는다 |
+| `MemoriesProvider` | 메모리 상태(게시물·자산·초안). object URL 해제는 이벤트 핸들러에서만: 교체·취소된 임시 사진, 삭제된 게시물. 등록된 사진은 화면 언마운트로 해제하지 않는다. 등록 토큰으로 연타 중복 방지, 빠른 재선택은 요청 번호로 이전 결과 폐기 |
+| `/memories` | 2열 목록(`PhotoCard` 정사각 타일, 추억 날짜 내림차순 → 등록 시각 내림차순), 빈 상태, 로딩 skeleton·실패 표시(실패 카드도 상세로 이동 가능) |
+| `/memories/new` | 전체 화면 등록 폼: 기기 파일 선택기 → 검사·미리보기 → 교체/취소 → 날짜(필수)·설명(선택) → '추억 등록'. 유실 확인은 공용 `LeaveDialog`(마음 전하기와 동일) |
+| `/memories/[id]` | 원본 비율 전체 표시(`object-contain`), 날짜·설명·작성자, 작성자만 삭제(프론트 데모 규칙), 삭제 확인 후 목록으로. 없는 ID는 '이 추억을 찾을 수 없어요' |
+| `MemoryImage` | 로딩·실패 상태를 가진 사진 렌더. object URL(blob:)은 next/image 로더를 쓸 수 없어 `<img>`를 쓴다. 서버 업로드가 생기면 next/image로 바꾼다 |
+
+- 게시물당 사진 1장. 여러 장·영상·댓글·좋아요·편집·EXIF 위치·얼굴 분석은 하지 않는다.
+- 홈 '최근 추억'은 같은 provider의 등록 시각 내림차순 3개와 '전체 보기'다.
+- 새로고침 초기화와 데모 인물 전환은 실제 인증·저장·가족 공유가 아니다.
 - 홈은 오늘 일정을 시간순 2개만 보여주고 '전체 보기'로 /calendar에 연결한다.
 - 사용자가 쓰지 않은 시간·약속·사과를 자동으로 덧붙이지 않는다. '예시 흐름'은 합성 예시로 표시하고 작성 중인 내용을 묻지 않고 덮어쓰지 않는다.
 - 마음 전하기 진입: 홈 CTA(`/mind`), 프로필 시트의 '{이름}에게 마음 전하기'(수신자만 미리 선택), 알림 시트의 '마음 수신함 열기'.

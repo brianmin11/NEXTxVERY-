@@ -3,6 +3,7 @@
 import * as React from "react"
 
 import { useDemoViewer } from "@/components/demo/demo-viewer-provider"
+import { useMemories } from "@/components/memories/memories-provider"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -23,16 +24,26 @@ import { useReturnFocus } from "./use-return-focus"
  */
 export function DemoViewerSwitch() {
   const { family, viewerId, setViewerId } = useDemoViewer()
-  const { draftDirty } = useMind()
+  const { draftDirty: mindDirty } = useMind()
+  const memories = useMemories()
   const [pending, setPending] = React.useState<string | null>(null)
   const returnFocus = useReturnFocus()
+  const dirty = mindDirty || memories.draftDirty
 
   function request(id: string) {
     if (id === viewerId) return
-    if (draftDirty) {
+    if (dirty) {
       returnFocus.capture()
       setPending(id)
     } else setViewerId(id)
+  }
+
+  function confirmSwitch() {
+    if (!pending) return
+    // 추억 초안의 임시 사진은 object URL까지 해제한다(마음 초안은 작성자에게만 보이므로 그대로 둔다).
+    if (memories.draftDirty) memories.resetDraft()
+    setViewerId(pending)
+    setPending(null)
   }
 
   return (
@@ -52,20 +63,15 @@ export function DemoViewerSwitch() {
           <DialogHeader>
             <DialogTitle>작성 중인 내용이 지워져요</DialogTitle>
             <DialogDescription>
-              데모 인물을 바꾸면 지금 쓰던 원문과 전달 문장은 사라져요. 다른 인물의 화면에 남지 않게 하기 위해서예요.
+              데모 인물을 바꾸면 지금 쓰던 내용(마음 원문·전달 문장, 고른 사진·설명)은 사라져요. 다른 인물의 화면에 남지 않게
+              하기 위해서예요.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPending(null)}>
               계속 작성
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                if (pending) setViewerId(pending)
-                setPending(null)
-              }}
-            >
+            <Button variant="destructive" onClick={confirmSwitch}>
               지우고 전환
             </Button>
           </DialogFooter>
