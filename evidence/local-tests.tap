@@ -2,535 +2,535 @@ TAP version 13
 # Subtest: diagnostic wrapper preserves actual request headers and body but logs no credentials or payload
 ok 1 - diagnostic wrapper preserves actual request headers and body but logs no credentials or payload
   ---
-  duration_ms: 34.139333
+  duration_ms: 30.188292
   type: 'test'
   ...
 # Subtest: 401 keeps original response but diagnostic includes only sanitized status, identifiers and scope names
 ok 2 - 401 keeps original response but diagnostic includes only sanitized status, identifiers and scope names
   ---
-  duration_ms: 1.190166
+  duration_ms: 1.934208
   type: 'test'
   ...
 # Subtest: mismatching expected credential is a boolean observation, never a rewritten authorization
 ok 3 - mismatching expected credential is a boolean observation, never a rewritten authorization
   ---
-  duration_ms: 0.598542
+  duration_ms: 2.051875
   type: 'test'
   ...
 # Subtest: observer failure cannot replace a successful provider response or create another dispatch
 ok 4 - observer failure cannot replace a successful provider response or create another dispatch
   ---
-  duration_ms: 1.196
+  duration_ms: 0.947583
   type: 'test'
   ...
 # Subtest: transport rejection is preserved and observer receives no raw exception text
 ok 5 - transport rejection is preserved and observer receives no raw exception text
   ---
-  duration_ms: 0.51575
+  duration_ms: 1.377916
   type: 'test'
   ...
 # Subtest: non-JSON error bodies stay readable and are not captured
 ok 6 - non-JSON error bodies stay readable and are not captured
   ---
-  duration_ms: 0.364458
+  duration_ms: 0.471375
   type: 'test'
   ...
 # Subtest: malformed identifier fields are omitted rather than copied as raw errors
 ok 7 - malformed identifier fields are omitted rather than copied as raw errors
   ---
-  duration_ms: 0.303875
+  duration_ms: 0.343334
   type: 'test'
   ...
 # Subtest: GET diagnostics do not invent a payload hash or mutate method
 ok 8 - GET diagnostics do not invent a payload hash or mutate method
   ---
-  duration_ms: 0.092916
+  duration_ms: 0.101583
   type: 'test'
   ...
 # Subtest: credential-shaped values are never logged even when returned in identifier fields
 ok 9 - credential-shaped values are never logged even when returned in identifier fields
   ---
-  duration_ms: 0.299167
+  duration_ms: 0.328708
   type: 'test'
   ...
 # Subtest: memory disabled excludes stored history but preserves current request
 ok 10 - memory disabled excludes stored history but preserves current request
   ---
-  duration_ms: 27.180709
+  duration_ms: 28.539709
   type: 'test'
   ...
 # Subtest: changing stored history while memory disabled cannot change model input
 ok 11 - changing stored history while memory disabled cannot change model input
   ---
-  duration_ms: 0.559709
+  duration_ms: 0.460375
   type: 'test'
   ...
 # Subtest: invalid current ownership is rejected before model call
 ok 12 - invalid current ownership is rejected before model call
   ---
-  duration_ms: 0.238708
+  duration_ms: 0.223583
   type: 'test'
   ...
 # Subtest: invalid current state revoked fails closed
 ok 13 - invalid current state revoked fails closed
   ---
-  duration_ms: 0.159166
+  duration_ms: 0.136791
   type: 'test'
   ...
 # Subtest: invalid current state deleted fails closed
 ok 14 - invalid current state deleted fails closed
   ---
-  duration_ms: 0.135625
+  duration_ms: 0.095875
   type: 'test'
   ...
 # Subtest: invalid current state corrected fails closed
 ok 15 - invalid current state corrected fails closed
   ---
-  duration_ms: 0.128833
+  duration_ms: 0.099833
   type: 'test'
   ...
 # Subtest: expired current input is not used
 ok 16 - expired current input is not used
   ---
-  duration_ms: 0.184625
+  duration_ms: 0.183083
   type: 'test'
   ...
 # Subtest: source id, version and quoted text must all match allowed evidence
 ok 17 - source id, version and quoted text must all match allowed evidence
   ---
-  duration_ms: 0.394792
+  duration_ms: 0.395542
   type: 'test'
   ...
 # Subtest: speaker cannot be changed to another family member by model
 ok 18 - speaker cannot be changed to another family member by model
   ---
-  duration_ms: 0.201666
+  duration_ms: 0.138292
   type: 'test'
   ...
 # Subtest: clarification limit does not create an endless question loop
 ok 19 - clarification limit does not create an endless question loop
   ---
-  duration_ms: 0.253375
+  duration_ms: 0.189417
   type: 'test'
   ...
 # Subtest: joint input rejects extra private context fields before calling model
 ok 20 - joint input rejects extra private context fields before calling model
   ---
-  duration_ms: 0.789708
+  duration_ms: 0.636542
   type: 'test'
   ...
 # Subtest: private-only record changes cannot affect joint call or shared metadata
 ok 21 - private-only record changes cannot affect joint call or shared metadata
   ---
-  duration_ms: 0.607792
+  duration_ms: 0.552167
   type: 'test'
   ...
 # Subtest: invalid approved-card scope rejected: {"state":"revoked"}
 ok 22 - invalid approved-card scope rejected: {"state":"revoked"}
   ---
-  duration_ms: 0.120917
+  duration_ms: 0.101417
   type: 'test'
   ...
 # Subtest: invalid approved-card scope rejected: {"state":"deleted"}
 ok 23 - invalid approved-card scope rejected: {"state":"deleted"}
   ---
-  duration_ms: 0.097458
+  duration_ms: 0.075084
   type: 'test'
   ...
 # Subtest: invalid approved-card scope rejected: {"state":"corrected"}
 ok 24 - invalid approved-card scope rejected: {"state":"corrected"}
   ---
-  duration_ms: 0.084334
+  duration_ms: 0.068292
   type: 'test'
   ...
 # Subtest: invalid approved-card scope rejected: {"permissionEpoch":3}
 ok 25 - invalid approved-card scope rejected: {"permissionEpoch":3}
   ---
-  duration_ms: 0.070458
+  duration_ms: 0.171959
   type: 'test'
   ...
 # Subtest: invalid approved-card scope rejected: {"householdId":"other"}
 ok 26 - invalid approved-card scope rejected: {"householdId":"other"}
   ---
-  duration_ms: 0.062917
+  duration_ms: 0.087125
   type: 'test'
   ...
 # Subtest: invalid approved-card scope rejected: {"purpose":"other"}
 ok 27 - invalid approved-card scope rejected: {"purpose":"other"}
   ---
-  duration_ms: 0.076083
+  duration_ms: 0.073875
   type: 'test'
   ...
 # Subtest: invalid approved-card scope rejected: {"hostVerified":false}
 ok 28 - invalid approved-card scope rejected: {"hostVerified":false}
   ---
-  duration_ms: 0.103083
+  duration_ms: 0.116708
   type: 'test'
   ...
 # Subtest: invalid approved-card scope rejected: {"validUntil":"2026-10-01T00:00:00+09:00"}
 ok 29 - invalid approved-card scope rejected: {"validUntil":"2026-10-01T00:00:00+09:00"}
   ---
-  duration_ms: 0.063875
+  duration_ms: 0.068458
   type: 'test'
   ...
 # Subtest: invalid approved-card scope rejected: {"recipients":[]}
 ok 30 - invalid approved-card scope rejected: {"recipients":[]}
   ---
-  duration_ms: 0.067083
+  duration_ms: 0.070167
   type: 'test'
   ...
 # Subtest: shared output cannot cite private source ids
 ok 31 - shared output cannot cite private source ids
   ---
-  duration_ms: 0.107709
+  duration_ms: 0.119083
   type: 'test'
   ...
 # Subtest: one-sided input preserves the missing participant
 ok 32 - one-sided input preserves the missing participant
   ---
-  duration_ms: 0.12175
+  duration_ms: 0.296209
   type: 'test'
   ...
 # Subtest: defer and decline preserve choice without model invocation
 ok 33 - defer and decline preserve choice without model invocation
   ---
-  duration_ms: 1.807292
+  duration_ms: 1.994417
   type: 'test'
   ...
 # Subtest: revision changes version and old acceptance cannot match new semantic plan
 ok 34 - revision changes version and old acceptance cannot match new semantic plan
   ---
-  duration_ms: 1.102459
+  duration_ms: 0.958542
   type: 'test'
   ...
 # Subtest: valid plan remains a draft and never grants execution authority
 ok 35 - valid plan remains a draft and never grants execution authority
   ---
-  duration_ms: 0.16925
+  duration_ms: 0.138666
   type: 'test'
   ...
 # Subtest: compile is deterministic
 ok 36 - compile is deterministic
   ---
-  duration_ms: 0.263625
+  duration_ms: 0.240042
   type: 'test'
   ...
 # Subtest: missing assignee remains unresolved
 ok 37 - missing assignee remains unresolved
   ---
-  duration_ms: 0.152167
+  duration_ms: 0.151667
   type: 'test'
   ...
 # Subtest: unknown assignee, recipient or update target fails validation
 ok 38 - unknown assignee, recipient or update target fails validation
   ---
-  duration_ms: 0.256458
+  duration_ms: 0.250292
   type: 'test'
   ...
 # Subtest: past, reversed and impossible dates cannot produce a clean change plan
 ok 39 - past, reversed and impossible dates cannot produce a clean change plan
   ---
-  duration_ms: 0.488625
+  duration_ms: 0.203917
   type: 'test'
   ...
 # Subtest: recurrence must have a finite end and valid weekdays
 ok 40 - recurrence must have a finite end and valid weekdays
   ---
-  duration_ms: 1.016958
+  duration_ms: 0.646583
   type: 'test'
   ...
 # Subtest: shared busy schedule overlap prevents clean change plan
 ok 41 - shared busy schedule overlap prevents clean change plan
   ---
-  duration_ms: 0.389708
+  duration_ms: 0.284292
   type: 'test'
   ...
 # Subtest: unsupported timezone and explicit unresolved fields prevent clean change plan
 ok 42 - unsupported timezone and explicit unresolved fields prevent clean change plan
   ---
-  duration_ms: 0.339583
+  duration_ms: 0.159959
   type: 'test'
   ...
 # Subtest: share generation has its own safety check and never exposes unsafe draft
 ok 43 - share generation has its own safety check and never exposes unsafe draft
   ---
-  duration_ms: 0.497083
+  duration_ms: 0.451666
   type: 'test'
   ...
 # Subtest: ordinary share remains a private unapproved draft with server-controlled recipients
 ok 44 - ordinary share remains a private unapproved draft with server-controlled recipients
   ---
-  duration_ms: 0.162125
+  duration_ms: 0.125042
   type: 'test'
   ...
 # Subtest: sourced action cannot invent a valid but unmentioned timestamp
 ok 45 - sourced action cannot invent a valid but unmentioned timestamp
   ---
-  duration_ms: 0.108292
+  duration_ms: 0.087167
   type: 'test'
   ...
 # Subtest: model cannot expand agreement to a nonparticipant
 ok 46 - model cannot expand agreement to a nonparticipant
   ---
-  duration_ms: 0.380292
+  duration_ms: 0.201375
   type: 'test'
   ...
 # Subtest: old approval versions and semantic hashes are independently rejected
 ok 47 - old approval versions and semantic hashes are independently rejected
   ---
-  duration_ms: 0.195125
+  duration_ms: 0.162417
   type: 'test'
   ...
 # Subtest: recurring actions conflict with later occurrences of another new action
 ok 48 - recurring actions conflict with later occurrences of another new action
   ---
-  duration_ms: 1.257459
+  duration_ms: 0.805
   type: 'test'
   ...
 # Subtest: proposed terms cannot appear as a clean plan without confirmation even if model omitted unknowns
 ok 49 - proposed terms cannot appear as a clean plan without confirmation even if model omitted unknowns
   ---
-  duration_ms: 0.107334
+  duration_ms: 0.090875
   type: 'test'
   ...
 # Subtest: raw prior and tampered prior text cannot enter joint prompt
 ok 50 - raw prior and tampered prior text cannot enter joint prompt
   ---
-  duration_ms: 0.276208
+  duration_ms: 0.247417
   type: 'test'
   ...
 # Subtest: private-scoped or stale prior metadata is rejected before joint inference
 ok 51 - private-scoped or stale prior metadata is rejected before joint inference
   ---
-  duration_ms: 0.535625
+  duration_ms: 0.556
   type: 'test'
   ...
 # Subtest: evaluation approval limits persist across runs and prevent concurrent use
 ok 52 - evaluation approval limits persist across runs and prevent concurrent use
   ---
-  duration_ms: 2.527708
+  duration_ms: 1.98625
   type: 'test'
   ...
 # Subtest: corrupt budget ledger is not silently reset
 ok 53 - corrupt budget ledger is not silently reset
   ---
-  duration_ms: 0.613042
+  duration_ms: 0.73575
   type: 'test'
   ...
 # Subtest: personal-only ready ends without sharing or joint inference
 ok 54 - personal-only ready ends without sharing or joint inference
   ---
-  duration_ms: 13.31775
+  duration_ms: 12.824167
   type: 'test'
   ...
 # Subtest: reflect and private support remain private terminal outcomes
 ok 55 - reflect and private support remain private terminal outcomes
   ---
-  duration_ms: 0.553833
+  duration_ms: 0.775416
   type: 'test'
   ...
 # Subtest: joint entry is independent of scenario and private memory content
 ok 56 - joint entry is independent of scenario and private memory content
   ---
-  duration_ms: 2.690459
+  duration_ms: 2.126208
   type: 'test'
   ...
 # Subtest: flow has at most one pre-authored clarification turn and honestly reports unmet stages
 ok 57 - flow has at most one pre-authored clarification turn and honestly reports unmet stages
   ---
-  duration_ms: 0.4225
+  duration_ms: 0.309417
   type: 'test'
   ...
 # Subtest: no pre-authored answer means no invented continuation
 ok 58 - no pre-authored answer means no invented continuation
   ---
-  duration_ms: 0.266167
+  duration_ms: 0.171375
   type: 'test'
   ...
 # Subtest: authored clarification can resume complete flow within declared call bound
 ok 59 - authored clarification can resume complete flow within declared call bound
   ---
-  duration_ms: 2.338291
+  duration_ms: 1.289666
   type: 'test'
   ...
 # Subtest: revise adds a new version; defer and decline do not dispatch paid requests or inherit acceptance
 ok 60 - revise adds a new version; defer and decline do not dispatch paid requests or inherit acceptance
   ---
-  duration_ms: 1.09525
+  duration_ms: 1.39925
   type: 'test'
   ...
 # Subtest: revoked joint card is an expected error before model dispatch, not generation success
 ok 61 - revoked joint card is an expected error before model dispatch, not generation success
   ---
-  duration_ms: 0.179459
+  duration_ms: 0.276708
   type: 'test'
   ...
 # Subtest: unexpected model failure is preserved without a fixture fallback
 ok 62 - unexpected model failure is preserved without a fixture fallback
   ---
-  duration_ms: 0.114292
+  duration_ms: 0.237834
   type: 'test'
   ...
 # Subtest: non-domain budget error propagates to batch stop handler
 ok 63 - non-domain budget error propagates to batch stop handler
   ---
-  duration_ms: 0.229334
+  duration_ms: 0.276708
   type: 'test'
   ...
 # Subtest: declared bounds cover every case mode, clarification and revision combination
 ok 64 - declared bounds cover every case mode, clarification and revision combination
   ---
-  duration_ms: 3.528542
+  duration_ms: 4.723333
   type: 'test'
   ...
 # Subtest: summary distinguishes partial cases and preserves human ratings across reruns
 ok 65 - summary distinguishes partial cases and preserves human ratings across reruns
   ---
-  duration_ms: 105.871084
+  duration_ms: 126.178916
   type: 'test'
   ...
 # Subtest: published JSON examples satisfy their named v1 schemas
 ok 66 - published JSON examples satisfy their named v1 schemas
   ---
-  duration_ms: 12.458
+  duration_ms: 7.953542
   type: 'test'
   ...
 # Subtest: revocation invalidates direct and transitive derived artifacts, not unrelated agreement
 ok 67 - revocation invalidates direct and transitive derived artifacts, not unrelated agreement
   ---
-  duration_ms: 2.496084
+  duration_ms: 4.699459
   type: 'test'
   ...
 # Subtest: source correction or new version invalidates older derived artifacts
 ok 68 - source correction or new version invalidates older derived artifacts
   ---
-  duration_ms: 0.138958
+  duration_ms: 0.2625
   type: 'test'
   ...
 # Subtest: same active version does not invalidate
 ok 69 - same active version does not invalidate
   ---
-  duration_ms: 0.061583
+  duration_ms: 0.07725
   type: 'test'
   ...
 # Subtest: SDK serializes strict schema without stored state, tools or SDK retries
 ok 70 - SDK serializes strict schema without stored state, tools or SDK retries
   ---
-  duration_ms: 6.106459
+  duration_ms: 5.795875
   type: 'test'
   ...
 # Subtest: SDK maps TRUNCATED without fixture fallback
 ok 71 - SDK maps TRUNCATED without fixture fallback
   ---
-  duration_ms: 0.757166
+  duration_ms: 0.728042
   type: 'test'
   ...
 # Subtest: SDK maps MODEL_REFUSAL without fixture fallback
 ok 72 - SDK maps MODEL_REFUSAL without fixture fallback
   ---
-  duration_ms: 0.444917
+  duration_ms: 0.426834
   type: 'test'
   ...
 # Subtest: SDK maps SCHEMA_INVALID without fixture fallback
 ok 73 - SDK maps SCHEMA_INVALID without fixture fallback
   ---
-  duration_ms: 0.415667
+  duration_ms: 0.403333
   type: 'test'
   ...
 # Subtest: SDK rate limit performs one attempt and marks retryable
 ok 74 - SDK rate limit performs one attempt and marks retryable
   ---
-  duration_ms: 1.481166
+  duration_ms: 0.488959
   type: 'test'
   ...
 # Subtest: every stage output can become an OpenAI strict JSON schema locally
 ok 75 - every stage output can become an OpenAI strict JSON schema locally
   ---
-  duration_ms: 5.067792
+  duration_ms: 3.092416
   type: 'test'
   ...
 # Subtest: permission diagnostics expose only status and scope names, never raw error or credentials
 ok 76 - permission diagnostics expose only status and scope names, never raw error or credentials
   ---
-  duration_ms: 0.73925
+  duration_ms: 0.653458
   type: 'test'
   ...
 # Subtest: provider-observed usage survives truncation without retaining response text
 ok 77 - provider-observed usage survives truncation without retaining response text
   ---
-  duration_ms: 0.363375
+  duration_ms: 0.455542
   type: 'test'
   ...
 # Subtest: runtime returns validated data and measured metadata without input text
 ok 78 - runtime returns validated data and measured metadata without input text
   ---
-  duration_ms: 3.782916
+  duration_ms: 5.684
   type: 'test'
   ...
 # Subtest: malformed model output is an error, never a mock success
 ok 79 - malformed model output is an error, never a mock success
   ---
-  duration_ms: 0.524917
+  duration_ms: 0.473667
   type: 'test'
   ...
 # Subtest: pre-cancelled request invokes no model
 ok 80 - pre-cancelled request invokes no model
   ---
-  duration_ms: 0.133791
+  duration_ms: 0.323167
   type: 'test'
   ...
 # Subtest: in-flight cancellation terminates even an uncooperative adapter
 ok 81 - in-flight cancellation terminates even an uncooperative adapter
   ---
-  duration_ms: 17.097166
+  duration_ms: 16.006292
   type: 'test'
   ...
 # Subtest: timeout terminates uncooperative adapter
 ok 82 - timeout terminates uncooperative adapter
   ---
-  duration_ms: 21.573417
+  duration_ms: 21.245333
   type: 'test'
   ...
 # Subtest: call count and retry ceiling bound rate-limit retries
 ok 83 - call count and retry ceiling bound rate-limit retries
   ---
-  duration_ms: 0.591333
+  duration_ms: 0.384417
   type: 'test'
   ...
 # Subtest: non-retryable refusal makes only one attempt
 ok 84 - non-retryable refusal makes only one attempt
   ---
-  duration_ms: 0.250084
+  duration_ms: 0.130125
   type: 'test'
   ...
 # Subtest: budget denial and oversized input happen before provider call
 ok 85 - budget denial and oversized input happen before provider call
   ---
-  duration_ms: 0.536292
+  duration_ms: 0.256584
   type: 'test'
   ...
 # Subtest: missing token usage is unknown, not a zero-cost claim
 ok 86 - missing token usage is unknown, not a zero-cost claim
   ---
-  duration_ms: 0.135083
+  duration_ms: 0.109875
   type: 'test'
   ...
 # Subtest: provider exception is sanitized and is not successful data
 ok 87 - provider exception is sanitized and is not successful data
   ---
-  duration_ms: 0.156
+  duration_ms: 0.141791
   type: 'test'
   ...
 # Subtest: known failed-response usage is metered and unknown retries remain unknown
 ok 88 - known failed-response usage is metered and unknown retries remain unknown
   ---
-  duration_ms: 0.217375
+  duration_ms: 0.563125
   type: 'test'
   ...
 # Subtest: schema validation failure keeps observed usage without treating output as successful
 ok 89 - schema validation failure keeps observed usage without treating output as successful
   ---
-  duration_ms: 0.1
+  duration_ms: 0.202875
   type: 'test'
   ...
 1..89
@@ -541,4 +541,4 @@ ok 89 - schema validation failure keeps observed usage without treating output a
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 220.111375
+# duration_ms 205.488166

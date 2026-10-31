@@ -1,7 +1,7 @@
 import {readFileSync,readdirSync,writeFileSync,existsSync} from 'node:fs';
 import {resolve} from 'node:path';
 const dir='eval/results';
-const files=readdirSync(dir).filter(f=>/^(development|holdout)-\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)?.[0])-Number(b.match(/\d+/)?.[0]));
+const files=readdirSync(dir).filter(f=>/^(development|holdout|diagnostic)-\d+\.json$/.test(f)).sort((a,b)=>Number(a.match(/\d+/)?.[0])-Number(b.match(/\d+/)?.[0]));
 const reports=files.map(file=>({file,...JSON.parse(readFileSync(resolve(dir,file),'utf8'))}));
 const runs=reports.flatMap(report=>report.runs.map((run:any)=>({...run,file:report.file,split:report.plan.split})));
 const latest=new Map<string,any>();

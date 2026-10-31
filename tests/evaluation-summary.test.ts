@@ -17,5 +17,7 @@ test('summary distinguishes partial cases and preserves human ratings across rer
  run();assert.equal(JSON.parse(readFileSync(path,'utf8').trim()).reviewers[0].notes,'human annotation');
  writeFileSync(join(cwd,'eval/results/development-2.json'),JSON.stringify(report));run();
  const reviews=readFileSync(path,'utf8').trim().split('\n').map(line=>JSON.parse(line));assert.equal(reviews.length,2);assert.equal(reviews[0].reviewers[0].ratings.naturalness,3);
+ writeFileSync(join(cwd,'eval/results/diagnostic-3.json'),JSON.stringify({plan:{split:'diagnostic'},results:[],runs:[{calls:1,stage:'personal',usageComplete:false,estimatedCostUsd:null}]}));run();
+ const diagnosed=JSON.parse(readFileSync(join(cwd,'eval/results/summary.json'),'utf8'));assert.equal(diagnosed.providerRequests,3);assert.equal(diagnosed.unknownUsageRequests,1);assert.equal(diagnosed.latestByCase.length,1);
  }finally{rmSync(cwd,{recursive:true,force:true});}
 });

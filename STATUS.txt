@@ -1,31 +1,32 @@
-2026-10-31 KST — partial live evaluation checkpoint
+2026-11-01 KST — final synthetic live evaluation completed
 Repository: brianmin11/NEXTxVERY-
 Branch: codex/relationship-ai
-Package: @family-os/relationship-ai, schema 1.0, prompt ko-relationship-2
+Package: @family-os/relationship-ai, schema1.0, prompt ko-relationship-4
 
 Completed:
-- Independent TypeScript core, privacy/source/version boundaries, draft-only deterministic ChangePlan, OpenAI adapter, bounded runtime, schemas/examples/backend integration guide.
-- Responses Write edit explicitly approved, saved, and UI re-open verified.
-- Live model responses observed; semantic speaker attribution defect fixed in prompt2.
-- Evaluation offset/checkpoints/provenance, reflection/clarification stops, known failed-response usage preservation, cumulative limits, summary and blank human review export.
-- Typecheck/build and 69/69 local tests passed; independent QA reviewed 507f444, remaining checkpoint concerns subsequently fixed by main.
+- Independent TypeScript module, private/shared boundaries, draft-only deterministic ChangePlan, OpenAI adapter, bounded runtime, schemas/examples/backend guide.
+- Failure diagnosis separated provider authorization, speaker contract, evaluation entry-point design, and inferred-midnight defects. No case-specific response branches or fixture fallback.
+- Final development24 + first holdout8: 32 expected case outcomes, 48 successful provider requests, zero unexpected errors/required-stage gaps/operational issues.
+- End-to-end3 flows; joint analysis/agreement8; actual revision1; deterministic defer/decline; revoked-context preflight rejection; reflection/private-support exits; role/gender variants.
+- Prompt/schema/runner/dataset frozen before holdout; matching hashes verified.
+- Default production SDK (without diagnostic fetch) probe also passed.
+- Typecheck/build and 89/89 local tests passed; independent QA integrated and verified.
 
-Actual evaluation status:
-- 22 cumulative inference requests; 12 returned observable usage; 10 permission denials with unknown usage.
-- Known-usage estimate subtotal USD0.093510; actual billed cost unknown.
-- Reserved USD1.795904 / USD12 and 22 / 128 slots, no auto retries.
-- Latest development: K01-K08 clarification_required; K09-K11 errors; K12-K24 unattempted. K09 personal stage completed before share permission error.
-- Holdout not started. Full live pipeline and human Korean quality review NOT complete.
-- Repeated intermittent HTTP401 missing api.responses.write despite saved permission and matching local key; further calls stopped to avoid repeated failures.
+Costs / cumulative approval:
+- 107 actual inference requests; 97 observable usage responses; 10 historical permission failures with unknown usage.
+- Known-usage estimate subtotal USD0.755960, actual billed total unknown.
+- Reserved109/128 slots and USD8.897888/USD12; 2 revoked preflight reservations did not call the provider.
+- No automatic retries; budget ledger preserved; 19 reserved-call slots remain.
 
 Not claimed:
-- Real user/child data evaluation, auth/RLS/storage/deletion/approval/calendar integration, deployed UI, family benefit or payment willingness.
+- Human Korean language/relationship quality ratings: NOT_COLLECTED.
+- All9 original/revised ChangePlanDrafts remain executable=false with unresolved/proposed blockers; actual execution NOT verified.
+- Real user/child data, auth/RLS/storage/deletion/authenticated approval/calendar integration/deployment/family benefit/payment willingness: NOT_VERIFIED.
+- Provider-internal reason for historical intermittent authorization failures cannot be established retrospectively; current final calls and default SDK succeeded without broader permissions/new credentials.
 
 Next:
-- Resolve/allow propagation of provider permission, then resume K12 (offset11), inspect K09-K11, finish development, freeze prompt, run holdout within remaining approval.
-- Preserve eval/results/budget.json; never reset approval ledger.
-- Human reviewers complete eval/results/human-review.jsonl; host developer runs integration checklist.
+- Human reviewers rate evidence/human-review-final.jsonl; preserve scores across summary regenerations.
+- Backend developer implements and validates host responsibilities in docs/INTEGRATION.md.
+- Do not reset eval/results/budget.json or infer new paid/deployment approval.
 
-Evidence: evidence/local-tests.tap, evidence/live-evaluation-status.json, docs/LIVE-EVALUATION.md, docs/INTEGRATION.md.
-
-Final QA: live report totals independently reconciled; partial-case classification and human-rating preservation fixed and regression-tested.
+Evidence: docs/LIVE-EVALUATION.md, docs/FAILURE-ANALYSIS.md, evidence/{final-development.json,final-holdout.json,evaluation-freeze.json,live-evaluation-status.json,local-tests.tap}.

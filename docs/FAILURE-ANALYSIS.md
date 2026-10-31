@@ -12,7 +12,7 @@
 
 진단용 fetch 관찰기를 추가했다. 기본 공식 API 주소, 실제 전송 credential의 로컬 값 일치 여부(boolean), 조직·프로젝트 header 존재 여부, payload SHA256, HTTP status, x-request-id, 허용 형식 scope명만 기록한다. 키·Authorization·원문 error message·전체 header는 저장하지 않는다. 식별자 필드로 반사된 credential 형식/동일 키도 제거한다. 관찰기를 제거해도 요청/응답 의미는 바뀌지 않으며 observer 실패가 모델 결과를 바꾸지 않게 한다.
 
-2026-10-31 14:57 UTC 진단 요청은 동일 키로 `/v1/responses` HTTP200을 받았고, K10의 REFLECTION_ONLY 결과가 계약 검증을 통과했다. 이후의 개발/holdout 상태와 전체 건수는 LIVE-EVALUATION.md를 기준으로 한다. 공급자 키를 새로 만들거나 All 권한으로 확대해서 우회하지 않았다.
+2026-10-31 14:57 UTC 진단 요청은 동일 키로 `/v1/responses` HTTP200을 받았고, K10의 REFLECTION_ONLY 결과가 계약 검증을 통과했다. 이후의 개발/holdout 상태와 전체 건수는 LIVE-EVALUATION.md를 기준으로 한다. 공급자 키를 새로 만들거나 All 권한으로 확대해서 우회하지 않았다. 최종48회가 모두 성공했으며, 이후 진단 래퍼 없이 기본 SDK 경로로도1회 성공했다. 따라서 진단 전용 transport가 성공을 대체하는 구조도 아니다.
 
 ## 2. 의미 검증 실패: 화자 계약과 프롬프트의 불일치
 
