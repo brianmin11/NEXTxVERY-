@@ -16,7 +16,10 @@ type MonthGridProps = {
   onSelect: (date: DateKey) => void
 }
 
-/** 모바일 월간 달력. 7열, 칸 최소 44px, 일정 있는 날은 점 + 접근 가능한 개수 설명. */
+/**
+ * 모바일 월간 달력(Figma). 7열, 칸 최소 44px, 선택한 날은 32px 초록 원, 오늘은 굵은 초록 글자,
+ * 일정 있는 날은 코랄 점 + 접근 가능한 개수 설명.
+ */
 export function MonthGrid({ year, month, selected, today, countsByDate, onSelect }: MonthGridProps) {
   const weeks = monthGrid(year, month)
   return (
@@ -28,7 +31,7 @@ export function MonthGrid({ year, month, selected, today, countsByDate, onSelect
             key={d}
             role="columnheader"
             aria-label={WEEKDAY_FULL[i]}
-            className="py-1 text-center text-xs font-medium text-muted-foreground"
+            className="py-2 text-center text-xs font-medium text-muted-foreground"
           >
             {d}
           </div>
@@ -51,17 +54,23 @@ export function MonthGrid({ year, month, selected, today, countsByDate, onSelect
                   aria-current={isToday ? "date" : undefined}
                   aria-pressed={isSelected}
                   className={cn(
-                    "flex aspect-square min-h-11 w-full flex-col items-center justify-center gap-0.5 rounded-lg text-sm transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted",
-                    isSelected && "bg-primary font-semibold text-primary-foreground hover:bg-primary/90",
-                    isToday && !isSelected && "font-bold text-primary ring-1 ring-primary/40"
+                    "relative flex min-h-11 w-full flex-col items-center justify-center rounded-full text-sm transition-colors outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted",
+                    isToday && !isSelected && "font-bold text-primary"
                   )}
                 >
-                  <span className="tabular-nums">{day}</span>
+                  <span
+                    className={cn(
+                      "flex size-8 items-center justify-center rounded-full tabular-nums",
+                      isSelected && "bg-primary font-semibold text-primary-foreground"
+                    )}
+                  >
+                    {day}
+                  </span>
                   <span
                     aria-hidden="true"
                     className={cn(
-                      "size-1.5 rounded-full",
-                      count > 0 ? (isSelected ? "bg-primary-foreground" : "bg-primary") : "bg-transparent"
+                      "absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full",
+                      count > 0 ? "bg-deco-coral" : "bg-transparent"
                     )}
                   />
                 </button>

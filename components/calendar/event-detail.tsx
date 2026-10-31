@@ -1,6 +1,6 @@
 "use client"
 
-import { CalendarDays, Clock, MapPin, Pencil, StickyNote, Tag, Trash2, User } from "lucide-react"
+import { CalendarDays, Clock, MapPin, Pencil, StickyNote, Trash2, User } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,7 @@ type EventDetailProps = {
   onDelete: () => void
 }
 
-/** 일정 상세. 작성자(데모 인물 기준)에게만 수정·삭제를 보여준다. 서버 권한 검증이 아니다. */
+/** 일정 상세(Figma: 유형 칩 → 제목 → 날짜 → 정보 행). 작성자(데모 인물 기준)에게만 수정·삭제를 보여준다. 서버 권한 검증이 아니다. */
 export function EventDetail({ event, family, viewerId, onEdit, onDelete }: EventDetailProps) {
   const creator = findMember(family, event.createdByMemberId)
   const members = event.participantIds.map((id) => findMember(family, id)).filter((m) => m !== undefined)
@@ -28,28 +28,27 @@ export function EventDetail({ event, family, viewerId, onEdit, onDelete }: Event
     <>
       <SheetHeader className="px-5 pt-2">
         <div className="flex flex-wrap gap-1.5">
-          <Badge variant="secondary" className="h-6 px-2">
-            {CALENDAR_CATEGORY_LABEL[event.category]}
-          </Badge>
+          <span className="rounded-md bg-secondary px-2 py-0.5 text-xs font-bold text-primary">{CALENDAR_CATEGORY_LABEL[event.category]}</span>
           {event.seed && (
-            <Badge variant="outline" className="h-6 px-2 text-muted-foreground">
+            <Badge variant="outline" className="h-5 px-2 text-muted-foreground">
               데모 예시
             </Badge>
           )}
         </div>
-        <SheetTitle className="pr-10 text-xl font-bold">{event.title}</SheetTitle>
-        <SheetDescription>
+        <SheetTitle className="pr-10 text-2xl font-bold tracking-tight">{event.title}</SheetTitle>
+        <SheetDescription className="tabular-nums">
           <time dateTime={event.date}>{formatDateKeyFull(event.date)}</time>
+          {" · "}
+          {formatEventTime(event)}
         </SheetDescription>
       </SheetHeader>
-      <dl className="flex flex-col gap-3 px-5">
+      <dl className="flex flex-col divide-y divide-border border-t border-border px-5">
         <Row icon={Clock} label="시간">
           <span className="tabular-nums">{formatEventTime(event)}</span>
         </Row>
         <Row icon={CalendarDays} label="날짜">
           <time dateTime={event.date}>{formatDateKeyFull(event.date)}</time>
         </Row>
-        <Row icon={Tag} label="유형">{CALENDAR_CATEGORY_LABEL[event.category]}</Row>
         {event.location && (
           <Row icon={MapPin} label="장소">
             {event.location}
@@ -94,7 +93,7 @@ export function EventDetail({ event, family, viewerId, onEdit, onDelete }: Event
 
 function Row({ icon: Icon, label, children }: { icon: typeof Clock; label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-3">
+    <div className="flex min-h-12 items-start gap-3 py-3">
       <dt className="flex w-16 shrink-0 items-center gap-1.5 pt-0.5 text-sm text-muted-foreground">
         <Icon className="size-4" aria-hidden="true" />
         {label}

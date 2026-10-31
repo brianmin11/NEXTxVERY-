@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { CALENDAR_LOCATION_MAX, CALENDAR_MEMO_MAX, CALENDAR_TITLE_MAX } from "@/lib/calendar/config"
@@ -23,18 +22,18 @@ import { draftsEqual, hasErrors, validateDraft } from "@/lib/calendar/validate"
 import type { Family } from "@/lib/home.fixture"
 
 type EventFormProps = {
+  formId: string
   mode: "create" | "edit"
   initial: CalendarDraft
   family: Family
   /** 검증을 통과했을 때만 호출. token은 연타 중복 방지용 */
   onSubmit: (draft: CalendarDraft, token: string) => void
-  onCancel: () => void
   /** 입력이 바뀔 때 알림(유실 확인용). 이벤트 핸들러에서만 호출한다 */
   onDirtyChange: (dirty: boolean) => void
 }
 
-/** 일정 추가·수정 폼. 저장 전에는 원래 일정을 바꾸지 않고, 취소하면 변경을 버린다. */
-export function EventForm({ mode, initial, family, onSubmit, onCancel, onDirtyChange }: EventFormProps) {
+/** 일정 추가·수정 폼 본문. 저장 버튼은 화면이 `form={formId}`로 그린다. 저장 전에는 원래 일정을 바꾸지 않는다. */
+export function EventForm({ formId, mode, initial, family, onSubmit, onDirtyChange }: EventFormProps) {
   const [draft, setDraft] = React.useState<CalendarDraft>(initial)
   const [errors, setErrors] = React.useState<CalendarDraftErrors>({})
   const [submitted, setSubmitted] = React.useState(false)
@@ -76,141 +75,124 @@ export function EventForm({ mode, initial, family, onSubmit, onCancel, onDirtyCh
   const err = (k: keyof CalendarDraftErrors) => errors[k]
 
   return (
-    <form onSubmit={submit} noValidate className="flex min-h-0 flex-1 flex-col">
-      <SheetHeader className="px-5 pt-2">
-        <SheetTitle className="pr-10 text-xl font-bold">{mode === "create" ? "일정 추가" : "일정 수정"}</SheetTitle>
-        <SheetDescription>데모 일정에만 반영돼요. 실제 저장·알림은 없어요.</SheetDescription>
-      </SheetHeader>
+    <form id={formId} onSubmit={submit} noValidate aria-label={mode === "create" ? "일정 추가" : "일정 수정"} className="flex flex-col gap-5">
+      <Field id="ev-title" label="제목" required error={err("title")} hint={`${draft.title.length} / ${CALENDAR_TITLE_MAX}`}>
+        <Input
+          id="ev-title"
+          value={draft.title}
+          maxLength={CALENDAR_TITLE_MAX}
+          placeholder="예: 주말 가족 나들이"
+          aria-invalid={!!err("title") || undefined}
+          aria-describedby={describedBy("ev-title", !!err("title"))}
+          onChange={(e) => patch({ title: e.target.value })}
+        />
+      </Field>
 
-      <div className="flex flex-col gap-5 px-5 pb-4">
-        <Field id="ev-title" label="제목" required error={err("title")} hint={`${draft.title.length} / ${CALENDAR_TITLE_MAX}`}>
-          <Input
-            id="ev-title"
-            value={draft.title}
-            maxLength={CALENDAR_TITLE_MAX}
-            placeholder="예: 주말 가족 나들이"
-            aria-invalid={!!err("title") || undefined}
-            aria-describedby={describedBy("ev-title", !!err("title"))}
-            onChange={(e) => patch({ title: e.target.value })}
-          />
-        </Field>
+      <Field id="ev-date" label="날짜" required error={err("date")}>
+        <Input
+          id="ev-date"
+          type="date"
+          value={draft.date}
+          aria-invalid={!!err("date") || undefined}
+          aria-describedby={describedBy("ev-date", !!err("date"))}
+          onChange={(e) => patch({ date: e.target.value })}
+        />
+      </Field>
 
-        <Field id="ev-date" label="날짜" required error={err("date")}>
-          <Input
-            id="ev-date"
-            type="date"
-            value={draft.date}
-            aria-invalid={!!err("date") || undefined}
-            aria-describedby={describedBy("ev-date", !!err("date"))}
-            onChange={(e) => patch({ date: e.target.value })}
-          />
-        </Field>
+      <div className="flex min-h-11 items-center justify-between gap-3">
+        <Label htmlFor="ev-allDay" className="text-sm font-semibold text-muted-foreground">
+          종일
+        </Label>
+        <Switch id="ev-allDay" checked={draft.allDay} onCheckedChange={(v) => patch({ allDay: v })} />
+      </div>
 
-        <div className="flex min-h-11 items-center justify-between gap-3">
-          <Label htmlFor="ev-allDay" className="text-sm font-semibold text-muted-foreground">
-            종일
-          </Label>
-          <Switch id="ev-allDay" checked={draft.allDay} onCheckedChange={(v) => patch({ allDay: v })} />
+      {!draft.allDay && (
+        <div className="grid grid-cols-2 gap-3">
+          <Field id="ev-startTime" label="시작" required error={err("startTime")}>
+            <Input
+              id="ev-startTime"
+              type="time"
+              value={draft.startTime}
+              aria-invalid={!!err("startTime") || undefined}
+              aria-describedby={describedBy("ev-startTime", !!err("startTime"))}
+              onChange={(e) => patch({ startTime: e.target.value })}
+            />
+          </Field>
+          <Field id="ev-endTime" label="종료" required error={err("endTime")}>
+            <Input
+              id="ev-endTime"
+              type="time"
+              value={draft.endTime}
+              aria-invalid={!!err("endTime") || undefined}
+              aria-describedby={describedBy("ev-endTime", !!err("endTime"))}
+              onChange={(e) => patch({ endTime: e.target.value })}
+            />
+          </Field>
         </div>
+      )}
 
-        {!draft.allDay && (
-          <div className="grid grid-cols-2 gap-3">
-            <Field id="ev-startTime" label="시작" required error={err("startTime")}>
-              <Input
-                id="ev-startTime"
-                type="time"
-                value={draft.startTime}
-                aria-invalid={!!err("startTime") || undefined}
-                aria-describedby={describedBy("ev-startTime", !!err("startTime"))}
-                onChange={(e) => patch({ startTime: e.target.value })}
-              />
-            </Field>
-            <Field id="ev-endTime" label="종료" required error={err("endTime")}>
-              <Input
-                id="ev-endTime"
-                type="time"
-                value={draft.endTime}
-                aria-invalid={!!err("endTime") || undefined}
-                aria-describedby={describedBy("ev-endTime", !!err("endTime"))}
-                onChange={(e) => patch({ endTime: e.target.value })}
-              />
-            </Field>
-          </div>
-        )}
+      <Field id="ev-category" label="유형">
+        <Select value={draft.category} onValueChange={(v) => patch({ category: v as CalendarCategory })}>
+          <SelectTrigger id="ev-category" className="h-11 w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {CALENDAR_CATEGORIES.map((c) => (
+              <SelectItem key={c} value={c}>
+                {CALENDAR_CATEGORY_LABEL[c]}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
 
-        <Field id="ev-category" label="유형">
-          <Select value={draft.category} onValueChange={(v) => patch({ category: v as CalendarCategory })}>
-            <SelectTrigger id="ev-category" className="h-11 w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {CALENDAR_CATEGORIES.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {CALENDAR_CATEGORY_LABEL[c]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </Field>
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-sm font-semibold text-muted-foreground">참여하는 가족</legend>
+        <div className="flex flex-wrap gap-2">
+          {family.members.map((m) => {
+            const on = draft.participantIds.includes(m.id)
+            return (
+              <Button
+                key={m.id}
+                type="button"
+                role="checkbox"
+                aria-checked={on}
+                variant={on ? "secondary" : "outline"}
+                className="h-11 gap-2 rounded-full pr-4 pl-2"
+                onClick={() => toggleParticipant(m.id)}
+              >
+                <FamilyAvatar member={m} size={30} decorative />
+                {m.name}
+                {on && <Check className="size-4 text-primary" aria-hidden="true" />}
+              </Button>
+            )
+          })}
+        </div>
+      </fieldset>
 
-        <fieldset className="flex flex-col gap-2">
-          <legend className="text-sm font-semibold text-muted-foreground">참여하는 가족</legend>
-          <div className="flex flex-wrap gap-2">
-            {family.members.map((m) => {
-              const on = draft.participantIds.includes(m.id)
-              return (
-                <Button
-                  key={m.id}
-                  type="button"
-                  role="checkbox"
-                  aria-checked={on}
-                  variant={on ? "secondary" : "outline"}
-                  className="h-11 gap-2 rounded-full pr-4 pl-2"
-                  onClick={() => toggleParticipant(m.id)}
-                >
-                  <FamilyAvatar member={m} size={30} decorative />
-                  {m.name}
-                  {on && <Check className="size-4 text-primary" aria-hidden="true" />}
-                </Button>
-              )
-            })}
-          </div>
-        </fieldset>
+      <Field id="ev-location" label="장소" error={err("location")} hint={`${draft.location.length} / ${CALENDAR_LOCATION_MAX}`}>
+        <Input
+          id="ev-location"
+          value={draft.location}
+          maxLength={CALENDAR_LOCATION_MAX}
+          placeholder="선택"
+          aria-invalid={!!err("location") || undefined}
+          onChange={(e) => patch({ location: e.target.value })}
+        />
+      </Field>
 
-        <Field id="ev-location" label="장소" error={err("location")} hint={`${draft.location.length} / ${CALENDAR_LOCATION_MAX}`}>
-          <Input
-            id="ev-location"
-            value={draft.location}
-            maxLength={CALENDAR_LOCATION_MAX}
-            placeholder="선택"
-            aria-invalid={!!err("location") || undefined}
-            onChange={(e) => patch({ location: e.target.value })}
-          />
-        </Field>
-
-        <Field id="ev-memo" label="메모" error={err("memo")} hint={`${draft.memo.length} / ${CALENDAR_MEMO_MAX}`}>
-          <Textarea
-            id="ev-memo"
-            value={draft.memo}
-            maxLength={CALENDAR_MEMO_MAX}
-            rows={3}
-            className="min-h-20"
-            placeholder="선택"
-            aria-invalid={!!err("memo") || undefined}
-            onChange={(e) => patch({ memo: e.target.value })}
-          />
-        </Field>
-      </div>
-
-      {/* 시트 안에서 아래 고정. 키보드가 열리면 뷰포트가 줄어 위로 올라온다. */}
-      <div className="sticky bottom-0 mt-auto grid grid-cols-2 gap-2 border-t border-border bg-popover px-5 pt-3 pb-[calc(env(safe-area-inset-bottom)+--spacing(4))]">
-        <Button type="button" variant="outline" size="lg" onClick={onCancel}>
-          취소
-        </Button>
-        <Button type="submit" size="lg" disabled={submitted}>
-          {mode === "create" ? "추가" : "저장"}
-        </Button>
-      </div>
+      <Field id="ev-memo" label="메모" error={err("memo")} hint={`${draft.memo.length} / ${CALENDAR_MEMO_MAX}`}>
+        <Textarea
+          id="ev-memo"
+          value={draft.memo}
+          maxLength={CALENDAR_MEMO_MAX}
+          rows={3}
+          className="min-h-20"
+          placeholder="선택"
+          aria-invalid={!!err("memo") || undefined}
+          onChange={(e) => patch({ memo: e.target.value })}
+        />
+      </Field>
     </form>
   )
 }
