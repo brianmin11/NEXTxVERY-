@@ -254,7 +254,9 @@ export function useDemoViewer() {
     family,
     viewer,
     viewerId: c.session.viewer.id,
-    setViewerId: (_id: string) => {},
+    setViewerId: (_id: string) => {
+      void _id
+    },
   }
 }
 export function DemoViewerProvider({

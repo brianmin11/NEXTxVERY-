@@ -4,7 +4,7 @@ import Link from "next/link"
 import { ChevronRight, ClipboardList, Menu } from "lucide-react"
 
 import { Card } from "@/components/ui/card"
-import { AppShell, DemoBadge } from "@/components/woorijip/app-shell"
+import { AppShell } from "@/components/woorijip/app-shell"
 import { EmptyState } from "@/components/woorijip/state-views"
 
 export const metadata: Metadata = { title: "더보기" }
@@ -26,14 +26,23 @@ export default function MorePage() {
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="font-semibold">집안일</span>
-                <span className="text-sm text-muted-foreground">가족과 나눈 할 일과 완료 기록</span>
+                <span className="text-sm text-muted-foreground">
+                  가족과 나눈 할 일과 완료 기록
+                </span>
               </span>
-              <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <ChevronRight
+                className="size-5 shrink-0 text-muted-foreground"
+                aria-hidden="true"
+              />
             </Link>
           </li>
         </ul>
       </Card>
-      <EmptyState icon={Menu} title="설정은 아직 준비 중이에요" description="가족 설정과 알림 설정은 다음 단계에서 만들어요." />
+      <EmptyState
+        icon={Menu}
+        title="설정은 아직 준비 중이에요"
+        description="가족 설정과 알림 설정은 다음 단계에서 만들어요."
+      />
     </AppShell>
   )
 }

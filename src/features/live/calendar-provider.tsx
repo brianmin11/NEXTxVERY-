@@ -37,8 +37,17 @@ function useValue() {
         "calendar/events",
         "POST",
         {
-          fields: (({ id, createdByMemberId, seed, revision, ...fields }) =>
-            fields)(event),
+          fields: {
+            title: event.title,
+            category: event.category,
+            date: event.date,
+            allDay: event.allDay,
+            startTime: event.startTime,
+            endTime: event.endTime,
+            location: event.location,
+            memo: event.memo,
+            participantIds: event.participantIds,
+          },
         },
         token
       )),
