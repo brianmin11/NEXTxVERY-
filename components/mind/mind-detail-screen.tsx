@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { ArrowLeft, Ban, Clock, MessageCircle, SearchX } from "lucide-react"
+import { Ban, Clock, MessageCircle, SearchX } from "lucide-react"
 
+import { DemoViewerSwitch } from "@/components/demo/demo-viewer-switch"
 import { FamilyAvatar } from "@/components/home/family-avatar"
 import { Button } from "@/components/ui/button"
 import {
@@ -15,16 +15,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-import { AppShell, DemoBadge } from "@/components/woorijip/app-shell"
+import { AppShell } from "@/components/woorijip/app-shell"
+import { StepLabel } from "@/components/woorijip/flow-page"
 import { EmptyState } from "@/components/woorijip/state-views"
 import { formatFullDate, formatTime } from "@/lib/format"
 import { findMember } from "@/lib/home.fixture"
 import { MIND_REPLY_MAX_LENGTH } from "@/lib/mind/config"
 import type { MindResponse } from "@/lib/mind/types"
 
-import { DemoViewerSwitch } from "./demo-viewer-switch"
 import { useMind } from "./mind-provider"
 import { MindStatusBadge } from "./mind-status"
 import { useReturnFocus } from "./use-return-focus"
@@ -37,9 +36,12 @@ const RESPONSE_LABEL: Record<MindResponse["kind"], string> = {
   declined: "지금은 어렵다고 답했어요",
 }
 
-/** 메시지 상세. 받은 사람만 응답할 수 있고(데모 인물 기준), 열람은 응답과 구분된다. */
+/**
+ * 메시지 상세. 받은 사람만 응답할 수 있고(데모 인물 기준), 열람은 응답과 구분된다.
+ * 읽음 처리는 이 화면에 들어올 때 한 곳에서만 한다(목록 클릭·URL 직접 진입 모두 같은 경로).
+ * 보낸 사람이 자기 메시지를 열어도 읽음으로 바뀌지 않는다.
+ */
 export function MindDetailScreen({ id }: { id: string }) {
-  const router = useRouter()
   const { family, viewerId, messages, dispatch } = useMind()
   const message = messages.find((m) => m.id === id)
   const [replyOpen, setReplyOpen] = React.useState(false)
@@ -54,16 +56,15 @@ export function MindDetailScreen({ id }: { id: string }) {
     setPendingState(next)
   }
 
-  const header = (
-    <Button variant="ghost" size="icon" aria-label="수신함으로 돌아가기" onClick={() => router.push("/inbox")}>
-      <ArrowLeft className="size-5" aria-hidden="true" />
-    </Button>
-  )
+  const shouldMarkRead = !!message && message.toId === viewerId && message.status === "sent"
+  React.useEffect(() => {
+    // 서버 연동 시 이 자리가 "상세 조회 = 읽음 처리" 호출로 바뀐다.
+    if (shouldMarkRead) dispatch({ type: "message/read", id })
+  }, [shouldMarkRead, id, dispatch])
 
   if (!message || (message.toId !== viewerId && message.fromId !== viewerId)) {
     return (
-      <AppShell title={header}>
-        <DemoBadge />
+      <AppShell title="마음" back="/inbox" backLabel="수신함으로 돌아가기" hideNav>
         <DemoViewerSwitch />
         <EmptyState
           icon={SearchX}
@@ -82,6 +83,7 @@ export function MindDetailScreen({ id }: { id: string }) {
   const isRecipient = message.toId === viewerId
   const from = findMember(family, message.fromId)
   const to = findMember(family, message.toId)
+  const other = isRecipient ? from : to
   const at = new Date(message.createdAt)
   const canRespond = isRecipient && message.response === null
   const replyBlank = reply.trim().length === 0
@@ -98,46 +100,38 @@ export function MindDetailScreen({ id }: { id: string }) {
   }
 
   return (
-    <AppShell title={header}>
-      <DemoBadge />
+    <AppShell title={isRecipient ? "받은 마음" : "보낸 마음"} back="/inbox" backLabel="수신함으로 돌아가기" hideNav>
       <DemoViewerSwitch />
 
       <article
         ref={articleRef}
         tabIndex={-1}
         aria-label="메시지"
-        className="flex flex-col gap-4 rounded-xl bg-card p-4 ring-1 ring-border outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="flex flex-col items-center gap-3 pt-4 text-center outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <div className="flex items-center gap-3">
-          {from && <FamilyAvatar member={from} size={44} decorative />}
-          <div className="min-w-0">
-            <p className="font-semibold">
-              {from?.name} → {to?.name}
-            </p>
-            <time className="text-sm text-muted-foreground tabular-nums" dateTime={message.createdAt}>
-              {formatFullDate(at)} {formatTime(at)}
-            </time>
-          </div>
-        </div>
-        <p className="text-lg leading-relaxed whitespace-pre-wrap">{message.text}</p>
-        <div className="flex flex-wrap gap-1.5">
+        {other && <FamilyAvatar member={other} size={88} />}
+        <StepLabel>
+          {isRecipient ? `${from?.name ?? "가족"} 님의 마음` : `${to?.name ?? "가족"} 님에게 보낸 마음`} ·{" "}
+          <time dateTime={message.createdAt} className="tabular-nums">
+            {formatFullDate(at)} {formatTime(at)}
+          </time>
+        </StepLabel>
+        <blockquote className="px-1 py-3 text-xl leading-relaxed font-semibold whitespace-pre-wrap">{message.text}</blockquote>
+        <div className="flex flex-wrap justify-center gap-1.5">
           <MindStatusBadge status={message.status} />
+          {message.seed && <span className="text-xs text-muted-foreground">데모 예시</span>}
         </div>
+        <p className="text-sm text-muted-foreground">이 메시지를 읽는 것은 동의나 수락을 의미하지 않아요.</p>
         {message.response && (
-          <>
-            <Separator />
-            <section aria-label="응답" className="flex flex-col gap-1.5">
-              <p className="text-sm font-medium text-muted-foreground">
-                {to?.name}의 {RESPONSE_LABEL[message.response.kind]}
-              </p>
-              {message.response.kind === "reply" && (
-                <p className="rounded-lg bg-muted p-3 leading-relaxed whitespace-pre-wrap">{message.response.text}</p>
-              )}
-              <time className="text-sm text-muted-foreground tabular-nums" dateTime={message.response.at}>
-                {formatTime(new Date(message.response.at))}
-              </time>
-            </section>
-          </>
+          <section aria-label="응답" className="mt-2 flex w-full flex-col gap-1.5 rounded-lg bg-muted p-4 text-left">
+            <p className="text-sm font-medium text-muted-foreground">
+              {to?.name}의 {RESPONSE_LABEL[message.response.kind]}
+            </p>
+            {message.response.kind === "reply" && <p className="leading-relaxed whitespace-pre-wrap">{message.response.text}</p>}
+            <time className="text-sm text-muted-foreground tabular-nums" dateTime={message.response.at}>
+              {formatTime(new Date(message.response.at))}
+            </time>
+          </section>
         )}
       </article>
 
@@ -147,17 +141,14 @@ export function MindDetailScreen({ id }: { id: string }) {
             <MessageCircle aria-hidden="true" />
             답장하기
           </Button>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" size="lg" onClick={() => setPending({ kind: "later" })}>
-              <Clock aria-hidden="true" />
-              나중에 이야기하기
-            </Button>
-            <Button variant="outline" size="lg" onClick={() => setPending({ kind: "declined" })}>
-              <Ban aria-hidden="true" />
-              지금은 어려워요
-            </Button>
-          </div>
-          <p className="text-center text-sm text-muted-foreground">열어 본 것만으로는 수락한 것으로 표시되지 않아요.</p>
+          <Button variant="outline" size="lg" onClick={() => setPending({ kind: "later" })}>
+            <Clock aria-hidden="true" />
+            나중에 이야기하기
+          </Button>
+          <Button variant="ghost" size="lg" className="text-muted-foreground underline underline-offset-4" onClick={() => setPending({ kind: "declined" })}>
+            <Ban aria-hidden="true" />
+            지금은 어려워요
+          </Button>
         </section>
       )}
 
@@ -190,7 +181,7 @@ export function MindDetailScreen({ id }: { id: string }) {
       )}
 
       {!isRecipient && message.response === null && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-center text-sm text-muted-foreground">
           {to?.name}이(가) 아직 응답하지 않았어요. 열람 여부는 상태 표시로 알 수 있어요.
         </p>
       )}
@@ -201,9 +192,7 @@ export function MindDetailScreen({ id }: { id: string }) {
             <DialogTitle>
               {pending?.kind === "reply" ? "이 답장을 보낼까요?" : pending?.kind === "later" ? "나중에 이야기하기로 할까요?" : "지금은 어렵다고 답할까요?"}
             </DialogTitle>
-            <DialogDescription>
-              데모 수신함에만 반영돼요. 실제 알림은 보내지 않고, 보낸 뒤에는 바꿀 수 없어요.
-            </DialogDescription>
+            <DialogDescription>데모 수신함에만 반영돼요. 실제 알림은 보내지 않고, 보낸 뒤에는 바꿀 수 없어요.</DialogDescription>
           </DialogHeader>
           {pending?.kind === "reply" && (
             <p className="rounded-lg bg-muted p-3 text-sm leading-relaxed whitespace-pre-wrap">{pending.text}</p>

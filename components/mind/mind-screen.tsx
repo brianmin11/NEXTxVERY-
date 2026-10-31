@@ -3,10 +3,10 @@
 import * as React from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { AlertCircle, CircleCheck, Lock, Send, X } from "lucide-react"
+import { AlertCircle, Check, ChevronRight, Lock, Send } from "lucide-react"
 
+import { DemoViewerSwitch } from "@/components/demo/demo-viewer-switch"
 import { FamilyAvatar } from "@/components/home/family-avatar"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -17,32 +17,34 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { FlowHeading, FlowLead, FlowPage, StepLabel } from "@/components/woorijip/flow-page"
+import { LeaveDialog } from "@/components/woorijip/leave-dialog"
 import { findMember } from "@/lib/home.fixture"
 import { MIND_MAX_LENGTH } from "@/lib/mind/config"
 import { relationshipAdapter, SYNTHETIC_EXAMPLE } from "@/lib/mind/relationship-demo-adapter"
 import type { MindMessage } from "@/lib/mind/types"
 
 import { AdapterStatus } from "./adapter-status"
-import { DemoViewerSwitch } from "./demo-viewer-switch"
 import { useMind } from "./mind-provider"
-import { LeaveDialog } from "@/components/woorijip/leave-dialog"
-
 import { RecipientPicker } from "./recipient-picker"
 import { useReturnFocus } from "./use-return-focus"
 
 const STEP_TITLE = {
-  compose: "어떤 마음을 전하고 싶나요?",
-  refine: "전달할 문장 다듬기",
-  confirm: "전달 내용 확인",
-  sent: "데모 수신함에 추가했어요",
+  compose: "마음 전하기",
+  refine: "표현 다듬기",
+  confirm: "전송 전 확인",
+  sent: "마음을 전했어요",
 } as const
-const STEP_INDEX = { compose: 1, refine: 2, confirm: 3, sent: 3 } as const
 
 function isBlank(s: string) {
   return s.trim().length === 0
 }
 
-/** 마음 전하기 작성 흐름(전체 화면). 바텀시트가 아니라 긴 입력에 맞춘 단독 화면이다. */
+/**
+ * 마음 전하기 작성 흐름(전체 화면, 3단계 + 완료).
+ * 원문(나만 봄)과 전달 문장은 분리되고, 전달은 확인 단계의 명시적 버튼으로만 일어난다.
+ * 실제 AI는 연결되지 않았으므로 제안을 미리 채우지 않고 직접 쓴다.
+ */
 export function MindScreen() {
   const router = useRouter()
   const { family, viewer, viewerId, draft, draftDirty, dispatch } = useMind()
@@ -67,31 +69,27 @@ export function MindScreen() {
     } else router.push("/home")
   }
 
+  const back =
+    draft.step === "compose"
+      ? close
+      : draft.step === "refine"
+        ? () => dispatch({ type: "draft/step", step: "compose" })
+        : draft.step === "confirm"
+          ? () => dispatch({ type: "draft/step", step: "refine" })
+          : undefined
+
   return (
-    <div className="flex min-h-dvh flex-col">
-      <header className="sticky top-0 z-30 border-b border-border bg-background/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-md items-center justify-between gap-2 px-4">
-          <Button variant="ghost" size="icon" aria-label="작성 닫기" onClick={close}>
-            <X className="size-5" aria-hidden="true" />
-          </Button>
-          <p className="text-sm font-medium text-muted-foreground tabular-nums">
-            {draft.step === "sent" ? "완료" : `${STEP_INDEX[draft.step]} / 3`}
-          </p>
-        </div>
-      </header>
-
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 pt-4 pb-6">
-        <Badge variant="outline" className="h-6 self-start px-2.5 text-muted-foreground">
-          프론트 데모 · 실제 AI 및 계정 보호 미연결
-        </Badge>
-        <DemoViewerSwitch />
-        <h1 className="text-2xl leading-snug font-bold tracking-tight">{STEP_TITLE[draft.step]}</h1>
-
-        {draft.step === "compose" && <ComposeStep />}
-        {draft.step === "refine" && <RefineStep />}
-        {draft.step === "confirm" && <ConfirmStep />}
-        {draft.step === "sent" && <SentStep />}
-      </main>
+    <FlowPage
+      title={STEP_TITLE[draft.step]}
+      back={back}
+      backLabel={draft.step === "compose" ? "작성 닫기" : "이전 단계"}
+      action={<StepActions viewerId={viewerId} viewerName={viewer.name} recipient={recipient} />}
+    >
+      <DemoViewerSwitch />
+      {draft.step === "compose" && <ComposeStep />}
+      {draft.step === "refine" && <RefineStep />}
+      {draft.step === "confirm" && <ConfirmStep />}
+      {draft.step === "sent" && <SentStep />}
 
       <LeaveDialog
         open={leaveOpen}
@@ -103,13 +101,7 @@ export function MindScreen() {
           router.push("/home")
         }}
       />
-      {/* 화면 아래 고정 버튼. 키보드가 열리면 뷰포트가 줄어 버튼이 위로 올라온다. */}
-      <footer className="sticky bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto grid max-w-md gap-2 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+--spacing(3))]">
-          <StepActions viewerId={viewerId} viewerName={viewer.name} recipient={recipient} />
-        </div>
-      </footer>
-    </div>
+    </FlowPage>
   )
 }
 
@@ -130,9 +122,15 @@ function ComposeStep() {
 
   return (
     <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2 pt-2">
+        <StepLabel>1 / 3 · 수신자와 원문</StepLabel>
+        <FlowHeading>마음을 정리해 볼까요?</FlowHeading>
+        <FlowLead>아직 누구에게도 보이지 않는 나만의 작성 공간이에요.</FlowLead>
+      </div>
+
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-semibold text-muted-foreground" id="mind-recipient-label">
-          받는 사람
+          누구에게 전할까요?
         </h2>
         <RecipientPicker
           members={family.members}
@@ -148,13 +146,13 @@ function ComposeStep() {
 
       <section className="flex flex-col gap-2">
         <label htmlFor="mind-raw" className="text-sm font-semibold text-muted-foreground">
-          하고 싶은 말 · 나만 보는 원문
+          내가 하고 싶은 말 · 나만 보는 원문
         </label>
         <Textarea
           id="mind-raw"
           value={draft.rawText}
           maxLength={MIND_MAX_LENGTH}
-          rows={6}
+          rows={8}
           placeholder="지금 느끼는 그대로 적어도 괜찮아요."
           aria-describedby="mind-raw-count mind-raw-help"
           aria-invalid={showError || undefined}
@@ -162,9 +160,9 @@ function ComposeStep() {
           onChange={(e) => dispatch({ type: "draft/update", patch: { rawText: e.target.value } })}
         />
         <div className="flex items-start justify-between gap-3">
-          <p id="mind-raw-help" className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Lock className="size-3.5 shrink-0" aria-hidden="true" />
-            원문은 전달 문장에 자동 포함되지 않아요.
+          <p id="mind-raw-help" className="flex items-center gap-1.5 text-sm font-medium text-primary">
+            <Lock className="size-4 shrink-0" aria-hidden="true" />
+            이 원문은 전송되지 않아요
           </p>
           <Counter id="mind-raw-count" length={draft.rawText.length} max={MIND_MAX_LENGTH} />
         </div>
@@ -210,12 +208,22 @@ function RefineStep() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section aria-labelledby="mind-raw-title" className="flex flex-col gap-2">
-        <h2 id="mind-raw-title" className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
+      <div className="flex flex-col gap-2 pt-2">
+        <StepLabel>2 / 3 · 전달할 문장</StepLabel>
+        <FlowHeading>
+          상대에게 보일 문장을
+          <br />
+          직접 다듬어 볼까요?
+        </FlowHeading>
+        <FlowLead>실제 AI는 아직 연결되지 않아 제안을 만들지 않아요. 원문을 보며 전달할 문장을 직접 써 주세요.</FlowLead>
+      </div>
+
+      <section aria-labelledby="mind-raw-title" className="flex flex-col gap-1 rounded-r-lg border-l-3 border-input bg-muted px-4 py-3">
+        <h2 id="mind-raw-title" className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
           <Lock className="size-3.5" aria-hidden="true" />
-          내가 쓴 원문 · 나만 봐요
+          내 원문 · 나만 봐요
         </h2>
-        <p className="rounded-lg bg-muted p-3 leading-relaxed whitespace-pre-wrap">{draft.rawText}</p>
+        <p className="text-sm leading-relaxed whitespace-pre-wrap">{draft.rawText}</p>
       </section>
 
       <AdapterStatus phase="demo" />
@@ -237,14 +245,15 @@ function RefineStep() {
           id="mind-outgoing"
           value={draft.outgoingText}
           maxLength={MIND_MAX_LENGTH}
-          rows={5}
+          rows={6}
           placeholder="상대에게 보일 문장을 직접 써 주세요."
           aria-describedby="mind-outgoing-count mind-outgoing-help"
+          className="border-primary/50 bg-[color-mix(in_oklab,var(--card),var(--secondary)_30%)]"
           onChange={(e) => dispatch({ type: "draft/update", patch: { outgoingText: e.target.value } })}
         />
         <div className="flex items-start justify-between gap-3">
           <p id="mind-outgoing-help" className="text-sm text-muted-foreground">
-            상대에게는 이 문장만 보여요.
+            사실과 다른 내용이 없는지 확인해 주세요. 상대에게는 이 문장만 보여요.
           </p>
           <Counter id="mind-outgoing-count" length={draft.outgoingText.length} max={MIND_MAX_LENGTH} />
         </div>
@@ -254,9 +263,7 @@ function RefineStep() {
         <DialogContent onCloseAutoFocus={exampleFocus.onCloseAutoFocus}>
           <DialogHeader>
             <DialogTitle>예시 흐름 · 합성 예시</DialogTitle>
-            <DialogDescription>
-              작성 중인 내용과 무관한 가상의 예시예요. AI가 만든 결과가 아니에요.
-            </DialogDescription>
+            <DialogDescription>작성 중인 내용과 무관한 가상의 예시예요. AI가 만든 결과가 아니에요.</DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 text-sm">
             <div>
@@ -310,23 +317,15 @@ function ConfirmStep() {
   const { family, draft } = useMind()
   const recipient = draft.recipientId ? findMember(family, draft.recipientId) : undefined
   return (
-    <div className="flex flex-col gap-4">
-      <section aria-labelledby="mind-final-title" className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-border">
-        <h2 id="mind-final-title" className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground">
-          <Send className="size-3.5" aria-hidden="true" />
-          상대에게는 이 문장만 보여요
-        </h2>
-        {recipient && (
-          <div className="flex items-center gap-2">
-            <FamilyAvatar member={recipient} size={36} decorative />
-            <p className="font-semibold">{recipient.name}에게</p>
-          </div>
-        )}
-        <p className="text-lg leading-relaxed whitespace-pre-wrap">{draft.outgoingText}</p>
-      </section>
-      <p className="text-sm text-muted-foreground">
-        원문은 이 문장에 포함되지 않아요. 확인 버튼을 눌러야만 데모 수신함에 추가되고, 실제 알림은 보내지 않아요.
+    <div className="flex flex-col items-center gap-3 pt-4 text-center">
+      {recipient && <FamilyAvatar member={recipient} size={88} />}
+      <StepLabel>{recipient?.name} 님에게</StepLabel>
+      <blockquote className="px-1 py-4 text-xl leading-relaxed font-semibold whitespace-pre-wrap">{draft.outgoingText}</blockquote>
+      <p className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+        <Check className="size-4 text-primary" aria-hidden="true" />
+        원문이 아닌 이 문장만 전달됩니다.
       </p>
+      <p className="text-xs text-muted-foreground">확인 버튼을 눌러야만 데모 수신함에 추가되고, 실제 알림은 보내지 않아요.</p>
     </div>
   )
 }
@@ -335,14 +334,21 @@ function SentStep() {
   const { family, draft } = useMind()
   const recipient = draft.recipientId ? findMember(family, draft.recipientId) : undefined
   return (
-    <div className="flex flex-col items-center gap-3 rounded-xl bg-card px-6 py-10 text-center ring-1 ring-border">
-      <span className="flex size-12 items-center justify-center rounded-full bg-secondary text-primary">
-        <CircleCheck className="size-6" aria-hidden="true" />
+    <div className="flex flex-col items-center gap-4 pt-16 text-center">
+      <span className="flex size-20 items-center justify-center rounded-full bg-primary text-primary-foreground">
+        <Send className="size-8" aria-hidden="true" />
       </span>
-      <p className="font-semibold">{recipient?.name}에게 보낼 문장을 데모 수신함에 추가했어요</p>
-      <p className="text-sm text-muted-foreground">
-        실제 알림은 보내지 않았어요. 이 데모 상태는 메모리에만 있어서 새로고침하면 사라져요.
-      </p>
+      <FlowHeading>
+        {recipient?.name} 님에게
+        <br />
+        마음을 전했어요
+      </FlowHeading>
+      <FlowLead>
+        상대가 읽는 것은 동의나 수락을 의미하지 않아요.
+        <br />
+        답할 시간을 천천히 기다려 주세요.
+      </FlowLead>
+      <p className="text-xs text-muted-foreground">데모 수신함에만 추가됐고 실제 알림은 보내지 않았어요. 새로고침하면 사라져요.</p>
     </div>
   )
 }
@@ -365,7 +371,8 @@ function StepActions({
       return (
         <>
           <Button size="lg" disabled={!ok} onClick={() => dispatch({ type: "draft/step", step: "refine" })}>
-            다음: 전달 문장 다듬기
+            전달 문장 쓰기
+            <ChevronRight aria-hidden="true" />
           </Button>
           {!ok && (
             <p className="text-center text-sm text-muted-foreground">
@@ -378,26 +385,19 @@ function StepActions({
     case "refine": {
       const ok = !isBlank(draft.outgoingText) && draft.outgoingText.length <= MIND_MAX_LENGTH
       return (
-        <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="lg" onClick={() => dispatch({ type: "draft/step", step: "compose" })}>
-            돌아가서 수정
-          </Button>
-          <Button
-            size="lg"
-            disabled={!ok}
-            onClick={() => dispatch({ type: "draft/step", step: "confirm", confirmToken: crypto.randomUUID() })}
-          >
-            전달 내용 확인
-          </Button>
-        </div>
+        <Button
+          size="lg"
+          disabled={!ok}
+          onClick={() => dispatch({ type: "draft/step", step: "confirm", confirmToken: crypto.randomUUID() })}
+        >
+          이 문장으로 계속
+          <ChevronRight aria-hidden="true" />
+        </Button>
       )
     }
     case "confirm":
       return (
-        <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="lg" onClick={() => dispatch({ type: "draft/step", step: "refine" })}>
-            돌아가서 수정
-          </Button>
+        <>
           <Button
             size="lg"
             onClick={() => {
@@ -416,27 +416,28 @@ function StepActions({
               dispatch({ type: "message/send", message, confirmToken: draft.confirmToken })
             }}
           >
-            확인하고 추가
+            확인하고 전송
           </Button>
-          <p className="col-span-2 text-center text-sm text-muted-foreground">
+          <p className="text-center text-sm text-muted-foreground">
             {viewerName} → {recipient?.name} · 데모 수신함에만 추가돼요
           </p>
-        </div>
+        </>
       )
     case "sent":
       return (
-        <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="lg" asChild>
-            <Link href="/home">홈으로</Link>
-          </Button>
+        <>
           <Button size="lg" asChild>
             <Link href="/inbox?tab=sent">보낸 마음 보기</Link>
           </Button>
-          <Button variant="ghost" className="col-span-2" onClick={() => dispatch({ type: "draft/reset" })}>
-            새 마음 쓰기
-          </Button>
-        </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/home">우리집으로</Link>
+            </Button>
+            <Button variant="ghost" onClick={() => dispatch({ type: "draft/reset" })}>
+              새 마음 쓰기
+            </Button>
+          </div>
+        </>
       )
   }
 }
-
