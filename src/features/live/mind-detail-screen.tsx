@@ -58,10 +58,12 @@ export function MindDetailScreen({ id }: { id: string }) {
     setPendingState(next)
   }
 
+  const markRead = React.useEffectEvent(() => {
+    void dispatch({ type: "message/read", id })
+  })
   React.useEffect(() => {
-    if (message?.toId === viewerId && message.status === "sent")
-      void dispatch({ type: "message/read", id })
-  }, [id, message?.status, message?.toId, viewerId, dispatch])
+    if (message?.toId === viewerId && message.status === "sent") markRead()
+  }, [id, message?.status, message?.toId, viewerId])
   const header = (
     <Button
       variant="ghost"

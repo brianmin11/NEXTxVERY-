@@ -31,7 +31,8 @@ export async function api<T>(
   })
   const result = await res.json()
   if (!res.ok) {
-    if (res.status === 401) window.dispatchEvent(new Event("session-expired"))
+    if (res.status === 401 && path !== "session")
+      window.dispatchEvent(new Event("session-expired"))
     throw new ApiError(
       res.status,
       result.error?.message || "요청을 완료하지 못했어요. 다시 시도해 주세요."
