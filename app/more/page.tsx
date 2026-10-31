@@ -38,6 +38,23 @@ export default function MorePage() {
           </li>
         </ul>
       </Card>
+      <Card size="sm" className="py-0">
+        <Link
+          href="/coordination"
+          className="flex min-h-14 items-center justify-between rounded-xl px-4 outline-none hover:bg-muted/60 focus-visible:ring-3 focus-visible:ring-ring/50 active:bg-muted"
+        >
+          <span>
+            <span className="block font-semibold">함께 일정 조율</span>
+            <span className="text-sm text-muted-foreground">
+              각자의 의견을 나누고 함께 수락한 시간으로 변경해요
+            </span>
+          </span>
+          <ChevronRight
+            className="size-5 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
+        </Link>
+      </Card>
       <EmptyState
         icon={Menu}
         title="설정은 아직 준비 중이에요"

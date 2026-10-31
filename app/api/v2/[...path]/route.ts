@@ -1,5 +1,7 @@
 import { getActor, getDatabase } from "@/src/lib/server/auth"
 import { createV2Service } from "@/src/lib/server/v2-service"
+import { relationshipProvider } from "@/src/lib/server/provider"
+import { createCoordinationService } from "@/src/lib/server/v3-coordination"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 const privateHeaders = {
@@ -54,9 +56,12 @@ async function handle(
         { status: 401, headers: privateHeaders }
       )
     const path = (await context.params).path.join("/")
+    const provider = relationshipProvider(actor, request.signal)
     const service = createV2Service({
       db: getDatabase(),
       inviteSecret: process.env.BETTER_AUTH_SECRET,
+      uploadDir: process.env.FAMILY_UPLOAD_PATH,
+      suggest: provider.suggest,
     })
     if (request.method === "POST" && path === "memories/assets") {
       await service.cleanup()
@@ -108,7 +113,15 @@ async function handle(
       }
     }
     return Response.json(
-      { data: await service.request(actor, request.method, path, body) },
+      {
+        data: await (path === "coordinations" ||
+        path.startsWith("coordinations/")
+          ? createCoordinationService({
+              db: getDatabase(),
+              propose: provider.propose,
+            }).request(actor, request.method, path, body)
+          : service.request(actor, request.method, path, body)),
+      },
       { headers: privateHeaders }
     )
   } catch (error) {

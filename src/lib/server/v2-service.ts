@@ -128,7 +128,11 @@ type Options = {
   inviteSecret?: string
   db: DatabaseSync
   uploadDir?: string
-  suggest?: (rawText: string, recipientName: string) => Promise<string>
+  suggest?: (
+    rawText: string,
+    recipientName: string,
+    context: { actorId: string; recipientId: string; familyId: string }
+  ) => Promise<string>
 }
 
 export function createV2Service({
@@ -537,8 +541,13 @@ export function createV2Service({
       )!
       let proposed: string
       try {
-        proposed = await suggest(b.rawText, recipient.name)
-      } catch {
+        proposed = await suggest(b.rawText, recipient.name, {
+          actorId: actor.id,
+          recipientId: recipient.user_id,
+          familyId: m.family_id,
+        })
+      } catch (error) {
+        if (error instanceof V2Error) throw error
         fail(
           "AI_UNAVAILABLE",
           503,
