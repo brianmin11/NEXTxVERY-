@@ -8,11 +8,17 @@ export type AuthMailMessage = {
   token: string
 }
 
+export type AuthMailReceipt = {
+  status: "provider-accepted"
+  provider: "resend"
+  id: string
+}
+
 /** Inject a provider only after its domain, sender and release scope are approved. */
 export type AuthMailAdapter = {
   /** Simulated adapters never represent successful delivery to a mailbox. */
-  delivery: "live" | "simulated"
-  send(message: AuthMailMessage): Promise<void>
+  delivery: "live" | "test-live" | "simulated"
+  send(message: AuthMailMessage): Promise<void | AuthMailReceipt>
 }
 
 type AuthEnvironment = Record<string, string | undefined>
@@ -113,7 +119,7 @@ export function createAuthOptions({
   const resetPassword = enabled(env, "AUTH_PASSWORD_RESET_ENABLED")
   const requireVerification = enabled(env, "AUTH_EMAIL_VERIFICATION_REQUIRED")
   const deliveryReady = enabled(env, "AUTH_EMAIL_DELIVERY_READY")
-  if (mailer && mailer.delivery !== "live" && mailer.delivery !== "simulated") {
+  if (mailer && !["live", "test-live", "simulated"].includes(mailer.delivery)) {
     throw new Error("Auth mail adapter must declare its delivery capability")
   }
   if (env.NODE_ENV === "production" && mailer?.delivery === "simulated") {

@@ -1,6 +1,7 @@
 import "server-only"
 import { betterAuth } from "better-auth"
 import { createAuthOptions } from "./auth-config"
+import { createAuthMailAdapterFromEnv } from "./auth-mail-resend"
 import { getMigrations } from "better-auth/db/migration"
 import { openDatabase } from "./database"
 import { asServiceDatabase } from "./service-database"
@@ -25,7 +26,10 @@ export function getDatabase(): ServiceDatabase {
 }
 export function getAuth() {
   return (globalAuth.familyAuth ??= (async () => {
-    const config = createAuthOptions({ database: getNativeDatabase() })
+    const config = createAuthOptions({
+      database: getNativeDatabase(),
+      mailer: createAuthMailAdapterFromEnv(),
+    })
     if (!process.env.DATABASE_URL) {
       const migrations = await getMigrations(config)
       await migrations.runMigrations()
