@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { LiveAccount } from "@/src/features/live/session"
 import Link from "next/link"
 import { ChevronRight, ClipboardList, Menu } from "lucide-react"
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = { title: "더보기" }
 export default function MorePage() {
   return (
     <AppShell title={<h1 className="text-lg font-bold">더보기</h1>}>
-      <DemoBadge />
+      <LiveAccount />
       <Card size="sm" className="py-0">
         <ul>
           <li>

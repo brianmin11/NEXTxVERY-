@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import localFont from "next/font/local"
 
 import "./globals.css"
+import { LiveGate } from "@/src/features/live/session"
 import { CalendarProvider } from "@/components/calendar/calendar-provider"
 import { ChoresProvider } from "@/components/chores/chores-provider"
 import { DemoViewerProvider } from "@/components/demo/demo-viewer-provider"
@@ -65,7 +66,7 @@ export default function RootLayout({
         <ThemeProvider>
           <TooltipProvider>
             {/* 데모 상태(현재 인물·마음·일정): 메모리 전용, 라우트 이동 중 유지, 새로고침 시 초기화 */}
-            <DemoViewerProvider>
+            <LiveGate><DemoViewerProvider>
               <MindProvider>
                 <CalendarProvider>
                   <MemoriesProvider>
@@ -73,7 +74,7 @@ export default function RootLayout({
                   </MemoriesProvider>
                 </CalendarProvider>
               </MindProvider>
-            </DemoViewerProvider>
+            </DemoViewerProvider></LiveGate>
           </TooltipProvider>
         </ThemeProvider>
       </body>
