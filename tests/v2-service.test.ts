@@ -25,7 +25,12 @@ async function fixture(
   db.exec(
     readFileSync(new URL("../migrations/002-v2.sql", import.meta.url), "utf8")
   )
-  const service = createV2Service({ db, uploadDir: dir, suggest })
+  const service = createV2Service({
+    db,
+    uploadDir: dir,
+    suggest,
+    inviteSecret: "synthetic-test-invite-secret-at-least-32-characters",
+  })
   const a = actor("가족 A"),
     b = actor("가족 B"),
     c = actor("같은 가족 C"),
@@ -100,6 +105,7 @@ test("session identifies actual member; invite secret is hashed and family data 
     const rows = f.db.prepare("SELECT * FROM v2_invites").all()
     assert.equal(JSON.stringify(rows).includes(f.invite.inviteCode), false)
     assert.ok(rows.length > 0)
+    assert.equal(JSON.stringify(f.db.prepare("SELECT * FROM v2_receipts").all()).includes(f.invite.inviteCode), false)
     const noFamily = await f.call<{ family: null }>(
       actor("새 계정"),
       "GET",

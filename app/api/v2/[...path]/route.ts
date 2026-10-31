@@ -54,7 +54,10 @@ async function handle(
         { status: 401, headers: privateHeaders }
       )
     const path = (await context.params).path.join("/")
-    const service = createV2Service({ db: getDatabase() })
+    const service = createV2Service({
+      db: getDatabase(),
+      inviteSecret: process.env.BETTER_AUTH_SECRET,
+    })
     if (request.method === "POST" && path === "memories/assets") {
       await service.cleanup()
       const buffer = await limitedBody(request, 11 * 1024 * 1024)

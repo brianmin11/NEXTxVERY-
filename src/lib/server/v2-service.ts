@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomUUID } from "node:crypto"
+import { createHash, createHmac, randomUUID } from "node:crypto"
 import { mkdir, readFile, unlink, writeFile } from "node:fs/promises"
 import { resolve } from "node:path"
 import type { DatabaseSync } from "node:sqlite"
@@ -125,6 +125,7 @@ type Asset = RemoteAsset & {
   file: string
 }
 type Options = {
+  inviteSecret?: string
   db: DatabaseSync
   uploadDir?: string
   suggest?: (rawText: string, recipientName: string) => Promise<string>
@@ -134,6 +135,7 @@ export function createV2Service({
   db,
   uploadDir = resolve(".data/uploads"),
   suggest,
+  inviteSecret,
 }: Options) {
   function transaction<T>(fn: () => T): T {
     db.exec("BEGIN IMMEDIATE")
@@ -349,24 +351,27 @@ export function createV2Service({
       })
     }
     const m = member(actor)
-    if (method === "POST" && path === "family/invites")
-      return mutate(
-        actor,
-        method,
-        path,
-        parse(z.object({ requestId }), body),
-        () => {
-          const inviteCode = randomBytes(24).toString("base64url")
-          db.prepare(
-            "INSERT INTO v2_invites(code_hash,family_id,expires_at) VALUES(?,?,?)"
-          ).run(
-            hash(inviteCode),
-            m.family_id,
-            new Date(Date.now() + 86400000).toISOString()
-          )
-          return { inviteCode }
-        }
-      )
+    if (method === "POST" && path === "family/invites") {
+      const b = parse(z.object({ requestId }), body)
+      if (!inviteSecret || inviteSecret.length < 32)
+        fail("INVITE_UNAVAILABLE", 503, "초대 설정을 확인해 주세요.")
+      const inviteCode = createHmac("sha256", inviteSecret)
+        .update(
+          JSON.stringify(["v2-invite", actor.id, m.family_id, b.requestId])
+        )
+        .digest("base64url")
+      mutate(actor, method, path, b, () => {
+        db.prepare(
+          "INSERT INTO v2_invites(code_hash,family_id,expires_at) VALUES(?,?,?)"
+        ).run(
+          hash(inviteCode),
+          m.family_id,
+          new Date(Date.now() + 86400000).toISOString()
+        )
+        return { created: true }
+      })
+      return { inviteCode }
+    }
     if (path === "calendar/events") {
       if (method === "GET") return list<CalendarEvent>(actor, "event")
       if (method === "POST") {
