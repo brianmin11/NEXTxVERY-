@@ -9,17 +9,10 @@ export { findMember, isFamilyAdmin, memberRoleLabel } from "@/lib/family/types"
 // 일정은 lib/calendar/fixture.ts(seedEvents)가, 추억은 lib/memories/fixture.ts(seedMemories)가,
 // 집안일은 lib/chores/fixture.ts(seedChores)가 원본이다. 홈과 각 화면이 같은 provider 상태를 읽는다.
 
-export type NotificationItem = {
-  id: string
-  text: string
-  at: string
-}
-
 export type HomeData = {
   family: Family
   /** 현재 보고 있는 구성원(가상) */
   viewerId: string
-  notifications: NotificationItem[]
 }
 
 const AVATARS = {
@@ -82,17 +75,7 @@ export const DEMO_FAMILY_EIGHT: Family = {
 }
 
 function homeFor(family: Family, viewerId: string): HomeData {
-  return {
-    family,
-    viewerId,
-    notifications:
-      family.members.length > 1
-        ? [
-            { id: "n1", text: `${family.members[0].name}님이 '함께 저녁 먹기' 일정에 참여했어요`, at: "2026-10-31T09:10:00+09:00" },
-            { id: "n2", text: "오늘 내 할 일 2개 중 1개를 끝냈어요", at: "2026-10-31T08:00:00+09:00" },
-          ]
-        : [],
-  }
+  return { family, viewerId }
 }
 
 export const DEMO_HOME_ONE = homeFor(DEMO_FAMILY_ONE, "solo")

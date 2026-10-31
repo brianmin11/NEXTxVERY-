@@ -218,28 +218,6 @@
   }
 }
 
-/* 집 장면 캐릭터: 걷기 흔들림은 motion-safe에서만, 본체만 좌우 반전(이름표는 그대로) */
-@keyframes yard-bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5%);
-  }
-}
-[data-facing="left"] .yard-body > svg {
-  transform: scaleX(-1);
-}
-@media (prefers-reduced-motion: no-preference) {
-  [data-walk="walking"] .yard-body {
-    animation: yard-bob 0.55s ease-in-out infinite;
-  }
-  [data-walk="running"] .yard-body {
-    animation: yard-bob 0.3s ease-in-out infinite;
-  }
-}
-
 /* 픽셀 자산(테마 배경·캐릭터 레이어)은 확대해도 번지지 않게 그린다. */
 @utility pixelated {
   image-rendering: pixelated;
