@@ -1,4 +1,4 @@
-import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
+import {readFileSync,mkdirSync,writeFileSync,existsSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {createEngine,createRunner,compileChangePlan,OpenAIAdapter,RelationshipError, type RunOptions, type ModelRunMetadata} from '../src/index.js';
 const args=process.argv.slice(2);const arg=(n:string,d:string)=>args.includes(n)?args[args.indexOf(n)+1]??d:d;
@@ -12,6 +12,7 @@ const approvals=JSON.parse(readFileSync('APPROVALS.json','utf8'));
 if(approvals.paidModelCalls!==true)throw Error('Paid calls require explicit approval recorded in APPROVALS.json');
 const budget=Number(arg('--budget-usd','0'));
 if(!Number.isFinite(budget)||budget<plan.conservativeReservationUsd||budget>Number(approvals.maxCostUsd??0))throw Error('Budget outside recorded approval');
+if(existsSync('.env.local'))process.loadEnvFile('.env.local');
 if(!process.env.OPENAI_API_KEY)throw Error('Configure OPENAI_API_KEY in the server environment; do not commit it');
 const adapter=new OpenAIAdapter(plan.model,process.env.OPENAI_API_KEY);
 if(!(await adapter.checkAccess()).accessible)throw Error('Model access not verified for this account');

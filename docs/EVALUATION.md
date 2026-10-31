@@ -4,7 +4,7 @@
 
 ## 실행
 
-`npm run eval:plan`과 `npm run eval:plan -- --split holdout`은 무료 로컬 계획만 출력한다. live는 APPROVALS.json의 paidModelCalls=true, maxCostUsd 기록 및 명시 --budget-usd, OPENAI_API_KEY가 모두 필요하다. 이 파일은 사람이 승인한 범위를 메인이 기록하며 키 보유가 승인은 아니다. 키 값은 env로만 주고 파일·패킷·커밋에 넣지 않는다.
+`npm run eval:plan`과 `npm run eval:plan -- --split holdout`은 무료 로컬 계획만 출력한다. live는 APPROVALS.json의 paidModelCalls=true, maxCostUsd 기록 및 명시 --budget-usd, OPENAI_API_KEY가 모두 필요하다. 이 파일은 사람이 승인한 범위를 메인이 기록하며 키 보유가 승인은 아니다. 키 값은 서버 env 또는 gitignored .env.local에만 두고 채팅·패킷·커밋에 넣지 않는다. .env.example을 참고한다.
 
 승인 후 예: `npm run eval:live -- --split development --budget-usd 12`. 첫 평가 전 models.retrieve로 계정 접근을 확인한다. 현재 환경에서는 키가 없어 계정별 접근을 확인하지 못했다. CLI는 개인 정리→공유→분석→합의의 최대4호출/사례, 자동 재시도0. 위험 입력은 먼저 개인 지원으로 중단한다. 공유 카드의 hostVerified는 **성인 역할극 합성 fixture**이며 실제 인증 승인이 아니다. 모델 실패를 성공·fixture로 대체하지 않는다.
 
