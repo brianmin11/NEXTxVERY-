@@ -1,6 +1,12 @@
 import { AsyncLocalStorage } from "node:async_hooks"
 import { Pool, type PoolClient } from "pg"
 import type { ServiceDatabase } from "../../contracts/storage"
+export function databaseSchema() {
+  const schema = process.env.DATABASE_SCHEMA || "woorijip"
+  if (!/^woorijip(?:_[a-z0-9_]{1,40})?$/.test(schema))
+    throw new Error("Invalid application database schema")
+  return schema
+}
 // Repository statements use SQLite positional placeholders; quoted SQL is preserved.
 export function postgresSql(sql: string) {
   let index = 0,
@@ -64,11 +70,15 @@ export function createPostgresPool(
   // Do not allow connection URL SSL parameters to silently disable certificate validation.
   for (const name of ["sslmode", "sslcert", "sslkey", "sslrootcert"])
     url.searchParams.delete(name)
-  return new Pool({
+  const pool = new Pool({
     connectionString: url.toString(),
-    max: 5,
-    connectionTimeoutMillis: 10000,
-    idleTimeoutMillis: 30000,
+    // Small per-process pool leaves room for maintenance on the product's Nano plan.
+    max: 2,
+    connectionTimeoutMillis: 20000,
+    query_timeout: 20000,
+    idleTimeoutMillis: 120000,
+    keepAlive: true,
+    keepAliveInitialDelayMillis: 10000,
     ssl: local
       ? false
       : {
@@ -77,7 +87,13 @@ export function createPostgresPool(
             ? { ca: process.env.DATABASE_SSL_CA }
             : {}),
         },
-    options:
-      "-c search_path=woorijip,public -c statement_timeout=15000 -c lock_timeout=10000",
+    options: `-c search_path=${databaseSchema()},public -c statement_timeout=15000 -c lock_timeout=10000`,
   })
+  // pg evicts the failed idle client; keep the process alive for a fresh connection.
+  pool.on("error", () =>
+    console.error(
+      "PostgreSQL idle connection lost; reconnecting on next request"
+    )
+  )
+  return pool
 }

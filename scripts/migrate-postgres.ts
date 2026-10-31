@@ -1,15 +1,25 @@
 import { readFileSync } from "node:fs"
-import { loadEnvFile } from "node:process"
+import { parseEnv } from "node:util"
 import { getMigrations } from "better-auth/db/migration"
-import { createPostgresPool } from "../src/lib/server/postgres"
-if (process.env.STORAGE_ENV_FILE) loadEnvFile(process.env.STORAGE_ENV_FILE)
+import { createPostgresPool, databaseSchema } from "../src/lib/server/postgres"
+if (process.env.STORAGE_ENV_FILE)
+  Object.assign(
+    process.env,
+    parseEnv(readFileSync(process.env.STORAGE_ENV_FILE, "utf8"))
+  )
 if (!process.argv.includes("--apply"))
   throw new Error(
     "Explicit --apply required; configure approved target in STORAGE_ENV_FILE"
   )
 const pool = createPostgresPool()
+const schema = databaseSchema()
 try {
-  await pool.query(readFileSync("migrations/postgres/001-service.sql", "utf8"))
+  await pool.query(
+    readFileSync("migrations/postgres/001-service.sql", "utf8").replaceAll(
+      "woorijip",
+      schema
+    )
+  )
   const migrations = await getMigrations({
     database: pool,
     emailAndPassword: { enabled: true },
@@ -21,25 +31,30 @@ try {
       role,
     ])
     if (exists.rowCount) {
-      await pool.query(`REVOKE ALL ON SCHEMA woorijip FROM ${role}`)
+      await pool.query(`REVOKE ALL ON SCHEMA ${schema} FROM ${role}`)
       await pool.query(
-        `REVOKE ALL ON ALL TABLES IN SCHEMA woorijip FROM ${role}`
+        `REVOKE ALL ON ALL TABLES IN SCHEMA ${schema} FROM ${role}`
       )
       await pool.query(
-        `ALTER DEFAULT PRIVILEGES IN SCHEMA woorijip REVOKE ALL ON TABLES FROM ${role}`
+        `ALTER DEFAULT PRIVILEGES IN SCHEMA ${schema} REVOKE ALL ON TABLES FROM ${role}`
       )
     }
   }
   console.log(
     JSON.stringify({
       status: "migrated",
-      schema: "woorijip",
+      schema,
       rawPrivateLegacyTablesMigrated: false,
     })
   )
-} catch {
+} catch (error) {
   console.error(
     "Migration failed; inspect target configuration without logging credentials"
+  )
+  console.error(
+    JSON.stringify({
+      code: (error as { code?: string }).code || "MIGRATION_ERROR",
+    })
   )
   process.exitCode = 1
 } finally {
