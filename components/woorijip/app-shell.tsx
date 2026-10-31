@@ -1,4 +1,3 @@
-import { Badge } from "@/components/ui/badge"
 import { AppBottomNav } from "@/components/woorijip/app-nav"
 
 type AppShellProps = {
@@ -28,11 +27,5 @@ export function AppShell({ title, actions, children }: AppShellProps) {
   )
 }
 
-/** 화면 상단의 작은 데모 표시 */
-export function DemoBadge() {
-  return (
-    <Badge variant="outline" className="h-6 self-start px-2.5 text-muted-foreground">
-      프론트 데모 · 가상 데이터
-    </Badge>
-  )
-}
+/** 실제 모드에는 가상 데이터 배지를 표시하지 않는다. */
+export function DemoBadge() { return null }

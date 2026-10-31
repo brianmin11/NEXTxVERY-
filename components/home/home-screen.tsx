@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useDemoViewer } from "@/components/demo/demo-viewer-provider"
 import { Bell, Users } from "lucide-react"
 
 import { Logo } from "@/components/logo"
@@ -18,7 +19,9 @@ type HomeScreenProps = {
 }
 
 /** 가족 홈 조립. 시트는 selectedItem 하나로만 열려 겹치지 않는다. */
-export function HomeScreen({ data }: HomeScreenProps) {
+export function HomeScreen(_props: HomeScreenProps) {
+  const { family, viewerId } = useDemoViewer()
+  const data: HomeData = { family, viewerId, notifications: [] }
   const [selection, setSelection] = React.useState<HomeSelection | null>(null)
   const [open, setOpen] = React.useState(false)
   // 시트를 연 요소. 트리거 없이 여는 모달은 Radix가 포커스를 돌려주지 않아 직접 기억한다.

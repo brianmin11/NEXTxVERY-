@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Geist_Mono } from "next/font/google"
+
 import localFont from "next/font/local"
 
 import "./globals.css"
@@ -30,11 +30,7 @@ const fontCal = localFont({
   preload: false,
 })
 
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-  preload: false,
-})
+
 
 export const metadata: Metadata = {
   title: { default: BRAND_NAME, template: `%s · ${BRAND_NAME}` },
@@ -62,8 +58,7 @@ export default function RootLayout({
       className={cn(
         "font-sans antialiased",
         fontPretendard.variable,
-        fontCal.variable,
-        fontMono.variable
+        fontCal.variable
       )}
     >
       <body>
