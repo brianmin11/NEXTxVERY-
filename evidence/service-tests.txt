@@ -1,0 +1,5 @@
+2026-11-01 local integration candidate 6d7bd71
+Command: node --import tsx --test tests/v2-service.test.ts
+Result: 8 passed / 0 failed, duration 2047ms.
+Cases: real actor/family membership & hashed invite; calendar local dates/permissions/revisions/idempotency; invalid request rollback; chores permissions/stable completion; ephemeral suggestion and message visibility/read; unavailable AI with manual delivery; image bytes/private ownership/attach/delete; competing writes and orphan cleanup.
+No paid model call; suggestion test uses injected function. HTTP/browser tests remain separate.
